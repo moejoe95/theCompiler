@@ -1,2 +1,6 @@
-Please enter a number for sorting (1/5):
+Please enter an integer for sorting (1/5): 15
+Please enter an integer for sorting (2/5): 2
+Please enter an integer for sorting (3/5): 8
+Please enter an integer for sorting (4/5): 4
+Please enter an integer for sorting (5/5): 6
 2 4 6 8 15
