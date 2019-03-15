@@ -23,14 +23,63 @@
 	yylloc->last_column += yyleng;
 %}
 
-int_literal   [0-9]+
-float_literal [0-9]+\.[0-9]+
+alpha           [a-zA-Z_]
+alpha_num       [a-zA-Z0-9_]
+digit           [0-9]
+identifier      {alpha}{alpha_num}*
+bool_literal    "true"|"false"
+string_literal  \"[^"]*\"
+int_literal   {digit}+
+float_literal {digit}+\.{digit}+
+
+%x comment
 
 %%
 
-{int_literal}     { yylval->TK_INT_LITERAL = atol(yytext); return TK_INT_LITERAL; }
+"/*"                    { BEGIN(comment); }
+<comment>[^*]*
+<comment>"*"+[^*/\n]*
+<comment>"*"+"/"        { BEGIN(INITIAL); }
 
-{float_literal}   { yylval->TK_FLOAT_LITERAL = atof(yytext); return TK_FLOAT_LITERAL; }
+
+"<expression>"                { return TK_EXPRESSION; }
+"<declaration_assignment>"    { return TK_DECLARATION_ASSIGNMENT; }
+"<statement>"                 { return TK_STATEMENT; }
+
+"bool"            { return TK_BOOL; }
+"float"           { return TK_FLOAT; }
+"string"          { return TK_STRING; }
+"int"             { return TK_INT; }
+"if"              { return TK_IF; }
+"while"           { return TK_WHILE; }
+"else"            { return TK_ELSE; }
+"return"          { return TK_RETURN; }
+"void"            { return TK_VOID; }
+
+{int_literal}	{
+	yylval->TK_INT_LITERAL = atol(yytext);
+	return TK_INT_LITERAL;
+}
+
+{float_literal}   {
+	yylval->TK_FLOAT_LITERAL = atof(yytext);
+	return TK_FLOAT_LITERAL;
+}
+
+{bool_literal}	{
+	yylval->TK_BOOL_LITERAL = strcmp(yytext, "false") != 0;
+	return TK_BOOL_LITERAL;
+}
+
+{string_literal}   {
+	yylval->TK_STRING_LITERAL = strdup(yytext);
+	return TK_STRING_LITERAL;
+}
+
+{identifier}	{
+	yylval->TK_IDENTIFIER = strdup(yytext);
+	return TK_IDENTIFIER;
+}
 
 "+"               { return TK_PLUS; }
 "-"               { return TK_MINUS; }
@@ -39,6 +88,24 @@ float_literal [0-9]+\.[0-9]+
 
 "("               { return TK_LPARENTH; }
 ")"               { return TK_RPARENTH; }
+
+"<"               { return TK_LT; }
+">"               { return TK_GT; }
+"!"               { return TK_NOT; }
+"["               { return TK_LSQUAREBRACKET; }
+"]"               { return TK_RSQUAREBRACKET; }
+"{"               { return TK_LCURLYBRACKET; }
+"}"               { return TK_RCURLYBRACKET; }
+";"               { return TK_SEMICOLON; }
+","               { return TK_COLON; }
+
+"<="              { return TK_LTEQ; }
+">="              { return TK_GTEQ; }
+"&&"              { return TK_AND; }
+"||"              { return TK_OR; }
+"=="              { return TK_EQ; }
+"!="              { return TK_NEQ; }
+"="               { return TK_ASSIGN; }
 
 [ \t\r\n]+        { /* ignore */ }
 
