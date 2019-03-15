@@ -40,6 +40,9 @@ float_literal [0-9]+\.[0-9]+
 "("               { return TK_LPARENTH; }
 ")"               { return TK_RPARENTH; }
 
+"<"               { return TK_ST; }
+">"               { return TK_GT; }
+
 [ \t\r\n]+        { /* ignore */ }
 
 <<EOF>>           { return TK_END; }

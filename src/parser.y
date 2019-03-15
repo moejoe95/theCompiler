@@ -40,6 +40,9 @@ void mcc_parser_error();
 %token ASTER "*"
 %token SLASH "/"
 
+%token ST "<"
+%token GT ">"
+
 %left PLUS MINUS
 %left ASTER SLASH
 
@@ -59,6 +62,8 @@ expression : literal                      { $$ = mcc_ast_new_expression_literal(
            | expression ASTER expression  { $$ = mcc_ast_new_expression_binary_op(MCC_AST_BINARY_OP_MUL, $1, $3); loc($$, @1); }
            | expression SLASH expression  { $$ = mcc_ast_new_expression_binary_op(MCC_AST_BINARY_OP_DIV, $1, $3); loc($$, @1); }
            | LPARENTH expression RPARENTH { $$ = mcc_ast_new_expression_parenth($2);                              loc($$, @1); }
+		   | expression ST expression  { $$ = mcc_ast_new_expression_binary_op(MCC_AST_BINARY_OP_ST, $1, $3); loc($$, @1); }
+		   | expression GT expression  { $$ = mcc_ast_new_expression_binary_op(MCC_AST_BINARY_OP_GT, $1, $3); loc($$, @1); }
            ;
 
 literal : INT_LITERAL   { $$ = mcc_ast_new_literal_int($1);   loc($$, @1); }
