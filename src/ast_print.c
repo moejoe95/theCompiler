@@ -15,6 +15,10 @@ const char *mcc_ast_print_binary_op(enum mcc_ast_binary_op op)
 		return "*";
 	case MCC_AST_BINARY_OP_DIV:
 		return "/";
+	case MCC_AST_BINARY_OP_ST:
+		return "<";
+	case MCC_AST_BINARY_OP_GT:
+		return ">";
 	}
 
 	return "unknown op";
