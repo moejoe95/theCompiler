@@ -38,6 +38,21 @@ struct mcc_ast_expression *mcc_ast_new_expression_binary_op(enum mcc_ast_binary_
 	return expr;
 }
 
+struct mcc_ast_expression *mcc_ast_new_expression_unary_op(enum mcc_ast_unary_op op, struct mcc_ast_expression *rhs)
+{
+	assert(rhs);
+
+	struct mcc_ast_expression *expr = malloc(sizeof(*expr));
+	if (!expr) {
+		return NULL;
+	}
+
+	expr->type = MCC_AST_EXPRESSION_TYPE_UNARY_OP;
+	expr->op = op;
+	expr->rhs = rhs;
+	return expr;
+}
+
 struct mcc_ast_expression *mcc_ast_new_expression_parenth(struct mcc_ast_expression *expression)
 {
 	assert(expression);

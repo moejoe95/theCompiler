@@ -11,6 +11,7 @@
 #include "mcc/ast.h"
 
 const char *mcc_ast_print_binary_op(enum mcc_ast_binary_op op);
+const char *mcc_ast_print_unary_op(enum mcc_ast_unary_op op);
 
 // ---------------------------------------------------------------- DOT Printer
 
