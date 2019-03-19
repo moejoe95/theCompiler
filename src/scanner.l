@@ -25,12 +25,19 @@
 
 int_literal   [0-9]+
 float_literal [0-9]+\.[0-9]+
+bool_literal  "true"|"false"
+string_literal \"[^"]*\"
 
 %%
 
 {int_literal}     { yylval->TK_INT_LITERAL = atol(yytext); return TK_INT_LITERAL; }
 
 {float_literal}   { yylval->TK_FLOAT_LITERAL = atof(yytext); return TK_FLOAT_LITERAL; }
+
+{bool_literal}	  { yylval->TK_BOOL_LITERAL = strcmp(yytext, "true") == 0; return TK_BOOL_LITERAL; }
+
+{string_literal}  { yylval->TK_STRING_LITERAL = strdup(yytext); return TK_STRING_LITERAL; }
+
 
 "+"               { return TK_PLUS; }
 "-"               { return TK_MINUS; }
@@ -42,6 +49,16 @@ float_literal [0-9]+\.[0-9]+
 
 "<"               { return TK_ST; }
 ">"               { return TK_GT; }
+
+"<="			  { return TK_SE; }
+">="			  { return TK_GE; }
+
+"&&"			  { return TK_LAND; }
+"||"			  { return TK_LOR; }
+
+"=="			  { return TK_EQ; }
+"!="			  { return TK_NEQ; }
+
 
 [ \t\r\n]+        { /* ignore */ }
 

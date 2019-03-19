@@ -39,11 +39,15 @@ enum mcc_ast_binary_op {
 	MCC_AST_BINARY_OP_DIV,
 	MCC_AST_BINARY_OP_ST,
 	MCC_AST_BINARY_OP_GT,
+	MCC_AST_BINARY_OP_SE,
+	MCC_AST_BINARY_OP_GE,
+	MCC_AST_BINARY_OP_LAND,
+	MCC_AST_BINARY_OP_LOR,
+	MCC_AST_BINARY_OP_EQ,
+	MCC_AST_BINARY_OP_NEQ,
 };
 
-enum mcc_ast_unary_op {
-	MCC_AST_UNARY_OP_MINUS
-}; 
+enum mcc_ast_unary_op { MCC_AST_UNARY_OP_MINUS };
 
 // ---------------------------------------------------------------- Expressions
 
@@ -97,6 +101,9 @@ void mcc_ast_delete_expression(struct mcc_ast_expression *expression);
 enum mcc_ast_literal_type {
 	MCC_AST_LITERAL_TYPE_INT,
 	MCC_AST_LITERAL_TYPE_FLOAT,
+	MCC_AST_LITERAL_TYPE_BOOL,
+	MCC_AST_LITERAL_TYPE_STRING,
+
 };
 
 struct mcc_ast_literal {
@@ -109,12 +116,22 @@ struct mcc_ast_literal {
 
 		// MCC_AST_LITERAL_TYPE_FLOAT
 		double f_value;
+
+		// MCC_AST_LITERAL_TYPE_BOOL
+		int b_value;
+
+		// MCC_AST_LITERAL_TYPE_STRING
+		char *str_value;
 	};
 };
 
 struct mcc_ast_literal *mcc_ast_new_literal_int(long value);
 
 struct mcc_ast_literal *mcc_ast_new_literal_float(double value);
+
+struct mcc_ast_literal *mcc_ast_new_literal_bool(int value);
+
+struct mcc_ast_literal *mcc_ast_new_literal_string(char *value);
 
 void mcc_ast_delete_literal(struct mcc_ast_literal *literal);
 

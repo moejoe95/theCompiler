@@ -19,6 +19,18 @@ const char *mcc_ast_print_binary_op(enum mcc_ast_binary_op op)
 		return "<";
 	case MCC_AST_BINARY_OP_GT:
 		return ">";
+	case MCC_AST_BINARY_OP_SE:
+		return "<=";
+	case MCC_AST_BINARY_OP_GE:
+		return ">=";
+	case MCC_AST_BINARY_OP_LAND:
+		return "&&";
+	case MCC_AST_BINARY_OP_LOR:
+		return "||";
+	case MCC_AST_BINARY_OP_EQ:
+		return "==";
+	case MCC_AST_BINARY_OP_NEQ:
+		return "!=";
 	}
 
 	return "unknown op";
