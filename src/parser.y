@@ -70,7 +70,7 @@ void mcc_parser_error();
 
 toplevel : expression { *result = $1; }
 		 | logical_expression { *result = $1; }
-		 | literal_string 
+		 | literal_string
          ;
 
 expression : literal_number               { $$ = mcc_ast_new_expression_literal($1);                              loc($$, @1); }
