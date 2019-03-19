@@ -9,7 +9,11 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/builddir/mc_ast_to_dot",
-            "args": [],
+            "args": [
+                "|",
+                "xdot",
+                "-"
+            ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],
