@@ -6,7 +6,7 @@
         {
             "label": "ninja build",
             "type": "shell",
-            "command": "cd builddir; ninja",
+            "command": "ninja -C builddir",
             "group": {
                 "kind": "build",
                 "isDefault": true
