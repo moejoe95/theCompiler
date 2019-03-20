@@ -76,11 +76,11 @@ void mcc_ast_visit_literal(struct mcc_ast_literal *literal, struct mcc_ast_visit
 		break;
 
 	case MCC_AST_LITERAL_TYPE_BOOL:
-		visit(literal, visitor->literal_float, visitor);
+		visit(literal, visitor->literal_bool, visitor);
 		break;
 
 	case MCC_AST_LITERAL_TYPE_STRING:
-		visit(literal, visitor->literal_float, visitor);
+		visit(literal, visitor->literal_string, visitor);
 		break;
 	}
 

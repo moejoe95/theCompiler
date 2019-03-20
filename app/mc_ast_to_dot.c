@@ -11,7 +11,7 @@ int main(void)
 
 	// parsing phase
 	{
-		struct mcc_parser_result result = mcc_parse_string("true||true");
+		struct mcc_parser_result result = mcc_parse_string("true && false");
 		if (result.status != MCC_PARSER_STATUS_OK) {
 			return EXIT_FAILURE;
 		}

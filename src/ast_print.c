@@ -155,6 +155,34 @@ static void print_dot_literal_float(struct mcc_ast_literal *literal, void *data)
 	print_dot_node(out, literal, label);
 }
 
+static void print_dot_literal_bool(struct mcc_ast_literal *literal, void *data)
+{
+	assert(literal);
+	assert(data);
+
+	char label[LABEL_SIZE] = {0};
+	char *bool_value[5];
+	if (literal->b_value == 0)
+		*bool_value = "false";
+	else
+		*bool_value = "true";
+	snprintf(label, sizeof(label), "%s", *bool_value);
+
+	FILE *out = data;
+	print_dot_node(out, literal, label);
+}
+static void print_dot_literal_string(struct mcc_ast_literal *literal, void *data)
+{
+	assert(literal);
+	assert(data);
+
+	char label[LABEL_SIZE] = {0};
+	snprintf(label, sizeof(label), "%s", literal->str_value);
+
+	FILE *out = data;
+	print_dot_node(out, literal, label);
+}
+
 // Setup an AST Visitor for printing.
 static struct mcc_ast_visitor print_dot_visitor(FILE *out)
 {
@@ -173,6 +201,8 @@ static struct mcc_ast_visitor print_dot_visitor(FILE *out)
 
 	    .literal_int = print_dot_literal_int,
 	    .literal_float = print_dot_literal_float,
+	    .literal_bool = print_dot_literal_bool,
+	    .literal_string = print_dot_literal_string,
 	};
 }
 

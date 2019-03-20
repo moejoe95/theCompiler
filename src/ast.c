@@ -1,6 +1,7 @@
 #include "mcc/ast.h"
 
 #include <assert.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 // ---------------------------------------------------------------- Expressions
