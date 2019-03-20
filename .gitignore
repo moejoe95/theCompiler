@@ -1,1 +1,4 @@
 /build*/
+build.bat
+build.sh
+/.vscode/
