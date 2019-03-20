@@ -11,8 +11,10 @@ int main(void)
 
 	// parsing phase
 	{
-		struct mcc_parser_result result = mcc_parse_string("true && false");
+		struct mcc_parser_result result = mcc_parse_string("int i");
+
 		if (result.status != MCC_PARSER_STATUS_OK) {
+			fprintf(stdout, "parsing failed\n");
 			return EXIT_FAILURE;
 		}
 		expr = result.expression;

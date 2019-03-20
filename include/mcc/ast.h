@@ -16,6 +16,11 @@
 // Forward Declarations
 struct mcc_ast_expression;
 struct mcc_ast_literal;
+struct mcc_ast_parameter;
+struct mcc_ast_declare_assign;
+struct mcc_ast_new_declaration;
+struct mcc_ast_new_assignment;
+struct mcc_ast_identifier;
 
 // ------------------------------------------------------------------- AST Node
 
@@ -29,6 +34,15 @@ struct mcc_ast_source_location {
 struct mcc_ast_node {
 	struct mcc_ast_source_location sloc;
 };
+
+struct mcc_ast_parameter {
+	struct mcc_ast_node node;
+	struct mcc_ast_declare_assign *parameter;
+	struct mcc_ast_parameter *next_parameter;
+};
+
+struct mcc_ast_expression *mcc_ast_new_expression_identifier(char *identifier,
+                                                             struct mcc_ast_source_location *location);
 
 // ------------------------------------------------------------------ Operators
 
@@ -56,6 +70,8 @@ enum mcc_ast_expression_type {
 	MCC_AST_EXPRESSION_TYPE_BINARY_OP,
 	MCC_AST_EXPRESSION_TYPE_UNARY_OP,
 	MCC_AST_EXPRESSION_TYPE_PARENTH,
+	MCC_AST_EXPRESSION_TYPE_IDENTIFIER,
+	MCC_AST_EXPRESSION_TYPE_ARRAY_ACCESS,
 };
 
 struct mcc_ast_expression {
@@ -81,6 +97,16 @@ struct mcc_ast_expression {
 
 		// MCC_AST_EXPRESSION_TYPE_PARENTH
 		struct mcc_ast_expression *expression;
+
+		// MCC_AST_EXPRESSION_TYPE_IDENTIFIER
+		struct mcc_ast_identifier *identifier;
+
+		// MCC_AST_EXPRESSION_TYPE_ARRAY_ACCESS
+		struct {
+			struct mcc_ast_source_location *array_sloc;
+			struct mcc_ast_expression *array_access_id;
+			struct mcc_ast_expression *array_access_exp;
+		};
 	};
 };
 
@@ -96,7 +122,31 @@ struct mcc_ast_expression *mcc_ast_new_expression_parenth(struct mcc_ast_express
 
 void mcc_ast_delete_expression(struct mcc_ast_expression *expression);
 
+// ------------------------------------------------------------------- Parameter
+
+struct mcc_ast_parameter *mcc_ast_new_parameter(struct mcc_ast_declare_assign *declaration,
+                                                struct mcc_ast_parameter *parameter,
+                                                struct mcc_ast_source_location *location);
+
+void mcc_ast_delete_parameter(struct mcc_ast_parameter *parameter);
+
+// ------------------------------------------------------------------- Declarations
+
+enum mcc_ast_declare_assign_type {
+	MCC_AST_TYPE_DECLARATION,
+	MCC_AST_TYPE_ASSIGNMENT,
+};
+
 // ------------------------------------------------------------------- Literals
+
+enum mcc_ast_program_type {
+	MCC_AST_PROGRAM_TYPE_EXPRESSION,
+	MCC_AST_PROGRAM_TYPE_DECLARATION,
+	MCC_AST_PROGRAM_TYPE_STATEMENT,
+	MCC_AST_PROGRAM_TYPE_FUNCTION,
+	MCC_AST_PROGRAM_TYPE_FUNCTION_LIST,
+	MCC_AST_PROGRAM_TYPE_EMPTY,
+};
 
 enum mcc_ast_literal_type {
 	MCC_AST_LITERAL_TYPE_INT,
@@ -134,6 +184,60 @@ struct mcc_ast_literal *mcc_ast_new_literal_bool(int value);
 struct mcc_ast_literal *mcc_ast_new_literal_string(char *value);
 
 void mcc_ast_delete_literal(struct mcc_ast_literal *literal);
+
+struct mcc_ast_declare_assign {
+	struct mcc_ast_node node;
+
+	enum mcc_ast_declare_assign_type type;
+	struct mcc_ast_symbol_declaration *sym_declaration;
+
+	union {
+		/* MCC_AST_TYPE_DECLARATION */
+		struct {
+			enum mcc_ast_literal_type declare_type;
+			struct mcc_ast_expression *declare_id;
+			long *declare_array_size;
+		};
+
+		/* MCC_AST_TYPE_ASSIGNMENT */
+		struct {
+			struct mcc_ast_source_location *assign_sloc;
+			struct mcc_ast_expression *assign_lhs;
+			struct mcc_ast_expression *assign_rhs;
+		};
+	};
+};
+
+void mcc_ast_delete_declare_assign(struct mcc_ast_declare_assign *declaration);
+
+void mcc_ast_delete_declare_assign(struct mcc_ast_declare_assign *declaration);
+
+struct mcc_ast_declare_assign *mcc_ast_new_assignment(struct mcc_ast_expression *identifier,
+                                                      struct mcc_ast_expression *array_expression,
+                                                      struct mcc_ast_expression *expression,
+                                                      struct mcc_ast_source_location *location,
+                                                      struct mcc_ast_source_location *op_location,
+                                                      struct mcc_ast_source_location *array_location);
+
+struct mcc_ast_identifier {
+	struct mcc_ast_node node;
+	char *name;
+	struct mcc_ast_symbol_declaration *sym_declaration;
+};
+
+// -------------------------------------------------------------------- Types
+
+enum mcc_ast_type {
+	MCC_AST_TYPE_BOOL,
+	MCC_AST_TYPE_INT,
+	MCC_AST_TYPE_FLOAT,
+	MCC_AST_TYPE_STRING,
+	MCC_AST_TYPE_VOID,
+	MCC_AST_TYPE_INVALID,
+};
+
+// -------------------------------------------------------------------- Identifier
+void mcc_ast_delete_identifier(struct mcc_ast_identifier *id);
 
 // -------------------------------------------------------------------- Utility
 

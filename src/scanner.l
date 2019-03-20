@@ -27,8 +27,18 @@ int_literal   [0-9]+
 float_literal [0-9]+\.[0-9]+
 bool_literal  "true"|"false"
 string_literal \"[^"]*\"
+identifier     [a-zA-Z_][a-zA-Z0-9_]*
 
 %%
+
+"<expression>"                { return TK_EXPRESSION; }
+"<declaration_assignment>"    { return TK_DECLARATION_ASSIGNMENT; }
+"<statement>"                 { return TK_STATEMENT; }
+
+"bool"            { return TK_BOOL; }
+"float"           { return TK_FLOAT; }
+"string"          { return TK_STRING; }
+"int"             { return TK_INT; }
 
 {int_literal}     { yylval->TK_INT_LITERAL = atol(yytext); return TK_INT_LITERAL; }
 
@@ -38,6 +48,7 @@ string_literal \"[^"]*\"
 
 {string_literal}  { yylval->TK_STRING_LITERAL = strdup(yytext); return TK_STRING_LITERAL; }
 
+{identifier}      { yylval->TK_IDENTIFIER = strdup(yytext); return TK_IDENTIFIER; }
 
 "+"               { return TK_PLUS; }
 "-"               { return TK_MINUS; }
@@ -59,6 +70,7 @@ string_literal \"[^"]*\"
 "=="			  { return TK_EQ; }
 "!="			  { return TK_NEQ; }
 
+"="               { return TK_ASSIGN; }
 
 [ \t\r\n]+        { /* ignore */ }
 

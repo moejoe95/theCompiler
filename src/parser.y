@@ -29,6 +29,7 @@ void mcc_parser_error();
 
 %token END 0 "EOF"
 
+%token <char *> IDENTIFIER      "identifier"
 %token <long>   INT_LITERAL   "integer literal"
 %token <double> FLOAT_LITERAL "float literal"
 %token <int> 	BOOL_LITERAL "bool literal"
@@ -36,6 +37,9 @@ void mcc_parser_error();
 
 %token LPARENTH "("
 %token RPARENTH ")"
+%token LSQUAREBRACKET           "["
+%token RSQUAREBRACKET           "]"
+%token COLON                    ","
 
 %token PLUS  "+"
 %token MINUS "-"
@@ -54,20 +58,35 @@ void mcc_parser_error();
 
 %token EQ "=="
 %token NEQ "!="
+%token ASSIGN "="
+
+%token BOOL                     "bool"
+%token INT                      "int"
+%token FLOAT                    "float"
+%token STRING                   "string"
+
+%token EXPRESSION               "<expression>"
+%token DECLARATION_ASSIGNMENT   "<declaration_assignment>"
+%token STATEMENT                "<statement>"
 
 %left PLUS MINUS
 %left ASTER SLASH
 
 %type <struct mcc_ast_expression *> expression
-%type <struct mcc_ast_expression *> logical_expression
 %type <struct mcc_ast_literal *> literal
-%type <enum mCc_ast_type> type
+%type <enum mcc_ast_type> type
+%type <struct mcc_ast_declare_assign *> declaration
+%type <struct mcc_ast_declare_assign *> assignment
+%type <struct mcc_ast_expression *> id
+%type <struct mcc_ast_parameter *> parameters
 
 %start toplevel
 
 %%
 
 toplevel : expression { *result = $1; }
+		 | declaration { *result = $1; }
+		 | assignment { *result = $1; }
          ;
 
 expression : literal              		  { $$ = mcc_ast_new_expression_literal($1);                              loc($$, @1); }
@@ -91,6 +110,30 @@ literal : BOOL_LITERAL { $$ = mcc_ast_new_literal_bool($1); loc($$, @1); }
 		| INT_LITERAL   { $$ = mcc_ast_new_literal_int($1);   loc($$, @1); }
 		| FLOAT_LITERAL { $$ = mcc_ast_new_literal_float($1); loc($$, @1); }
 		| STRING_LITERAL { $$ = mcc_ast_new_literal_string($1); loc($$, @1); }
+
+declaration : type id                                            
+              { $$ = mcc_ast_new_declaration($1, $2, 0, 0, &@$); }
+            | type LSQUAREBRACKET INT_LITERAL RSQUAREBRACKET id  
+              { $$ = mcc_ast_new_declaration($1, $5, $3, 1, &@$); }
+            ;
+
+assignment : id ASSIGN expression { $$ = mcc_ast_new_assignment($1, $3, NULL, &@$, &@2, NULL); }
+           | id LSQUAREBRACKET expression RSQUAREBRACKET ASSIGN expression { $$ = mcc_ast_new_assignment($1, $6, $3, &@$, &@5, &@2); }
+           ;
+
+
+id : IDENTIFIER  { $$ = mcc_ast_new_expression_identifier($1, &@1); }
+   ;
+
+type : BOOL    { $$ = MCC_AST_TYPE_BOOL; }
+     | INT     { $$ = MCC_AST_TYPE_INT; }
+     | FLOAT   { $$ = MCC_AST_TYPE_FLOAT; }
+     | STRING  { $$ = MCC_AST_TYPE_STRING; }
+     ;
+
+parameters : declaration { $$ = mcc_ast_new_parameter($1, NULL, &@$); }
+           | declaration COLON parameters { $$ = mcc_ast_new_parameter($1, $3, &@$); }
+           ;
 
 %%
 

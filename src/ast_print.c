@@ -231,3 +231,15 @@ void mcc_ast_print_dot_literal(FILE *out, struct mcc_ast_literal *literal)
 
 	print_dot_end(out);
 }
+
+void mcc_ast_print_dot_declare_assign(FILE *out, struct mcc_ast_declare_assign *decl_assign)
+{
+	assert(decl_assign);
+
+	print_dot_begin(out);
+
+	// struct mcc_ast_visitor visitor = print_dot_visitor(out);
+	// mcc_ast_visit(decl_assign, &visitor);
+
+	print_dot_end(out);
+}
