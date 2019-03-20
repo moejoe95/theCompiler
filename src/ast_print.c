@@ -171,6 +171,7 @@ static void print_dot_literal_bool(struct mcc_ast_literal *literal, void *data)
 	FILE *out = data;
 	print_dot_node(out, literal, label);
 }
+
 static void print_dot_literal_string(struct mcc_ast_literal *literal, void *data)
 {
 	assert(literal);
@@ -181,6 +182,31 @@ static void print_dot_literal_string(struct mcc_ast_literal *literal, void *data
 
 	FILE *out = data;
 	print_dot_node(out, literal, label);
+}
+
+static void print_dot_declaration(struct mcc_ast_declare_assign *declaration, void *data)
+{
+	assert(declaration);
+	FILE *out = data;
+
+	// TODO
+
+	print_dot_node(out, declaration, "declare");
+	print_dot_edge(out, declaration, declaration->declare_id, "identifier");
+}
+
+static void print_dot_assignment(struct mcc_ast_declare_assign *assignment, void *data)
+{
+	assert(assignment);
+
+	FILE *out = data;
+
+	// TODO
+
+	print_dot_node(out, assignment, "assign");
+
+	print_dot_edge(out, assignment, assignment->assign_lhs, "lhs");
+	print_dot_edge(out, assignment, assignment->assign_rhs, "rhs");
 }
 
 // Setup an AST Visitor for printing.
@@ -203,6 +229,10 @@ static struct mcc_ast_visitor print_dot_visitor(FILE *out)
 	    .literal_float = print_dot_literal_float,
 	    .literal_bool = print_dot_literal_bool,
 	    .literal_string = print_dot_literal_string,
+
+	    .declaration = print_dot_declaration,
+	    .assignment = print_dot_assignment,
+
 	};
 }
 
@@ -238,8 +268,8 @@ void mcc_ast_print_dot_declare_assign(FILE *out, struct mcc_ast_declare_assign *
 
 	print_dot_begin(out);
 
-	// struct mcc_ast_visitor visitor = print_dot_visitor(out);
-	// mcc_ast_visit(decl_assign, &visitor);
+	struct mcc_ast_visitor visitor = print_dot_visitor(out);
+	mcc_ast_visit_declare_assign(decl_assign, &visitor);
 
 	print_dot_end(out);
 }

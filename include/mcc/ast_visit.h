@@ -23,6 +23,7 @@ enum mcc_ast_visit_order {
 
 // Callbacks
 typedef void (*mcc_ast_visit_expression_cb)(struct mcc_ast_expression *, void *userdata);
+typedef void (*mcc_ast_visit_declare_assign_cb)(struct mcc_ast_declare_assign *, void *userdata);
 typedef void (*mcc_ast_visit_literal_cb)(struct mcc_ast_literal *, void *userdata);
 
 struct mcc_ast_visitor {
@@ -46,17 +47,23 @@ struct mcc_ast_visitor {
 	mcc_ast_visit_literal_cb literal_float;
 	mcc_ast_visit_literal_cb literal_bool;
 	mcc_ast_visit_literal_cb literal_string;
+
+	mcc_ast_visit_declare_assign_cb declaration;
+	mcc_ast_visit_declare_assign_cb assignment;
 };
 
 void mcc_ast_visit_expression(struct mcc_ast_expression *expression, struct mcc_ast_visitor *visitor);
 
 void mcc_ast_visit_literal(struct mcc_ast_literal *literal, struct mcc_ast_visitor *visitor);
 
+void mcc_ast_visit_declare_assign(struct mcc_ast_declare_assign *dec, struct mcc_ast_visitor *visitor);
+
 // clang-format off
 
 #define mcc_ast_visit(x, visitor) _Generic((x), \
 		struct mcc_ast_expression *: mcc_ast_visit_expression, \
-		struct mcc_ast_literal *:    mcc_ast_visit_literal \
+		struct mcc_ast_literal *:    mcc_ast_visit_literal, \
+		struct mcc_ast_declare_assign *:    mcc_ast_visit_declare_assign \
 	)(x, visitor)
 
 // clang-format on

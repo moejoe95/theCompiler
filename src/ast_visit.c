@@ -1,6 +1,7 @@
 #include "mcc/ast_visit.h"
 
 #include <assert.h>
+#include <stdio.h>
 
 #define visit(node, callback, visitor) \
 	do { \
@@ -96,4 +97,21 @@ void mcc_ast_visit_literal(struct mcc_ast_literal *literal, struct mcc_ast_visit
 	}
 
 	visit_if_post_order(literal, visitor->literal, visitor);
+}
+
+void mcc_ast_visit_declare_assign(struct mcc_ast_declare_assign *dec, struct mcc_ast_visitor *visitor)
+{
+	assert(dec);
+	assert(visitor);
+
+	// TODO
+
+	switch (dec->type) {
+	case MCC_AST_TYPE_DECLARATION:
+		visit(dec, visitor->declaration, visitor);
+		break;
+	case MCC_AST_TYPE_ASSIGNMENT:
+		visit(dec, visitor->assignment, visitor);
+		break;
+	}
 }
