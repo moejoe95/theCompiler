@@ -50,6 +50,7 @@ void mcc_parser_error();
 
 %token LAND "&&"
 %token LOR "||"
+%token NOT "!"
 
 %token EQ "=="
 %token NEQ "!="
@@ -59,21 +60,17 @@ void mcc_parser_error();
 
 %type <struct mcc_ast_expression *> expression
 %type <struct mcc_ast_expression *> logical_expression
-%type <struct mcc_ast_literal *> literal_number
-%type <struct mcc_ast_literal *> literal_bool
-%type <struct mcc_ast_literal *> literal_string
-
+%type <struct mcc_ast_literal *> literal
+%type <enum mCc_ast_type> type
 
 %start toplevel
 
 %%
 
 toplevel : expression { *result = $1; }
-		 | logical_expression { *result = $1; }
-		 | literal_string
          ;
 
-expression : literal_number               { $$ = mcc_ast_new_expression_literal($1);                              loc($$, @1); }
+expression : literal              		  { $$ = mcc_ast_new_expression_literal($1);                              loc($$, @1); }
            | expression PLUS  expression  { $$ = mcc_ast_new_expression_binary_op(MCC_AST_BINARY_OP_ADD, $1, $3); loc($$, @1); }
            | expression MINUS expression  { $$ = mcc_ast_new_expression_binary_op(MCC_AST_BINARY_OP_SUB, $1, $3); loc($$, @1); }
            | expression ASTER expression  { $$ = mcc_ast_new_expression_binary_op(MCC_AST_BINARY_OP_MUL, $1, $3); loc($$, @1); }
@@ -86,20 +83,14 @@ expression : literal_number               { $$ = mcc_ast_new_expression_literal(
 		   | expression GE expression  { $$ = mcc_ast_new_expression_binary_op(MCC_AST_BINARY_OP_GE, $1, $3); loc($$, @1); }		 
 		   | expression EQ expression  { $$ = mcc_ast_new_expression_binary_op(MCC_AST_BINARY_OP_EQ, $1, $3); loc($$, @1); }	
 		   | expression NEQ expression  { $$ = mcc_ast_new_expression_binary_op(MCC_AST_BINARY_OP_NEQ, $1, $3); loc($$, @1); }	
+		   | expression LAND expression { $$ = mcc_ast_new_expression_binary_op(MCC_AST_BINARY_OP_LAND, $1, $3); loc($$, @1); }
+		   | expression LOR expression { $$ = mcc_ast_new_expression_binary_op(MCC_AST_BINARY_OP_LOR, $1, $3); loc($$, @1); }
+		   ;
 
-           ;
-
-literal_number : INT_LITERAL   { $$ = mcc_ast_new_literal_int($1);   loc($$, @1); }
-        	   | FLOAT_LITERAL { $$ = mcc_ast_new_literal_float($1); loc($$, @1); }
-        	   ;
-
-logical_expression : literal_bool { $$ = mcc_ast_new_expression_literal($1); loc($$, @1); }
-				   | logical_expression LAND logical_expression { $$ = mcc_ast_new_expression_binary_op(MCC_AST_BINARY_OP_LAND, $1, $3); loc($$, @1); }
-				   | logical_expression LOR logical_expression { $$ = mcc_ast_new_expression_binary_op(MCC_AST_BINARY_OP_LOR, $1, $3); loc($$, @1); }
-
-literal_bool : BOOL_LITERAL { $$ = mcc_ast_new_literal_bool($1); loc($$, @1); }
-
-literal_string : STRING_LITERAL { $$ = mcc_ast_new_literal_string($1); loc($$, @1); }
+literal : BOOL_LITERAL { $$ = mcc_ast_new_literal_bool($1); loc($$, @1); }
+		| INT_LITERAL   { $$ = mcc_ast_new_literal_int($1);   loc($$, @1); }
+		| FLOAT_LITERAL { $$ = mcc_ast_new_literal_float($1); loc($$, @1); }
+		| STRING_LITERAL { $$ = mcc_ast_new_literal_string($1); loc($$, @1); }
 
 %%
 
