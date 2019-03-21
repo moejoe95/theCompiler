@@ -7,7 +7,7 @@
 
 int main(void)
 {
-	struct mcc_ast_expression *expr = NULL;
+	struct mcc_ast_program *pro = NULL;
 
 	// parsing phase
 	{
@@ -17,13 +17,13 @@ int main(void)
 			fprintf(stdout, "parsing failed\n");
 			return EXIT_FAILURE;
 		}
-		expr = result.expression;
+		pro = result.program;
 	}
 
-	mcc_ast_print_dot(stdout, expr);
+	mcc_ast_print_dot(stdout, pro);
 
 	// cleanup
-	mcc_ast_delete(expr);
+	mcc_ast_delete(pro);
 
 	return EXIT_SUCCESS;
 }

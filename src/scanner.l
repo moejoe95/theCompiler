@@ -33,7 +33,6 @@ identifier     [a-zA-Z_][a-zA-Z0-9_]*
 
 "<expression>"                { return TK_EXPRESSION; }
 "<declaration_assignment>"    { return TK_DECLARATION_ASSIGNMENT; }
-"<statement>"                 { return TK_STATEMENT; }
 
 "bool"            { return TK_BOOL; }
 "float"           { return TK_FLOAT; }

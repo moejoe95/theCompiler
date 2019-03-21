@@ -23,6 +23,23 @@
 #define visit_if_post_order(node, callback, visitor) \
 	visit_if((visitor)->order == MCC_AST_VISIT_POST_ORDER, node, callback, visitor)
 
+void mcc_ast_visit_program(struct mcc_ast_program *pro, struct mcc_ast_visitor *visitor)
+{
+	assert(pro);
+	assert(visitor);
+
+	visit_if_pre_order(pro, visitor->program, visitor);
+
+	switch (pro->type) {
+	case MCC_AST_PROGRAM_TYPE_EXPRESSION:
+		// TODO
+		break;
+	case MCC_AST_PROGRAM_TYPE_DECLARATION:
+		// TODO
+		break;
+	}
+}
+
 void mcc_ast_visit_expression(struct mcc_ast_expression *expression, struct mcc_ast_visitor *visitor)
 {
 	assert(expression);
@@ -30,7 +47,7 @@ void mcc_ast_visit_expression(struct mcc_ast_expression *expression, struct mcc_
 
 	visit_if_pre_order(expression, visitor->expression, visitor);
 
-	switch (expression->type) { // TODO segfault happens here
+	switch (expression->type) {
 	case MCC_AST_EXPRESSION_TYPE_LITERAL:
 		visit_if_pre_order(expression, visitor->expression_literal, visitor);
 		mcc_ast_visit(expression->literal, visitor);

@@ -30,7 +30,7 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	struct mcc_ast_expression *expr = NULL;
+	struct mcc_ast_program *pro = NULL;
 
 	// parsing phase
 	{
@@ -39,7 +39,7 @@ int main(int argc, char *argv[])
 		if (result.status != MCC_PARSER_STATUS_OK) {
 			return EXIT_FAILURE;
 		}
-		expr = result.expression;
+		pro = result.program;
 	}
 
 	// TODO:
@@ -49,7 +49,7 @@ int main(int argc, char *argv[])
 	// - invoke backend compiler
 
 	// cleanup
-	mcc_ast_delete(expr);
+	mcc_ast_delete(pro);
 
 	return EXIT_SUCCESS;
 }

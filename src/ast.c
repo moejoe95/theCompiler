@@ -148,10 +148,9 @@ struct mcc_ast_expression *mcc_ast_new_expression_parenth(struct mcc_ast_express
 	return expr;
 }
 
-struct mcc_ast_expression *mcc_ast_new_expression_identifier(char *identifier, struct mcc_ast_source_location *location)
+struct mcc_ast_expression *mcc_ast_new_expression_identifier(char *identifier)
 {
 	assert(identifier);
-	assert(location);
 
 	struct mcc_ast_expression *expr = mcc_ast_get_new_expression_struct();
 	expr->type = MCC_AST_EXPRESSION_TYPE_IDENTIFIER;
@@ -161,9 +160,6 @@ struct mcc_ast_expression *mcc_ast_new_expression_identifier(char *identifier, s
 	id->sym_declaration = NULL;
 
 	expr->identifier = id;
-	mcc_ast_add_sloc(&expr->node, location);
-	mcc_ast_add_sloc(&expr->identifier->node, location);
-
 	return expr;
 }
 
@@ -288,11 +284,8 @@ void mcc_ast_delete_identifier(struct mcc_ast_identifier *id)
 
 // ------------------------------------------------------------------- Declaration
 
-struct mcc_ast_declare_assign *mcc_ast_new_declaration(enum mcc_ast_type type,
-                                                       struct mcc_ast_expression *identifier,
-                                                       long literal,
-                                                       int literal_flag,
-                                                       struct mcc_ast_source_location *location)
+struct mcc_ast_declare_assign *
+mcc_ast_new_declaration(enum mcc_ast_type type, struct mcc_ast_expression *identifier, long literal, int literal_flag)
 {
 	assert(identifier);
 
@@ -311,8 +304,6 @@ struct mcc_ast_declare_assign *mcc_ast_new_declaration(enum mcc_ast_type type,
 	} else {
 		decl->declare_array_size = NULL;
 	}
-
-	mcc_ast_add_sloc(&decl->node, location);
 
 	return decl;
 }
@@ -371,4 +362,48 @@ void mcc_ast_delete_declare_assign(struct mcc_ast_declare_assign *declaration)
 		break;
 	}
 	free(declaration);
+}
+
+// ------------------------------------------------------------------- toplevel
+
+struct mcc_ast_program *mcc_ast_new_program(void *program, enum mcc_ast_program_type type)
+{
+
+	struct mcc_ast_program *pro = malloc(sizeof(*pro));
+	if (!pro) {
+		return NULL;
+	}
+
+	pro->type = type;
+
+	switch (type) {
+	case MCC_AST_PROGRAM_TYPE_EXPRESSION:
+		pro->expression = *(struct mcc_ast_expression *)program;
+		break;
+
+	case MCC_AST_PROGRAM_TYPE_DECLARATION:
+		pro->declaration = *(struct mcc_ast_declare_assign *)program;
+		break;
+
+		// TODO
+	}
+
+	return pro;
+}
+
+void mcc_ast_delete_program(struct mcc_ast_program *program)
+{
+	assert(program);
+
+	switch (program->type) {
+	case MCC_AST_PROGRAM_TYPE_EXPRESSION:
+		// TODO
+		break;
+
+	case MCC_AST_PROGRAM_TYPE_DECLARATION:
+		// TODO
+		break;
+
+		// TODO
+	}
 }

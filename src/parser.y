@@ -2,7 +2,7 @@
 
 %define api.pure full
 %lex-param   {void *scanner}
-%parse-param {void *scanner} {struct mcc_ast_expression** result}
+%parse-param {void *scanner} {struct mcc_ast_program** result}
 
 %define parse.trace
 %define parse.error verbose
@@ -76,18 +76,16 @@ void mcc_parser_error();
 %type <struct mcc_ast_literal *> literal
 %type <enum mcc_ast_type> type
 %type <struct mcc_ast_declare_assign *> declaration
-%type <struct mcc_ast_declare_assign *> assignment
 %type <struct mcc_ast_expression *> id
-%type <struct mcc_ast_parameter *> parameters
+%type <struct mcc_ast_program *> toplevel
 
 %start toplevel
 
 %%
 
-toplevel : expression { *result = $1; }
-		 | declaration { *result = $1; }
-		 | assignment { *result = $1; }
-         ;
+toplevel : expression { *result = mcc_ast_new_program($1, MCC_AST_PROGRAM_TYPE_EXPRESSION); }
+		 | declaration { *result = mcc_ast_new_program($1, MCC_AST_PROGRAM_TYPE_DECLARATION); }     
+		 ;
 
 expression : literal              		  { $$ = mcc_ast_new_expression_literal($1);                              loc($$, @1); }
            | expression PLUS  expression  { $$ = mcc_ast_new_expression_binary_op(MCC_AST_BINARY_OP_ADD, $1, $3); loc($$, @1); }
@@ -112,17 +110,11 @@ literal : BOOL_LITERAL { $$ = mcc_ast_new_literal_bool($1); loc($$, @1); }
 		| STRING_LITERAL { $$ = mcc_ast_new_literal_string($1); loc($$, @1); }
 
 declaration : type id                                            
-              { $$ = mcc_ast_new_declaration($1, $2, 0, 0, &@$); }
-            | type LSQUAREBRACKET INT_LITERAL RSQUAREBRACKET id  
-              { $$ = mcc_ast_new_declaration($1, $5, $3, 1, &@$); }
+              { $$ = mcc_ast_new_declaration($1, $2, 0, 0); }
             ;
 
-assignment : id ASSIGN expression { $$ = mcc_ast_new_assignment($1, $3, NULL, &@$, &@2, NULL); }
-           | id LSQUAREBRACKET expression RSQUAREBRACKET ASSIGN expression { $$ = mcc_ast_new_assignment($1, $6, $3, &@$, &@5, &@2); }
-           ;
-
-
-id : IDENTIFIER  { $$ = mcc_ast_new_expression_identifier($1, &@1); }
+		   
+id : IDENTIFIER  { $$ = mcc_ast_new_expression_identifier($1); }
    ;
 
 type : BOOL    { $$ = MCC_AST_TYPE_BOOL; }
@@ -130,10 +122,6 @@ type : BOOL    { $$ = MCC_AST_TYPE_BOOL; }
      | FLOAT   { $$ = MCC_AST_TYPE_FLOAT; }
      | STRING  { $$ = MCC_AST_TYPE_STRING; }
      ;
-
-parameters : declaration { $$ = mcc_ast_new_parameter($1, NULL, &@$); }
-           | declaration COLON parameters { $$ = mcc_ast_new_parameter($1, $3, &@$); }
-           ;
 
 %%
 
@@ -180,7 +168,7 @@ struct mcc_parser_result mcc_parse_file(FILE *input)
 	    .status = MCC_PARSER_STATUS_OK,
 	};
 
-	if (yyparse(scanner, &result.expression) != 0) {
+	if (yyparse(scanner, &result.program) != 0) {
 		result.status = MCC_PARSER_STATUS_UNKNOWN_ERROR;
 	}
 

@@ -41,8 +41,7 @@ struct mcc_ast_parameter {
 	struct mcc_ast_parameter *next_parameter;
 };
 
-struct mcc_ast_expression *mcc_ast_new_expression_identifier(char *identifier,
-                                                             struct mcc_ast_source_location *location);
+struct mcc_ast_expression *mcc_ast_new_expression_identifier(char *identifier);
 
 // ------------------------------------------------------------------ Operators
 
@@ -130,6 +129,17 @@ struct mcc_ast_parameter *mcc_ast_new_parameter(struct mcc_ast_declare_assign *d
 
 void mcc_ast_delete_parameter(struct mcc_ast_parameter *parameter);
 
+// -------------------------------------------------------------------- Types
+
+enum mcc_ast_type {
+	MCC_AST_TYPE_BOOL,
+	MCC_AST_TYPE_INT,
+	MCC_AST_TYPE_FLOAT,
+	MCC_AST_TYPE_STRING,
+	// MCC_AST_TYPE_VOID,
+	// MCC_AST_TYPE_INVALID,
+};
+
 // ------------------------------------------------------------------- Declarations
 
 enum mcc_ast_declare_assign_type {
@@ -142,10 +152,10 @@ enum mcc_ast_declare_assign_type {
 enum mcc_ast_program_type {
 	MCC_AST_PROGRAM_TYPE_EXPRESSION,
 	MCC_AST_PROGRAM_TYPE_DECLARATION,
-	MCC_AST_PROGRAM_TYPE_STATEMENT,
-	MCC_AST_PROGRAM_TYPE_FUNCTION,
-	MCC_AST_PROGRAM_TYPE_FUNCTION_LIST,
-	MCC_AST_PROGRAM_TYPE_EMPTY,
+	// MCC_AST_PROGRAM_TYPE_STATEMENT,
+	// MCC_AST_PROGRAM_TYPE_FUNCTION,
+	// MCC_AST_PROGRAM_TYPE_FUNCTION_LIST,
+	// MCC_AST_PROGRAM_TYPE_EMPTY,
 };
 
 enum mcc_ast_literal_type {
@@ -219,32 +229,41 @@ struct mcc_ast_declare_assign *mcc_ast_new_assignment(struct mcc_ast_expression 
                                                       struct mcc_ast_source_location *op_location,
                                                       struct mcc_ast_source_location *array_location);
 
+struct mcc_ast_declare_assign *
+mcc_ast_new_declaration(enum mcc_ast_type type, struct mcc_ast_expression *identifier, long literal, int literal_flag);
+
 struct mcc_ast_identifier {
 	struct mcc_ast_node node;
 	char *name;
 	struct mcc_ast_symbol_declaration *sym_declaration;
 };
 
-// -------------------------------------------------------------------- Types
-
-enum mcc_ast_type {
-	MCC_AST_TYPE_BOOL,
-	MCC_AST_TYPE_INT,
-	MCC_AST_TYPE_FLOAT,
-	MCC_AST_TYPE_STRING,
-	MCC_AST_TYPE_VOID,
-	MCC_AST_TYPE_INVALID,
-};
-
 // -------------------------------------------------------------------- Identifier
 void mcc_ast_delete_identifier(struct mcc_ast_identifier *id);
+
+// ------------------------------------------------------------------ toplevel
+
+struct mcc_ast_program {
+	enum mcc_ast_program_type type;
+	struct mcc_ast_node node;
+	union {
+		struct mcc_ast_expression expression;
+		struct mcc_ast_declare_assign declaration;
+	};
+};
+
+struct mcc_ast_program *mcc_ast_new_program(void *program, enum mcc_ast_program_type type);
+
+void mcc_ast_delete_program(struct mcc_ast_program *program);
 
 // -------------------------------------------------------------------- Utility
 
 // clang-format off
 
 #define mcc_ast_delete(x) _Generic((x), \
+		struct mcc_ast_program *: mcc_ast_delete_program, \
 		struct mcc_ast_expression *: mcc_ast_delete_expression, \
+		struct mcc_ast_declare_assign *: mcc_ast_delete_declare_assign, \
 		struct mcc_ast_literal *:    mcc_ast_delete_literal \
 	)(x)
 
