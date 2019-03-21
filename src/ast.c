@@ -74,6 +74,16 @@ struct mcc_ast_identifier *mcc_ast_get_new_identifier_struct()
 	return id;
 }
 
+struct mcc_ast_literal *mcc_ast_get_new_literal_struct()
+{
+	struct mcc_ast_literal *lit = malloc(sizeof(*lit));
+	if (!lit) {
+		return NULL;
+	}
+
+	return lit;
+}
+
 // ---------------------------------------------------------------- Expressions
 
 struct mcc_ast_expression *mcc_ast_new_expression_literal(struct mcc_ast_literal *literal)
@@ -291,6 +301,7 @@ struct mcc_ast_declare_assign *mcc_ast_new_declaration(enum mcc_ast_type type,
 	decl->type = MCC_AST_TYPE_DECLARATION;
 	decl->declare_type = type;
 	decl->declare_id = identifier;
+	decl->declare_id->type = MCC_AST_EXPRESSION_TYPE_IDENTIFIER;
 	decl->sym_declaration = NULL;
 
 	if (literal_flag) {
@@ -342,4 +353,22 @@ struct mcc_ast_declare_assign *mcc_ast_new_assignment(struct mcc_ast_expression 
 	mcc_ast_add_sloc(&decl->node, location);
 
 	return decl;
+}
+
+void mcc_ast_delete_declare_assign(struct mcc_ast_declare_assign *declaration)
+{
+	assert(declaration);
+
+	switch (declaration->type) {
+
+	case MCC_AST_TYPE_DECLARATION:
+		mcc_ast_delete_expression(declaration->declare_id);
+		free(declaration->declare_array_size);
+		break;
+
+	case MCC_AST_TYPE_ASSIGNMENT:
+		// TODO
+		break;
+	}
+	free(declaration);
 }

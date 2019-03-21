@@ -30,7 +30,7 @@ void mcc_ast_visit_expression(struct mcc_ast_expression *expression, struct mcc_
 
 	visit_if_pre_order(expression, visitor->expression, visitor);
 
-	switch (expression->type) {
+	switch (expression->type) { // TODO segfault happens here
 	case MCC_AST_EXPRESSION_TYPE_LITERAL:
 		visit_if_pre_order(expression, visitor->expression_literal, visitor);
 		mcc_ast_visit(expression->literal, visitor);
