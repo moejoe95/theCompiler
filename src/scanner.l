@@ -20,7 +20,14 @@
 // - take line breaks into account
 #define YY_USER_ACTION \
 	yylloc->first_column = yylloc->last_column; \
-	yylloc->last_column += yyleng;
+	if(yytext == '\n'){ \
+		yylloc->first_column = yylloc->last_column; \
+		yylloc->last_column = 0; \
+	} \
+	else{ \
+		yylloc->last_column += yyleng; \
+	} \
+	yylloc->last_line = yylineno; 
 %}
 
 int_literal   [0-9]+
@@ -75,4 +82,4 @@ identifier     [a-zA-Z_][a-zA-Z0-9_]*
 
 <<EOF>>           { return TK_END; }
 
-.                 { fprintf(stderr, "invalid character '%c'\n", yytext[0]); }
+.                 { fprintf(stderr, "unknown character '%c'\n", yytext[0]); }
