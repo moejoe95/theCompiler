@@ -18,11 +18,13 @@ int euclid(int n, int k)
 int main()
 {
 	print("Please enter the first number: ");
+	print_nl();
 
 	int n;
 	n = read_int();
 
 	print("Please enter the second number: ");
+	print_nl();
 
 	int k;
 	k = read_int();
@@ -41,5 +43,3 @@ int main()
 
 	return 0;
 }
-
-

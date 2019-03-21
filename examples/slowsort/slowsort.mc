@@ -70,6 +70,7 @@ int get_choice(){
     print("[2] floats?");
     print_nl();
     print("choice: ");
+    print_nl();
     int choice;
     choice = read_int();
     return choice;
@@ -106,8 +107,9 @@ int main(){
         while(i < arr_size){
             print_int(i);
             print(". number = ");
+            print_nl();
             i_number = read_int();
-            i_arr[i] = i_number; 
+            i_arr[i] = i_number;
             i = i+1;
         }
 
@@ -116,7 +118,7 @@ int main(){
         print_i_array(i_arr, arr_size);
 
         /* call sorting function */
-        i_slowsort(i_arr, 0, arr_size-1); 
+        i_slowsort(i_arr, 0, arr_size-1);
 
         /* print result array to stdout */
         print("output array: ");
@@ -129,7 +131,7 @@ int main(){
             print_int(i);
             print(". number = ");
             f_number = read_float();
-            f_arr[i] = f_number; 
+            f_arr[i] = f_number;
             i = i+1;
         }
 
@@ -138,7 +140,7 @@ int main(){
         print_f_array(f_arr, arr_size);
 
         /* call sorting function */
-        f_slowsort(f_arr, 0, arr_size-1); 
+        f_slowsort(f_arr, 0, arr_size-1);
 
         /* print result array to stdout */
         print("output array: ");
