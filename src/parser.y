@@ -84,7 +84,7 @@ void mcc_parser_error();
 
 %destructor { mcc_ast_delete_expression($$); }          expression
 %destructor { mcc_ast_delete_statement($$); }           statement
-%destructor { mcc_ast_delete_declare_assign($$); }      declaration assignment
+%destructor { mcc_ast_delete_declare_assign($$); }      declaration
 
 %start toplevel
 
