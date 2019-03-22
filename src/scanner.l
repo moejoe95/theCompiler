@@ -40,6 +40,7 @@ identifier     [a-zA-Z_][a-zA-Z0-9_]*
 
 "<expression>"                { return TK_EXPRESSION; }
 "<declaration_assignment>"    { return TK_DECLARATION_ASSIGNMENT; }
+"<statement>"                 { return TK_STATEMENT; }
 
 "bool"            { return TK_BOOL; }
 "float"           { return TK_FLOAT; }
@@ -77,6 +78,8 @@ identifier     [a-zA-Z_][a-zA-Z0-9_]*
 "!="			  { return TK_NEQ; }
 
 "="               { return TK_ASSIGN; }
+";"               { return TK_SEMICOLON; }
+","               { return TK_COLON; }
 
 [ \t\r\n]+        { /* ignore */ }
 

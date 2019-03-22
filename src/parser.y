@@ -37,9 +37,10 @@ void mcc_parser_error();
 
 %token LPARENTH "("
 %token RPARENTH ")"
-%token LSQUAREBRACKET           "["
-%token RSQUAREBRACKET           "]"
-%token COLON                    ","
+%token LSQUAREBRACKET "["
+%token RSQUAREBRACKET "]"
+%token COLON ","
+%token SEMICOLON  ";"
 
 %token PLUS  "+"
 %token MINUS "-"
@@ -78,13 +79,19 @@ void mcc_parser_error();
 %type <struct mcc_ast_declare_assign *> declaration
 %type <struct mcc_ast_expression *> id
 %type <struct mcc_ast_program *> toplevel
+%type <struct mcc_ast_statement *> statement
+
+%destructor { mcc_ast_delete_expression($$); }          expression
+%destructor { mcc_ast_delete_statement($$); }           statement
+%destructor { mcc_ast_delete_declare_assign($$); }      declaration
 
 %start toplevel
 
 %%
 
 toplevel : expression { *result = mcc_ast_new_program($1, MCC_AST_PROGRAM_TYPE_EXPRESSION); }
-		 | declaration { *result = mcc_ast_new_program($1, MCC_AST_PROGRAM_TYPE_DECLARATION); }     
+		 | declaration { *result = mcc_ast_new_program($1, MCC_AST_PROGRAM_TYPE_DECLARATION); }
+		 | statement { *result = mcc_ast_new_program($1, MCC_AST_PROGRAM_TYPE_STATEMENT); }     
 		 ;
 
 expression : literal              		  { $$ = mcc_ast_new_expression_literal($1);                              loc($$, @1); }
@@ -108,9 +115,13 @@ literal : BOOL_LITERAL { $$ = mcc_ast_new_literal_bool($1); loc($$, @1); }
 		| INT_LITERAL   { $$ = mcc_ast_new_literal_int($1);   loc($$, @1); }
 		| FLOAT_LITERAL { $$ = mcc_ast_new_literal_float($1); loc($$, @1); }
 		| STRING_LITERAL { $$ = mcc_ast_new_literal_string($1); loc($$, @1); }
+		;
 
-declaration : type id                                            
-              { $$ = mcc_ast_new_declaration($1, $2, 0, 0); }
+statement : declaration SEMICOLON  { $$ = mcc_ast_new_statement_declaration($1, &@$); }
+          | expression SEMICOLON   { $$ = mcc_ast_new_statement_expression($1, &@$); }
+          ;
+
+declaration : type id { $$ = mcc_ast_new_declaration($1, $2, 0, 0); }
             ;
 
 		   

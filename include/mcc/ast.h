@@ -21,6 +21,7 @@ struct mcc_ast_declare_assign;
 struct mcc_ast_new_declaration;
 struct mcc_ast_new_assignment;
 struct mcc_ast_identifier;
+struct mcc_ast_statement;
 
 // ------------------------------------------------------------------- AST Node
 
@@ -147,12 +148,56 @@ enum mcc_ast_declare_assign_type {
 	MCC_AST_TYPE_ASSIGNMENT,
 };
 
+// ------------------------------------------------------------------- Statements
+
+enum mcc_ast_statement_type {
+	MCC_AST_STATEMENT_EXPRESSION,
+	MCC_AST_STATEMENT_ASSIGNMENT,
+	MCC_AST_STATEMENT_DECLARATION,
+	// MCC_AST_STATEMENT_RETURN,
+	// MCC_AST_STATEMENT_IF,
+	// MCC_AST_STATEMENT_WHILE,
+	// MCC_AST_STATEMENT_COMPOUND,
+};
+
+struct mcc_ast_statement {
+	struct mcc_ast_node node;
+	enum mcc_ast_statement_type type;
+
+	union {
+		/* MCC_AST_STATEMENT_EXPRESSION */
+		/* MCC_AST_STATEMENT_RETURN */
+		struct mcc_ast_expression *expression;
+
+		/* MCC_AST_STATEMENT_ASSIGNMENT */
+		/* MCC_AST_STATEMENT_DECLARATION */
+		struct mcc_ast_declare_assign *declare_assign;
+
+		// /* MCC_AST_STATEMENT_IF */
+		// struct {
+		// 	struct mcc_ast_expression *if_cond;
+		// 	struct mcc_ast_statement *if_stat;
+		// 	struct mcc_ast_statement *else_stat;
+		// };
+
+		// /* MCC_AST_STATEMENT_WHILE */
+		// struct {
+		// 	struct mcc_ast_expression *while_cond;
+		// 	struct mcc_ast_statement *while_sta;
+		// };
+
+		// /* MCC_AST_STATEMENT_COMPOUND */
+		// struct mcc_ast_statement_list *compound;
+	};
+};
+
+
 // ------------------------------------------------------------------- Literals
 
 enum mcc_ast_program_type {
 	MCC_AST_PROGRAM_TYPE_EXPRESSION,
 	MCC_AST_PROGRAM_TYPE_DECLARATION,
-	// MCC_AST_PROGRAM_TYPE_STATEMENT,
+	MCC_AST_PROGRAM_TYPE_STATEMENT,
 	// MCC_AST_PROGRAM_TYPE_FUNCTION,
 	// MCC_AST_PROGRAM_TYPE_FUNCTION_LIST,
 	// MCC_AST_PROGRAM_TYPE_EMPTY,
@@ -241,20 +286,37 @@ struct mcc_ast_identifier {
 // -------------------------------------------------------------------- Identifier
 void mcc_ast_delete_identifier(struct mcc_ast_identifier *id);
 
-// ------------------------------------------------------------------ toplevel
+// -------------------------------------------------------------------- Toplevel
 
 struct mcc_ast_program {
 	enum mcc_ast_program_type type;
 	struct mcc_ast_node node;
 	union {
-		struct mcc_ast_expression expression;
-		struct mcc_ast_declare_assign declaration;
+		struct mcc_ast_expression *expression;
+		struct mcc_ast_declare_assign *declaration;
+		struct mcc_ast_statement *statement;
 	};
 };
 
 struct mcc_ast_program *mcc_ast_new_program(void *program, enum mcc_ast_program_type type);
 
 void mcc_ast_delete_program(struct mcc_ast_program *program);
+
+// -------------------------------------------------------------------- Statement
+struct mcc_ast_statement *
+mcc_ast_new_statement_expression(struct mcc_ast_expression *expression,
+                                 struct mcc_ast_source_location *location);
+
+struct mcc_ast_statement *
+mcc_ast_new_statement_assignment(struct mcc_ast_declare_assign *assignment,
+                                 struct mcc_ast_source_location *location);
+
+struct mcc_ast_statement *
+mcc_ast_new_statement_declaration(struct mcc_ast_declare_assign *declaration,
+                                  struct mcc_ast_source_location *location);
+
+void mcc_ast_delete_statement(struct mcc_ast_statement *statement);
+
 
 // -------------------------------------------------------------------- Utility
 

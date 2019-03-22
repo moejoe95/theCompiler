@@ -23,7 +23,7 @@ void mcc_ast_set_sloc(struct mcc_ast_source_location *location, struct mcc_ast_s
 	// location->filename = set_location->filename;
 }
 
-struct mcc_ast_parameter *mCC_ast_get_new_parameter_struct()
+struct mcc_ast_parameter *mcc_ast_get_new_parameter_struct()
 {
 
 	struct mcc_ast_parameter *param = malloc(sizeof(*param));
@@ -83,6 +83,17 @@ struct mcc_ast_literal *mcc_ast_get_new_literal_struct()
 
 	return lit;
 }
+
+struct mcc_ast_statement *mcc_ast_get_new_statement_struct()
+{
+	struct mcc_ast_statement *statement = malloc(sizeof(*statement));
+	if (!statement) {
+		return NULL;
+	}
+
+	return statement;
+}
+
 
 // ---------------------------------------------------------------- Expressions
 
@@ -264,7 +275,7 @@ struct mcc_ast_parameter *mcc_ast_new_parameter(struct mcc_ast_declare_assign *d
 	assert(declaration);
 	assert(location);
 
-	struct mcc_ast_parameter *param = mCC_ast_get_new_parameter_struct();
+	struct mcc_ast_parameter *param = mcc_ast_get_new_parameter_struct();
 	param->parameter = declaration;
 	param->next_parameter = parameter;
 
@@ -364,7 +375,7 @@ void mcc_ast_delete_declare_assign(struct mcc_ast_declare_assign *declaration)
 	free(declaration);
 }
 
-// ------------------------------------------------------------------- toplevel
+// ------------------------------------------------------------------- Toplevel
 
 struct mcc_ast_program *mcc_ast_new_program(void *program, enum mcc_ast_program_type type)
 {
@@ -378,11 +389,15 @@ struct mcc_ast_program *mcc_ast_new_program(void *program, enum mcc_ast_program_
 
 	switch (type) {
 	case MCC_AST_PROGRAM_TYPE_EXPRESSION:
-		pro->expression = *(struct mcc_ast_expression *)program;
+		pro->expression = (struct mcc_ast_expression *)program;
 		break;
 
 	case MCC_AST_PROGRAM_TYPE_DECLARATION:
-		pro->declaration = *(struct mcc_ast_declare_assign *)program;
+		pro->declaration = (struct mcc_ast_declare_assign *)program;
+		break;
+
+	case MCC_AST_PROGRAM_TYPE_STATEMENT:
+		pro->statement = (struct mcc_ast_statement *)program;
 		break;
 
 		// TODO
@@ -404,6 +419,76 @@ void mcc_ast_delete_program(struct mcc_ast_program *program)
 		// TODO
 		break;
 
+	case MCC_AST_PROGRAM_TYPE_STATEMENT:
+		// TODO
+		break;
+
 		// TODO
 	}
+}
+
+// ------------------------------------------------------------------- Statements
+
+struct mcc_ast_statement *
+mcc_ast_new_statement_expression(struct mcc_ast_expression *expression,
+                                 struct mcc_ast_source_location *location)
+{
+	assert(expression);
+
+	struct mcc_ast_statement *stat = mcc_ast_get_new_statement_struct();
+	stat->type = MCC_AST_STATEMENT_EXPRESSION;
+	stat->expression = expression;
+
+	mcc_ast_add_sloc(&stat->node, location);
+
+	return stat;
+}
+
+struct mcc_ast_statement *
+mcc_ast_new_statement_assignment(struct mcc_ast_declare_assign *assignment,
+                                 struct mcc_ast_source_location *location)
+{
+	assert(assignment);
+
+	struct mcc_ast_statement *assign = mcc_ast_get_new_statement_struct();
+	assign->type = MCC_AST_STATEMENT_ASSIGNMENT;
+	assign->declare_assign = assignment;
+
+	mcc_ast_add_sloc(&assign->node, location);
+
+	return assign;
+}
+
+struct mcc_ast_statement *
+mcc_ast_new_statement_declaration(struct mcc_ast_declare_assign *declaration,
+                                  struct mcc_ast_source_location *location)
+{
+	assert(declaration);
+
+	struct mcc_ast_statement *dec = mcc_ast_get_new_statement_struct();
+	dec->type = MCC_AST_STATEMENT_DECLARATION;
+	dec->declare_assign = declaration;
+
+	mcc_ast_add_sloc(&dec->node, location);
+
+	return dec;
+}
+
+void mcc_ast_delete_statement(struct mcc_ast_statement *statement)
+{
+	assert(statement);
+
+	switch (statement->type) {
+
+	case MCC_AST_STATEMENT_EXPRESSION:
+		mcc_ast_delete_expression(statement->expression);
+		break;
+
+	case MCC_AST_STATEMENT_DECLARATION:
+	case MCC_AST_STATEMENT_ASSIGNMENT:
+		mcc_ast_delete_declare_assign(statement->declare_assign);
+		break;
+	}
+
+	free(statement);
 }
