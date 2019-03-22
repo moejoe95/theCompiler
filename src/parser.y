@@ -77,19 +77,21 @@ void mcc_parser_error();
 %type <struct mcc_ast_literal *> literal
 %type <enum mcc_ast_type> type
 %type <struct mcc_ast_declare_assign *> declaration
+%type <struct mcc_ast_declare_assign *> assignment
 %type <struct mcc_ast_expression *> id
 %type <struct mcc_ast_program *> toplevel
 %type <struct mcc_ast_statement *> statement
 
 %destructor { mcc_ast_delete_expression($$); }          expression
 %destructor { mcc_ast_delete_statement($$); }           statement
-%destructor { mcc_ast_delete_declare_assign($$); }      declaration
+%destructor { mcc_ast_delete_declare_assign($$); }      declaration assignment
 
 %start toplevel
 
 %%
 
 toplevel : expression { *result = mcc_ast_new_program($1, MCC_AST_PROGRAM_TYPE_EXPRESSION); }
+		 | assignment { *result = mcc_ast_new_program($1, MCC_AST_PROGRAM_TYPE_DECLARATION); }
 		 | declaration { *result = mcc_ast_new_program($1, MCC_AST_PROGRAM_TYPE_DECLARATION); }
 		 | statement { *result = mcc_ast_new_program($1, MCC_AST_PROGRAM_TYPE_STATEMENT); }     
 		 ;
@@ -117,13 +119,17 @@ literal : BOOL_LITERAL { $$ = mcc_ast_new_literal_bool($1); loc($$, @1); }
 		| STRING_LITERAL { $$ = mcc_ast_new_literal_string($1); loc($$, @1); }
 		;
 
-statement : declaration SEMICOLON  { $$ = mcc_ast_new_statement_declaration($1, &@$); }
-          | expression SEMICOLON   { $$ = mcc_ast_new_statement_expression($1, &@$); }
+statement : declaration SEMICOLON  { $$ = mcc_ast_new_statement_declaration($1); }
+ 		  | assignment SEMICOLON   { $$ = mcc_ast_new_statement_assignment($1); }
+          | expression SEMICOLON   { $$ = mcc_ast_new_statement_expression($1); }
           ;
 
 declaration : type id { $$ = mcc_ast_new_declaration($1, $2, 0, 0); }
             ;
 
+assignment : id ASSIGN expression { $$ = mcc_ast_new_assignment($1, $3, NULL); }
+           | id LSQUAREBRACKET expression RSQUAREBRACKET ASSIGN expression { $$ = mcc_ast_new_assignment($1, $6, $3); }
+           ;
 		   
 id : IDENTIFIER  { $$ = mcc_ast_new_expression_identifier($1); }
    ;

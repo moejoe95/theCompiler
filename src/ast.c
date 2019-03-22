@@ -321,10 +321,7 @@ mcc_ast_new_declaration(enum mcc_ast_type type, struct mcc_ast_expression *ident
 
 struct mcc_ast_declare_assign *mcc_ast_new_assignment(struct mcc_ast_expression *identifier,
                                                       struct mcc_ast_expression *expression,
-                                                      struct mcc_ast_expression *array_expression,
-                                                      struct mcc_ast_source_location *location,
-                                                      struct mcc_ast_source_location *op_location,
-                                                      struct mcc_ast_source_location *array_location)
+                                                      struct mcc_ast_expression *array_expression)
 {
 
 	assert(identifier);
@@ -334,9 +331,9 @@ struct mcc_ast_declare_assign *mcc_ast_new_assignment(struct mcc_ast_expression 
 	decl->type = MCC_AST_TYPE_ASSIGNMENT;
 	decl->assign_rhs = expression;
 
-	struct mcc_ast_source_location *sloc_op = mcc_ast_get_new_source_location_struct();
-	mcc_ast_set_sloc(sloc_op, op_location);
-	decl->assign_sloc = sloc_op;
+	// struct mcc_ast_source_location *sloc_op = mcc_ast_get_new_source_location_struct();
+	// mcc_ast_set_sloc(sloc_op, op_location);
+	// decl->assign_sloc = sloc_op;
 
 	struct mcc_ast_expression *arr_expr = identifier;
 	if (array_expression) {
@@ -346,13 +343,13 @@ struct mcc_ast_declare_assign *mcc_ast_new_assignment(struct mcc_ast_expression 
 		arr_expr->array_access_id = identifier;
 		mcc_ast_add_sloc(&arr_expr->node, &identifier->node.sloc);
 
-		struct mcc_ast_source_location *sloc_array = mcc_ast_get_new_source_location_struct();
-		mcc_ast_set_sloc(sloc_array, array_location);
-		arr_expr->array_sloc = sloc_array;
+		// struct mcc_ast_source_location *sloc_array = mcc_ast_get_new_source_location_struct();
+		// mcc_ast_set_sloc(sloc_array, array_location);
+		// arr_expr->array_sloc = sloc_array;
 	}
 
 	decl->assign_lhs = arr_expr;
-	mcc_ast_add_sloc(&decl->node, location);
+	// mcc_ast_add_sloc(&decl->node, location);
 
 	return decl;
 }
@@ -430,8 +427,7 @@ void mcc_ast_delete_program(struct mcc_ast_program *program)
 // ------------------------------------------------------------------- Statements
 
 struct mcc_ast_statement *
-mcc_ast_new_statement_expression(struct mcc_ast_expression *expression,
-                                 struct mcc_ast_source_location *location)
+mcc_ast_new_statement_expression(struct mcc_ast_expression *expression)
 {
 	assert(expression);
 
@@ -439,14 +435,13 @@ mcc_ast_new_statement_expression(struct mcc_ast_expression *expression,
 	stat->type = MCC_AST_STATEMENT_EXPRESSION;
 	stat->expression = expression;
 
-	mcc_ast_add_sloc(&stat->node, location);
+	// mcc_ast_add_sloc(&stat->node, location);
 
 	return stat;
 }
 
 struct mcc_ast_statement *
-mcc_ast_new_statement_assignment(struct mcc_ast_declare_assign *assignment,
-                                 struct mcc_ast_source_location *location)
+mcc_ast_new_statement_assignment(struct mcc_ast_declare_assign *assignment)
 {
 	assert(assignment);
 
@@ -454,14 +449,13 @@ mcc_ast_new_statement_assignment(struct mcc_ast_declare_assign *assignment,
 	assign->type = MCC_AST_STATEMENT_ASSIGNMENT;
 	assign->declare_assign = assignment;
 
-	mcc_ast_add_sloc(&assign->node, location);
+	// mcc_ast_add_sloc(&assign->node, location);
 
 	return assign;
 }
 
 struct mcc_ast_statement *
-mcc_ast_new_statement_declaration(struct mcc_ast_declare_assign *declaration,
-                                  struct mcc_ast_source_location *location)
+mcc_ast_new_statement_declaration(struct mcc_ast_declare_assign *declaration)
 {
 	assert(declaration);
 
@@ -469,7 +463,7 @@ mcc_ast_new_statement_declaration(struct mcc_ast_declare_assign *declaration,
 	dec->type = MCC_AST_STATEMENT_DECLARATION;
 	dec->declare_assign = declaration;
 
-	mcc_ast_add_sloc(&dec->node, location);
+	// mcc_ast_add_sloc(&dec->node, location);
 
 	return dec;
 }

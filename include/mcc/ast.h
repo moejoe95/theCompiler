@@ -247,14 +247,14 @@ struct mcc_ast_declare_assign {
 	struct mcc_ast_symbol_declaration *sym_declaration;
 
 	union {
-		/* MCC_AST_TYPE_DECLARATION */
+		// MCC_AST_TYPE_DECLARATION
 		struct {
 			enum mcc_ast_literal_type declare_type;
 			struct mcc_ast_expression *declare_id;
 			long *declare_array_size;
 		};
 
-		/* MCC_AST_TYPE_ASSIGNMENT */
+		// MCC_AST_TYPE_ASSIGNMENT
 		struct {
 			struct mcc_ast_source_location *assign_sloc;
 			struct mcc_ast_expression *assign_lhs;
@@ -269,10 +269,7 @@ void mcc_ast_delete_declare_assign(struct mcc_ast_declare_assign *declaration);
 
 struct mcc_ast_declare_assign *mcc_ast_new_assignment(struct mcc_ast_expression *identifier,
                                                       struct mcc_ast_expression *array_expression,
-                                                      struct mcc_ast_expression *expression,
-                                                      struct mcc_ast_source_location *location,
-                                                      struct mcc_ast_source_location *op_location,
-                                                      struct mcc_ast_source_location *array_location);
+                                                      struct mcc_ast_expression *expression);
 
 struct mcc_ast_declare_assign *
 mcc_ast_new_declaration(enum mcc_ast_type type, struct mcc_ast_expression *identifier, long literal, int literal_flag);
@@ -304,16 +301,13 @@ void mcc_ast_delete_program(struct mcc_ast_program *program);
 
 // -------------------------------------------------------------------- Statement
 struct mcc_ast_statement *
-mcc_ast_new_statement_expression(struct mcc_ast_expression *expression,
-                                 struct mcc_ast_source_location *location);
+mcc_ast_new_statement_expression(struct mcc_ast_expression *expression);
 
 struct mcc_ast_statement *
-mcc_ast_new_statement_assignment(struct mcc_ast_declare_assign *assignment,
-                                 struct mcc_ast_source_location *location);
+mcc_ast_new_statement_assignment(struct mcc_ast_declare_assign *assignment);
 
 struct mcc_ast_statement *
-mcc_ast_new_statement_declaration(struct mcc_ast_declare_assign *declaration,
-                                  struct mcc_ast_source_location *location);
+mcc_ast_new_statement_declaration(struct mcc_ast_declare_assign *declaration);
 
 void mcc_ast_delete_statement(struct mcc_ast_statement *statement);
 
