@@ -32,10 +32,17 @@ void mcc_ast_visit_program(struct mcc_ast_program *pro, struct mcc_ast_visitor *
 
 	switch (pro->type) {
 	case MCC_AST_PROGRAM_TYPE_EXPRESSION:
-		// TODO
+		visit_if_post_order(pro, visitor->expression, visitor);
+		mcc_ast_visit(pro->expression, visitor);
+		visit_if_post_order(pro, visitor->program, visitor);
 		break;
 	case MCC_AST_PROGRAM_TYPE_DECLARATION:
-		// TODO
+		visit_if_post_order(pro, visitor->declaration, visitor);
+		mcc_ast_visit(pro->declaration, visitor);
+		visit_if_post_order(pro, visitor->declaration, visitor);
+		break;
+	case MCC_AST_PROGRAM_TYPE_STATEMENT:
+		//
 		break;
 	}
 }
