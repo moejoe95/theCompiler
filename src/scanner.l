@@ -30,11 +30,15 @@
 	yylloc->last_line = yylineno; 
 %}
 
-int_literal   [0-9]+
-float_literal [0-9]+\.[0-9]+
-bool_literal  "true"|"false"
-string_literal \"[^"]*\"
-identifier     [a-zA-Z_][a-zA-Z0-9_]*
+alpha            [a-zA-Z_]
+alpha_num        [a-zA-Z0-9_]
+digit            [0-9]
+
+int_literal		{digit}+
+float_literal 	{digit}+\.{digit}+
+bool_literal	"true"|"false"
+string_literal	\"[^"]*\"
+identifier		{alpha}{alpha_num}*
 
 %%
 
@@ -48,11 +52,8 @@ identifier     [a-zA-Z_][a-zA-Z0-9_]*
 "int"             { return TK_INT; }
 
 {int_literal}     { yylval->TK_INT_LITERAL = atol(yytext); return TK_INT_LITERAL; }
-
 {float_literal}   { yylval->TK_FLOAT_LITERAL = atof(yytext); return TK_FLOAT_LITERAL; }
-
 {bool_literal}	  { yylval->TK_BOOL_LITERAL = strcmp(yytext, "true") == 0; return TK_BOOL_LITERAL; }
-
 {string_literal}  { yylval->TK_STRING_LITERAL = strdup(yytext); return TK_STRING_LITERAL; }
 
 {identifier}      { yylval->TK_IDENTIFIER = strdup(yytext); return TK_IDENTIFIER; }
