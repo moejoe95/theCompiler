@@ -65,6 +65,8 @@ identifier		{alpha}{alpha_num}*
 
 "("               { return TK_LPARENTH; }
 ")"               { return TK_RPARENTH; }
+"["               { return TK_LSQUAREBRACKET; }
+"]"               { return TK_RSQUAREBRACKET; }
 
 "<"               { return TK_ST; }
 ">"               { return TK_GT; }
