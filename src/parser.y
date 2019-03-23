@@ -65,6 +65,9 @@ void mcc_parser_error();
 %token INT                      "int"
 %token FLOAT                    "float"
 %token STRING                   "string"
+%token VOID                     "void"
+%token LCURLYBRACKET            "{"
+%token RCURLYBRACKET            "}"
 
 %token EXPRESSION               "<expression>"
 %token DECLARATION_ASSIGNMENT   "<declaration_assignment>"
@@ -81,10 +84,18 @@ void mcc_parser_error();
 %type <struct mcc_ast_expression *> id
 %type <struct mcc_ast_program *> toplevel
 %type <struct mcc_ast_statement *> statement
+%type <struct mcc_ast_func_definition *> function_def
+%type <struct mcc_ast_statement *> compound_stmt
+%type <struct mcc_ast_parameter *> parameters
+%type <struct mCc_ast_statement_list *> statement_list
 
 %destructor { mcc_ast_delete_expression($$); }          expression
 %destructor { mcc_ast_delete_statement($$); }           statement
 %destructor { mcc_ast_delete_declare_assign($$); }      declaration
+%destructor { mcc_ast_delete_function_def($$); }        function_def
+%destructor { mcc_ast_delete_statement($$); }           compound_stmt
+%destructor { mcc_ast_delete_statement_list($$); }      statement_list
+%destructor { mcc_ast_delete_parameter($$); }           parameters
 
 %start toplevel
 
@@ -93,7 +104,8 @@ void mcc_parser_error();
 toplevel : expression { *result = mcc_ast_new_program($1, MCC_AST_PROGRAM_TYPE_EXPRESSION); }
 		 | assignment { *result = mcc_ast_new_program($1, MCC_AST_PROGRAM_TYPE_DECLARATION); }
 		 | declaration { *result = mcc_ast_new_program($1, MCC_AST_PROGRAM_TYPE_DECLARATION); }
-		 | statement { *result = mcc_ast_new_program($1, MCC_AST_PROGRAM_TYPE_STATEMENT); }     
+		 | statement { *result = mcc_ast_new_program($1, MCC_AST_PROGRAM_TYPE_STATEMENT); }
+		 | function_def { *result = mcc_ast_new_program($1, MCC_AST_PROGRAM_TYPE_FUNCTION); }     
 		 ;
 
 expression : literal              		  { $$ = mcc_ast_new_expression_literal($1);                              loc($$, @1); }
@@ -140,6 +152,24 @@ type : BOOL    { $$ = MCC_AST_TYPE_BOOL; }
      | FLOAT   { $$ = MCC_AST_TYPE_FLOAT; }
      | STRING  { $$ = MCC_AST_TYPE_STRING; }
      ;
+
+function_def : VOID id LPARENTH RPARENTH compound_stmt { $$ = mcc_ast_new_function(MCC_AST_TYPE_VOID, $2, $5, NULL); }
+             | type id LPARENTH RPARENTH compound_stmt { $$ = mcc_ast_new_function($1, $2, $5, NULL); }
+             | VOID id LPARENTH parameters RPARENTH compound_stmt { $$ = mcc_ast_new_function(MCC_AST_TYPE_VOID, $2, $6, $4); }
+             | type id LPARENTH parameters RPARENTH compound_stmt { $$ = mcc_ast_new_function($1, $2, $6, $4); }
+             ;
+
+parameters : declaration { $$ = mcc_ast_new_parameter($1, NULL); }
+           | declaration COLON parameters { $$ = mcc_ast_new_parameter($1, $3); }
+           ;
+
+compound_stmt : LCURLYBRACKET RCURLYBRACKET {  $$ = mcc_ast_new_statement_compound(NULL); }
+              | LCURLYBRACKET statement_list RCURLYBRACKET { $$ = mcc_ast_new_statement_compound($2); }
+              ;
+
+statement_list : statement { $$ = mcc_ast_new_statement_compound_stmt($1, NULL); }
+               | statement statement_list { $$ = mcc_ast_new_statement_compound_stmt($1, $2); }
+               ;
 
 %%
 

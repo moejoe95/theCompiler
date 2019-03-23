@@ -42,7 +42,10 @@ void mcc_ast_visit_program(struct mcc_ast_program *pro, struct mcc_ast_visitor *
 		visit_if_post_order(pro, visitor->declaration, visitor);
 		break;
 	case MCC_AST_PROGRAM_TYPE_STATEMENT:
-		//
+		// TODO
+		break;
+	case MCC_AST_PROGRAM_TYPE_FUNCTION:
+		// TODO
 		break;
 	}
 }

@@ -51,6 +51,7 @@ identifier		{alpha}{alpha_num}*
 "float"           { return TK_FLOAT; }
 "string"          { return TK_STRING; }
 "int"             { return TK_INT; }
+"void"            { return TK_VOID; }
 
 {int_literal}     { yylval->TK_INT_LITERAL = atol(yytext); return TK_INT_LITERAL; }
 {float_literal}   { yylval->TK_FLOAT_LITERAL = atof(yytext); return TK_FLOAT_LITERAL; }
@@ -68,6 +69,8 @@ identifier		{alpha}{alpha_num}*
 ")"               { return TK_RPARENTH; }
 "["               { return TK_LSQUAREBRACKET; }
 "]"               { return TK_RSQUAREBRACKET; }
+"{"               { return TK_LCURLYBRACKET; }
+"}"               { return TK_RCURLYBRACKET; }
 
 "<"               { return TK_ST; }
 ">"               { return TK_GT; }
