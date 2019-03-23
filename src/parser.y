@@ -105,6 +105,7 @@ expression : literal              		  { $$ = mcc_ast_new_expression_literal($1);
 		   | expression ST expression  { $$ = mcc_ast_new_expression_binary_op(MCC_AST_BINARY_OP_ST, $1, $3); loc($$, @1); }
 		   | expression GT expression  { $$ = mcc_ast_new_expression_binary_op(MCC_AST_BINARY_OP_GT, $1, $3); loc($$, @1); }
 		   | MINUS expression { $$ = mcc_ast_new_expression_unary_op(MCC_AST_UNARY_OP_MINUS, $2); loc($$, @1); }
+		   | NOT expression { $$ = mcc_ast_new_expression_unary_op(MCC_AST_UNARY_OP_NOT, $2); loc($$, @1); }
 		   | expression SE expression  { $$ = mcc_ast_new_expression_binary_op(MCC_AST_BINARY_OP_SE, $1, $3); loc($$, @1); }	
 		   | expression GE expression  { $$ = mcc_ast_new_expression_binary_op(MCC_AST_BINARY_OP_GE, $1, $3); loc($$, @1); }		 
 		   | expression EQ expression  { $$ = mcc_ast_new_expression_binary_op(MCC_AST_BINARY_OP_EQ, $1, $3); loc($$, @1); }	

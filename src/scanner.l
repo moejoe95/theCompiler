@@ -18,6 +18,7 @@
 // TODO:
 // - track lines
 // - take line breaks into account
+// perhaps have to change ignore in line 87 for \n
 #define YY_USER_ACTION \
 	yylloc->first_column = yylloc->last_column; \
 	if(yytext == '\n'){ \
@@ -81,6 +82,7 @@ identifier		{alpha}{alpha_num}*
 "="               { return TK_ASSIGN; }
 ";"               { return TK_SEMICOLON; }
 ","               { return TK_COLON; }
+"!"               { return TK_NOT; }
 
 [ \t\r\n]+        { /* ignore */ }
 

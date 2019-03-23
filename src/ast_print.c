@@ -41,7 +41,10 @@ const char *mcc_ast_print_unary_op(enum mcc_ast_unary_op op)
 	switch (op) {
 	case MCC_AST_UNARY_OP_MINUS:
 		return "-";
+	case MCC_AST_UNARY_OP_NOT:
+		return "!";
 	}
+	
 
 	return "unknown op";
 }
