@@ -203,9 +203,11 @@ static void print_dot_declaration(struct mcc_ast_declare_assign *declaration, vo
 	FILE *out = data;
 
 	// TODO
+	char label[LABEL_SIZE] = {0};
+	snprintf(label, sizeof(label), "%s %d", "dec:", declaration->type);
 
-	print_dot_node(out, declaration, "declare");
-	print_dot_edge(out, declaration, declaration->declare_id, "identifier");
+	print_dot_node(out, declaration, label);
+	print_dot_edge(out, declaration, declaration->declare_id, "id");
 }
 
 static void print_dot_assignment(struct mcc_ast_declare_assign *assignment, void *data)
@@ -221,6 +223,17 @@ static void print_dot_assignment(struct mcc_ast_declare_assign *assignment, void
 	print_dot_edge(out, assignment, assignment->assign_lhs, "lhs");
 	print_dot_edge(out, assignment, assignment->assign_rhs, "rhs");
 }
+
+static void print_dot_statement(struct mcc_ast_statement *statement, void *data)
+{
+
+}
+
+static void print_dot_program(struct mcc_ast_program *program, void *data)
+{
+
+}
+
 
 // Setup an AST Visitor for printing.
 static struct mcc_ast_visitor print_dot_visitor(FILE *out)
@@ -259,6 +272,19 @@ void mcc_ast_print_dot_program(FILE *out, struct mcc_ast_program *program)
 
 	struct mcc_ast_visitor visitor = print_dot_visitor(out);
 	mcc_ast_visit(program, &visitor);
+
+	print_dot_end(out);
+}
+
+void mcc_ast_print_dot_statement(FILE *out, struct mcc_ast_statement *statement)
+{
+	assert(out);
+	assert(statement);
+
+	print_dot_begin(out);
+
+	struct mcc_ast_visitor visitor = print_dot_visitor(out);
+	mcc_ast_visit(statement, &visitor);
 
 	print_dot_end(out);
 }
