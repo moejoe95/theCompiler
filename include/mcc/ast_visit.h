@@ -22,7 +22,8 @@ enum mcc_ast_visit_order {
 };
 
 // Callbacks
-typedef void (*mcc_ast_visit_program_cv)(struct mcc_ast_program *, void *userdata);
+typedef void (*mcc_ast_visit_program_cb)(struct mcc_ast_program *, void *userdata);
+typedef void (*mcc_ast_visit_statement_cb)(struct mcc_ast_statement *, void *userdata);
 typedef void (*mcc_ast_visit_expression_cb)(struct mcc_ast_expression *, void *userdata);
 typedef void (*mcc_ast_visit_declare_assign_cb)(struct mcc_ast_declare_assign *, void *userdata);
 typedef void (*mcc_ast_visit_literal_cb)(struct mcc_ast_literal *, void *userdata);
@@ -35,7 +36,16 @@ struct mcc_ast_visitor {
 	// node. Use it to share data while traversing the tree.
 	void *userdata;
 
-	mcc_ast_visit_program_cv program;
+	mcc_ast_visit_program_cb program;
+
+	mcc_ast_visit_statement_cb statement;
+	mcc_ast_visit_statement_cb statement_expression;
+	mcc_ast_visit_statement_cb statement_assignment;
+	mcc_ast_visit_statement_cb statement_declaration;
+	mcc_ast_visit_statement_cb statement_return;
+	mcc_ast_visit_statement_cb statement_if;
+	mcc_ast_visit_statement_cb statement_while;
+	mcc_ast_visit_statement_cb statement_compound;
 
 	mcc_ast_visit_expression_cb expression;
 	mcc_ast_visit_expression_cb expression_literal;
@@ -57,6 +67,8 @@ struct mcc_ast_visitor {
 
 void mcc_ast_visit_program(struct mcc_ast_program *program, struct mcc_ast_visitor *visitor);
 
+void mcc_ast_visit_statement(struct mcc_ast_statement *statement, struct mcc_ast_visitor *visitor);
+
 void mcc_ast_visit_expression(struct mcc_ast_expression *expression, struct mcc_ast_visitor *visitor);
 
 void mcc_ast_visit_literal(struct mcc_ast_literal *literal, struct mcc_ast_visitor *visitor);
@@ -68,6 +80,7 @@ void mcc_ast_visit_declare_assign(struct mcc_ast_declare_assign *dec, struct mcc
 #define mcc_ast_visit(x, visitor) _Generic((x), \
 		struct mcc_ast_expression *: mcc_ast_visit_expression, \
 		struct mcc_ast_program *: mcc_ast_visit_program, \
+		struct mcc_ast_statement *: mcc_ast_visit_statement, \
 		struct mcc_ast_literal *:    mcc_ast_visit_literal, \
 		struct mcc_ast_declare_assign *:    mcc_ast_visit_declare_assign \
 	)(x, visitor)
