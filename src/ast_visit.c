@@ -132,7 +132,10 @@ void mcc_ast_visit_declare_assign(struct mcc_ast_declare_assign *dec, struct mcc
 		visit_if_post_order(dec, visitor->declaration, visitor);
 		break;
 	case MCC_AST_TYPE_ASSIGNMENT:
-		// TODO
+		visit_if_pre_order(dec, visitor->assignment, visitor);
+		mcc_ast_visit(dec->assign_lhs, visitor);
+		mcc_ast_visit(dec->assign_rhs, visitor);
+		visit_if_post_order(dec, visitor->assignment, visitor);
 		break;
 	}
 }
