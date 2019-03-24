@@ -2,3 +2,4 @@
 build.bat
 build.sh
 /.vscode/
+.vscode/settings.json

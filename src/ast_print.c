@@ -44,7 +44,6 @@ const char *mcc_ast_print_unary_op(enum mcc_ast_unary_op op)
 	case MCC_AST_UNARY_OP_NOT:
 		return "!";
 	}
-	
 
 	return "unknown op";
 }
@@ -139,9 +138,12 @@ static void print_dot_expression_identifier(struct mcc_ast_expression *expressio
 	assert(expression);
 	assert(data);
 
+	char label[LABEL_SIZE] = {0};
+	snprintf(label, sizeof(label), "%s %s", "id:", expression->identifier->name);
+
 	FILE *out = data;
-	print_dot_node(out, expression, "id");
-	print_dot_edge(out, expression, expression->expression, "expression");
+	print_dot_node(out, expression, label);
+	// print_dot_edge(out, expression, expression->identifier, "expression");
 }
 
 static void print_dot_literal_int(struct mcc_ast_literal *literal, void *data)
@@ -206,7 +208,7 @@ static void print_dot_declaration(struct mcc_ast_declare_assign *declaration, vo
 	snprintf(label, sizeof(label), "%s %d", "dec:", declaration->type);
 
 	print_dot_node(out, declaration, label);
-	print_dot_edge(out, declaration, declaration->declare_id->identifier, "id");
+	print_dot_edge(out, declaration, declaration->declare_id, "id");
 }
 
 static void print_dot_assignment(struct mcc_ast_declare_assign *assignment, void *data)
@@ -270,10 +272,7 @@ static void print_dot_statement_while(struct mcc_ast_statement *statement, void 
 	// TODO
 }
 
-static void print_dot_statement_compound(struct mcc_ast_statement *statement, void *data)
-{
-
-}
+static void print_dot_statement_compound(struct mcc_ast_statement *statement, void *data) {}
 
 // Setup an AST Visitor for printing.
 static struct mcc_ast_visitor print_dot_visitor(FILE *out)
@@ -300,13 +299,13 @@ static struct mcc_ast_visitor print_dot_visitor(FILE *out)
 	    .declaration = print_dot_declaration,
 	    .assignment = print_dot_assignment,
 
-		.statement_expression = print_dot_statement_expression,
-		.statement_assignment = print_dot_statement_assignment,
-		.statement_declaration = print_dot_statement_declaration,
-		.statement_return = print_dot_statement_return,
-		.statement_if = print_dot_statement_if,
-		.statement_while = print_dot_statement_while,
-		.statement_compound = print_dot_statement_compound,
+	    .statement_expression = print_dot_statement_expression,
+	    .statement_assignment = print_dot_statement_assignment,
+	    .statement_declaration = print_dot_statement_declaration,
+	    .statement_return = print_dot_statement_return,
+	    .statement_if = print_dot_statement_if,
+	    .statement_while = print_dot_statement_while,
+	    .statement_compound = print_dot_statement_compound,
 	};
 }
 
