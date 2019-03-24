@@ -202,7 +202,6 @@ static void print_dot_declaration(struct mcc_ast_declare_assign *declaration, vo
 	assert(declaration);
 	FILE *out = data;
 
-	// TODO
 	char label[LABEL_SIZE] = {0};
 	snprintf(label, sizeof(label), "%s %d", "dec:", declaration->type);
 
@@ -213,7 +212,6 @@ static void print_dot_declaration(struct mcc_ast_declare_assign *declaration, vo
 static void print_dot_assignment(struct mcc_ast_declare_assign *assignment, void *data)
 {
 	assert(assignment);
-
 	FILE *out = data;
 
 	// TODO
@@ -224,16 +222,58 @@ static void print_dot_assignment(struct mcc_ast_declare_assign *assignment, void
 	print_dot_edge(out, assignment, assignment->assign_rhs, "rhs");
 }
 
-static void print_dot_statement(struct mcc_ast_statement *statement, void *data)
+static void print_dot_statement_expression(struct mcc_ast_statement *statement, void *data)
+{
+	assert(statement);
+	FILE *out = data;
+
+	// TODO
+}
+
+static void print_dot_statement_assignment(struct mcc_ast_statement *statement, void *data)
+{
+	assert(statement);
+	FILE *out = data;
+
+	// TODO
+}
+
+static void print_dot_statement_declaration(struct mcc_ast_statement *statement, void *data)
+{
+	assert(statement);
+	FILE *out = data;
+
+	// TODO
+}
+
+static void print_dot_statement_return(struct mcc_ast_statement *statement, void *data)
+{
+	assert(statement);
+	FILE *out = data;
+
+	// TODO
+}
+
+static void print_dot_statement_if(struct mcc_ast_statement *statement, void *data)
+{
+	assert(statement);
+	FILE *out = data;
+
+	// TODO
+}
+
+static void print_dot_statement_while(struct mcc_ast_statement *statement, void *data)
+{
+	assert(statement);
+	FILE *out = data;
+
+	// TODO
+}
+
+static void print_dot_statement_compound(struct mcc_ast_statement *statement, void *data)
 {
 
 }
-
-static void print_dot_program(struct mcc_ast_program *program, void *data)
-{
-
-}
-
 
 // Setup an AST Visitor for printing.
 static struct mcc_ast_visitor print_dot_visitor(FILE *out)
@@ -260,6 +300,13 @@ static struct mcc_ast_visitor print_dot_visitor(FILE *out)
 	    .declaration = print_dot_declaration,
 	    .assignment = print_dot_assignment,
 
+		.statement_expression = print_dot_statement_expression,
+		.statement_assignment = print_dot_statement_assignment,
+		.statement_declaration = print_dot_statement_declaration,
+		.statement_return = print_dot_statement_return,
+		.statement_if = print_dot_statement_if,
+		.statement_while = print_dot_statement_while,
+		.statement_compound = print_dot_statement_compound,
 	};
 }
 
@@ -281,12 +328,8 @@ void mcc_ast_print_dot_statement(FILE *out, struct mcc_ast_statement *statement)
 	assert(out);
 	assert(statement);
 
-	print_dot_begin(out);
-
 	struct mcc_ast_visitor visitor = print_dot_visitor(out);
 	mcc_ast_visit(statement, &visitor);
-
-	print_dot_end(out);
 }
 
 void mcc_ast_print_dot_expression(FILE *out, struct mcc_ast_expression *expression)
@@ -294,12 +337,8 @@ void mcc_ast_print_dot_expression(FILE *out, struct mcc_ast_expression *expressi
 	assert(out);
 	assert(expression);
 
-	print_dot_begin(out);
-
 	struct mcc_ast_visitor visitor = print_dot_visitor(out);
 	mcc_ast_visit(expression, &visitor);
-
-	print_dot_end(out);
 }
 
 void mcc_ast_print_dot_literal(FILE *out, struct mcc_ast_literal *literal)
@@ -307,22 +346,14 @@ void mcc_ast_print_dot_literal(FILE *out, struct mcc_ast_literal *literal)
 	assert(out);
 	assert(literal);
 
-	print_dot_begin(out);
-
 	struct mcc_ast_visitor visitor = print_dot_visitor(out);
 	mcc_ast_visit(literal, &visitor);
-
-	print_dot_end(out);
 }
 
 void mcc_ast_print_dot_declare_assign(FILE *out, struct mcc_ast_declare_assign *decl_assign)
 {
 	assert(decl_assign);
 
-	print_dot_begin(out);
-
 	struct mcc_ast_visitor visitor = print_dot_visitor(out);
 	mcc_ast_visit_declare_assign(decl_assign, &visitor);
-
-	print_dot_end(out);
 }
