@@ -397,16 +397,6 @@ struct mcc_ast_statement *mcc_ast_new_statement_declaration(struct mcc_ast_decla
 	return dec;
 }
 
-struct mcc_ast_statement *mcc_ast_new_statement_if(struct mcc_ast_statement *stmt)
-{
-	assert(stmt);
-
-	struct mcc_ast_statement *new_stmt = mcc_ast_get_new_statement_struct();
-	new_stmt = stmt;
-
-	return new_stmt;
-}
-
 struct mcc_ast_statement *mcc_ast_new_if_stmt(struct mcc_ast_expression *expr,
                                               struct mcc_ast_statement *if_body,
                                               struct mcc_ast_statement *else_body)

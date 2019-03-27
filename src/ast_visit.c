@@ -140,6 +140,23 @@ void mcc_ast_visit_declare_assign(struct mcc_ast_declare_assign *dec, struct mcc
 	}
 }
 
+void mcc_ast_visit_if_stmt(struct mcc_ast_statement *if_stmt, struct mcc_ast_visitor *visitor)
+{
+	assert(if_stmt);
+	assert(visitor);
+
+	visit_if_pre_order(if_stmt, visitor->statement_if, visitor);
+
+	// if
+	mcc_ast_visit_expression(if_stmt->if_cond, visitor);
+	// then
+	mcc_ast_visit_statement(if_stmt->if_stat, visitor);
+	// else
+	mcc_ast_visit_statement(if_stmt->else_stat, visitor);
+
+	visit_if_post_order(if_stmt, visitor->statement_if, visitor);
+}
+
 void mcc_ast_visit_statement(struct mcc_ast_statement *stat, struct mcc_ast_visitor *visitor)
 {
 	assert(stat);
@@ -156,7 +173,7 @@ void mcc_ast_visit_statement(struct mcc_ast_statement *stat, struct mcc_ast_visi
 		// TODO
 		break;
 	case MCC_AST_STATEMENT_IF:
-		// TODO
+		mcc_ast_visit_if_stmt(stat, visitor);
 		break;
 	case MCC_AST_STATEMENT_WHILE:
 		// TODO

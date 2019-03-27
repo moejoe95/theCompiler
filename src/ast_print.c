@@ -229,22 +229,6 @@ static void print_dot_statement_expression(struct mcc_ast_statement *statement, 
 	// TODO
 }
 
-static void print_dot_statement_assignment(struct mcc_ast_statement *statement, void *data)
-{
-	assert(statement);
-	FILE *out = data;
-
-	// TODO
-}
-
-static void print_dot_statement_declaration(struct mcc_ast_statement *statement, void *data)
-{
-	assert(statement);
-	FILE *out = data;
-
-	// TODO
-}
-
 static void print_dot_statement_return(struct mcc_ast_statement *statement, void *data)
 {
 	assert(statement);
@@ -258,7 +242,11 @@ static void print_dot_statement_if(struct mcc_ast_statement *statement, void *da
 	assert(statement);
 	FILE *out = data;
 
-	// TODO
+	print_dot_node(out, statement, "stmt: if");
+
+	print_dot_edge(out, statement, statement->if_cond, "cond.");
+	print_dot_edge(out, statement, statement->if_stat, "if");
+	print_dot_edge(out, statement, statement->else_stat, "else");
 }
 
 static void print_dot_statement_while(struct mcc_ast_statement *statement, void *data)
@@ -303,8 +291,6 @@ static struct mcc_ast_visitor print_dot_visitor(FILE *out)
 	    .assignment = print_dot_assignment,
 
 	    .statement_expression = print_dot_statement_expression,
-	    .statement_assignment = print_dot_statement_assignment,
-	    .statement_declaration = print_dot_statement_declaration,
 	    .statement_return = print_dot_statement_return,
 	    .statement_if = print_dot_statement_if,
 	    .statement_while = print_dot_statement_while,
