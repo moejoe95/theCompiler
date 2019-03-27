@@ -1,8 +1,11 @@
-# mC Compiler
+# Yet another mc Compiler
 
-This repository holds a *getting started* code-base for the [compiler construction course](https://git.uibk.ac.at/c7031162/703602-Compiler-Construction).
+This repository holds the code-base from UIBK [compiler construction course](https://git.uibk.ac.at/c7031162/703602-Compiler-Construction) group 5.
 
-Be sure to understand the provided code before using it!
+## Authors
+- Andreas Peintner (1515339)
+- Josef Gugglberger ()
+- Tobias Kupek (11828471)
 
 - See [Development Notes](docs/development_notes.md)
 
@@ -32,7 +35,7 @@ Unit tests can be run directly with Ninja (or Meson).
 
     $ ninja test
 
-For integration testing we try to compile mC programs and compare their output for a given input.
+For integration testing we try to compile .mc programs and compare their output for a given input.
 
     $ ../scripts/run_integration_tests
 
@@ -42,6 +45,36 @@ Taken from the [Meson Documentation](https://mesonbuild.com/Unit-tests.html#cove
 > Meson will autodetect what coverage generator tools you have installed and will generate the corresponding targets.
 > These targets are `coverage-xml` and `coverage-text` which are both provided by Gcovr and `coverage-html`, which requires Lcov and GenHTML or Gcovr with html support.
 
-## Known Issues
+## Milestone 1 Parser
 
-- Parser leaks memory on invalid inputs.
+__Main goals__
+
+- Inputs are accepted / rejected correctly (syntax only).
+- Syntactically invalid inputs result in a meaningful error message containing the corresponding source location.
+- An AST is constructed for valid inputs.
+- The obtained AST can be printed in the DOT format (see mc_ast_to_dot).
+
+To verify the correct behavious, please follow the [Build Instructions](#build-instructions) from above.
+Afterwards the `mc_ast_to_dot` binary can produce the DOT output:
+
+```
+cat ../examples/euclid/euclid.mc | ./mc_ast_to_dot
+```
+
+A graphical output is available through graphviz:
+
+```
+cat ../examples/euclid/euclid.mc | ./mc_ast_to_dot | dot -Tpng > euclid_ast.png
+```
+
+__Example output__
+
+![AST of euclid.mc](./doc/images/euclid_ast.png "AST of euclid.mc")
+
+
+## Milestone 2
+
+TODO
+
+## Known Issues
+See the [GitLab Project](https://git.uibk.ac.at/csas7462/theCompiler/issues) for all current issues.
