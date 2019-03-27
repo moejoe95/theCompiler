@@ -369,7 +369,7 @@ struct mcc_ast_statement *mcc_ast_new_statement_expression(struct mcc_ast_expres
 struct mcc_ast_statement *mcc_ast_new_statement_return_expression(struct mcc_ast_expression *expression)
 {
 	struct mcc_ast_statement *stat = mcc_ast_get_new_statement_struct();
-	stat->type = MCC_AST_STATEMENT_EXPRESSION;
+	stat->type = MCC_AST_STATEMENT_RETURN;
 	stat->expression = expression;
 
 	return stat;
@@ -414,16 +414,6 @@ struct mcc_ast_statement *mcc_ast_new_if_stmt(struct mcc_ast_expression *expr,
 	return if_stmt;
 }
 
-struct mcc_ast_statement *mcc_ast_new_statement_while(struct mcc_ast_statement *stmt)
-{
-	assert(stmt);
-
-	struct mcc_ast_statement *new_stmt = mcc_ast_get_new_statement_struct();
-	new_stmt = stmt;
-
-	return new_stmt;
-}
-
 struct mcc_ast_statement *mcc_ast_new_while_stmt(struct mcc_ast_expression *expr, struct mcc_ast_statement *while_body)
 {
 	assert(expr);
@@ -435,17 +425,6 @@ struct mcc_ast_statement *mcc_ast_new_while_stmt(struct mcc_ast_expression *expr
 	while_stmt->while_stat = while_body;
 
 	return while_stmt;
-}
-
-struct mcc_ast_statement *mcc_ast_new_statement_return(struct mcc_ast_expression *return_expr)
-{
-	assert(return_expr);
-
-	struct mcc_ast_statement *return_stmt = mcc_ast_get_new_statement_struct();
-	return_stmt->type = MCC_AST_STATEMENT_RETURN;
-	return_stmt->expression = return_expr;
-
-	return return_stmt;
 }
 
 void mcc_ast_delete_statement(struct mcc_ast_statement *statement)

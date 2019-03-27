@@ -155,8 +155,8 @@ statement : declaration SEMICOLON  { $$ = mcc_ast_new_statement_declaration($1);
  		  | assignment SEMICOLON   { $$ = mcc_ast_new_statement_assignment($1); }
           | expression SEMICOLON   { $$ = mcc_ast_new_statement_expression($1); }
 		  | if_stmt 
-		  | while_stmt { $$ = mcc_ast_new_statement_while($1); }
-		  | return SEMICOLON { $$ = mcc_ast_new_statement_return($1); }
+		  | while_stmt 
+		  | return SEMICOLON
 		  | compound_stmt
           ;
 

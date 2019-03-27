@@ -140,7 +140,7 @@ void mcc_ast_visit_declare_assign(struct mcc_ast_declare_assign *dec, struct mcc
 	}
 }
 
-void mcc_ast_visit_if_stmt(struct mcc_ast_statement *if_stmt, struct mcc_ast_visitor *visitor)
+void mcc_ast_visit_statement_if(struct mcc_ast_statement *if_stmt, struct mcc_ast_visitor *visitor)
 {
 	assert(if_stmt);
 	assert(visitor);
@@ -157,6 +157,18 @@ void mcc_ast_visit_if_stmt(struct mcc_ast_statement *if_stmt, struct mcc_ast_vis
 	visit_if_post_order(if_stmt, visitor->statement_if, visitor);
 }
 
+void mcc_ast_visit_statement_return(struct mcc_ast_statement *ret_stmt, struct mcc_ast_visitor *visitor)
+{
+	assert(ret_stmt);
+	assert(visitor);
+
+	visit_if_pre_order(ret_stmt, visitor->statement_return, visitor);
+
+	mcc_ast_visit_expression(ret_stmt->expression, visitor);
+
+	visit_if_post_order(ret_stmt, visitor->statement_return, visitor);
+}
+
 void mcc_ast_visit_statement(struct mcc_ast_statement *stat, struct mcc_ast_visitor *visitor)
 {
 	assert(stat);
@@ -170,10 +182,10 @@ void mcc_ast_visit_statement(struct mcc_ast_statement *stat, struct mcc_ast_visi
 		mcc_ast_visit_declare_assign(stat->declare_assign, visitor);
 		break;
 	case MCC_AST_STATEMENT_RETURN:
-		// TODO
+		mcc_ast_visit_statement_return(stat, visitor);
 		break;
 	case MCC_AST_STATEMENT_IF:
-		mcc_ast_visit_if_stmt(stat, visitor);
+		mcc_ast_visit_statement_if(stat, visitor);
 		break;
 	case MCC_AST_STATEMENT_WHILE:
 		// TODO
