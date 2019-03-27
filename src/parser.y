@@ -39,7 +39,7 @@ void mcc_parser_error();
 %token RPARENTH ")"
 %token LSQUAREBRACKET "["
 %token RSQUAREBRACKET "]"
-%token COLON ","
+%token COMMA ","
 %token SEMICOLON  ";"
 
 %token PLUS  "+"
@@ -72,6 +72,7 @@ void mcc_parser_error();
 %token IF                       "if"
 %token ELSE                     "else"
 %token WHILE                     "while"
+%token RETURN                     "return"
 
 %token EXPRESSION               "<expression>"
 %token DECLARATION_ASSIGNMENT   "<declaration_assignment>"
@@ -87,7 +88,7 @@ void mcc_parser_error();
 %type <struct mcc_ast_declare_assign *> assignment
 %type <struct mcc_ast_expression *> id
 %type <struct mcc_ast_program *> toplevel
-%type <struct mcc_ast_statement *> statement if_stmt while_stmt
+%type <struct mcc_ast_statement *> statement if_stmt while_stmt return
 %type <struct mcc_ast_func_definition *> function_def
 %type <struct mcc_ast_statement *> compound_stmt
 %type <struct mcc_ast_parameter *> parameters
@@ -138,6 +139,7 @@ statement : declaration SEMICOLON  { $$ = mcc_ast_new_statement_declaration($1);
           | expression SEMICOLON   { $$ = mcc_ast_new_statement_expression($1); }
 		  | if_stmt { $$ = mcc_ast_new_statement_if($1); }
 		  | while_stmt { $$ = mcc_ast_new_statement_while($1); }
+		  | return SEMICOLON { $$ = mcc_ast_new_statement_return($1); }
           ;
 
 declaration : type id { $$ = mcc_ast_new_declaration($1, $2, 0, 0); }
@@ -146,6 +148,9 @@ declaration : type id { $$ = mcc_ast_new_declaration($1, $2, 0, 0); }
 assignment : id ASSIGN expression { $$ = mcc_ast_new_assignment($1, $3, NULL); }
            | id LSQUAREBRACKET expression RSQUAREBRACKET ASSIGN expression { $$ = mcc_ast_new_assignment($1, $6, $3); }
            ;
+
+return : RETURN expression { $$ = mcc_ast_new_statement_expression($2); }
+        ;
 		   
 if_stmt : IF LPARENTH expression RPARENTH statement ELSE statement  { $$ = mcc_ast_new_if_stmt($3, $5, $7); }
         ;
@@ -170,7 +175,7 @@ function_def : VOID id LPARENTH RPARENTH compound_stmt { $$ = mcc_ast_new_functi
              ;
 
 parameters : declaration { $$ = mcc_ast_new_parameter($1, NULL); }
-           | declaration COLON parameters { $$ = mcc_ast_new_parameter($1, $3); }
+           | declaration COMMA parameters { $$ = mcc_ast_new_parameter($1, $3); }
            ;
 
 compound_stmt : LCURLYBRACKET RCURLYBRACKET {  $$ = mcc_ast_new_statement_compound(NULL); }

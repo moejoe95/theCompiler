@@ -56,6 +56,7 @@ identifier		{alpha}{alpha_num}*
 "if"              { return TK_IF; }
 "else"            { return TK_ELSE; }
 "while"           { return TK_WHILE; }
+"return"           { return TK_RETURN; }
 
 {int_literal}     { yylval->TK_INT_LITERAL = atol(yytext); return TK_INT_LITERAL; }
 {float_literal}   { yylval->TK_FLOAT_LITERAL = atof(yytext); return TK_FLOAT_LITERAL; }
@@ -90,7 +91,7 @@ identifier		{alpha}{alpha_num}*
 
 "="               { return TK_ASSIGN; }
 ";"               { return TK_SEMICOLON; }
-","               { return TK_COLON; }
+","               { return TK_COMMA; }
 "!"               { return TK_NOT; }
 
 [ \t\r\n]+        { /* ignore */ }

@@ -321,6 +321,8 @@ struct mcc_ast_statement *mcc_ast_new_statement_while(struct mcc_ast_statement *
 
 struct mcc_ast_statement *mcc_ast_new_while_stmt(struct mcc_ast_expression *expression, struct mcc_ast_statement *);
 
+struct mcc_ast_statement *mcc_ast_new_statement_return(struct mcc_ast_declare_assign *return_expr);
+
 void mcc_ast_delete_statement(struct mcc_ast_statement *statement);
 
 // -------------------------------------------------------------------- Functions

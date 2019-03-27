@@ -511,6 +511,17 @@ struct mcc_ast_statement *mcc_ast_new_while_stmt(struct mcc_ast_expression *expr
 	return while_stmt;
 }
 
+struct mcc_ast_statement *mcc_ast_new_statement_return(struct mcc_ast_declare_assign *return_expr)
+{
+	assert(return_expr);
+
+	struct mcc_ast_statement *return_stmt = mcc_ast_get_new_statement_struct();
+	return_stmt->type = MCC_AST_STATEMENT_RETURN;
+	return_stmt->expression = return_expr;
+
+	return return_stmt;
+}
+
 void mcc_ast_delete_statement(struct mcc_ast_statement *statement)
 {
 	assert(statement);
