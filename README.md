@@ -4,7 +4,7 @@ This repository holds the code-base from UIBK [compiler construction course](htt
 
 ## Authors
 - Andreas Peintner (1515339)
-- Josef Gugglberger ()
+- Josef Gugglberger (1518418)
 - Tobias Kupek (11828471)
 
 - See [Development Notes](docs/development_notes.md)
