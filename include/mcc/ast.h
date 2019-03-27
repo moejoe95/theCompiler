@@ -174,7 +174,7 @@ struct mcc_ast_statement {
 		/* MCC_AST_STATEMENT_WHILE */
 		struct {
 			struct mcc_ast_expression *while_cond;
-			struct mcc_ast_statement *while_sta;
+			struct mcc_ast_statement *while_stat;
 		};
 
 		/* MCC_AST_STATEMENT_COMPOUND */
@@ -316,6 +316,10 @@ struct mcc_ast_statement *mcc_ast_new_statement_if(struct mcc_ast_statement *);
 
 struct mcc_ast_statement *
 mcc_ast_new_if_stmt(struct mcc_ast_expression *, struct mcc_ast_statement *, struct mcc_ast_statement *);
+
+struct mcc_ast_statement *mcc_ast_new_statement_while(struct mcc_ast_statement *);
+
+struct mcc_ast_statement *mcc_ast_new_while_stmt(struct mcc_ast_expression *expression, struct mcc_ast_statement *);
 
 void mcc_ast_delete_statement(struct mcc_ast_statement *statement);
 

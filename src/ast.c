@@ -487,6 +487,30 @@ struct mcc_ast_statement *mcc_ast_new_if_stmt(struct mcc_ast_expression *expr,
 	return if_stmt;
 }
 
+struct mcc_ast_statement *mcc_ast_new_statement_while(struct mcc_ast_statement *stmt)
+{
+	assert(stmt);
+
+	struct mcc_ast_statement *new_stmt = mcc_ast_get_new_statement_struct();
+	new_stmt = stmt;
+
+	return new_stmt;
+}
+
+struct mcc_ast_statement *mcc_ast_new_while_stmt(struct mcc_ast_expression *expr,
+                                              struct mcc_ast_statement *while_body)
+{
+	assert(expr);
+	assert(while_body);
+
+	struct mcc_ast_statement *while_stmt = mcc_ast_get_new_statement_struct();
+	while_stmt->type = MCC_AST_STATEMENT_WHILE;
+	while_stmt->while_cond = expr;
+	while_stmt->while_stat = while_body;
+
+	return while_stmt;
+}
+
 void mcc_ast_delete_statement(struct mcc_ast_statement *statement)
 {
 	assert(statement);
@@ -517,7 +541,7 @@ void mcc_ast_delete_statement(struct mcc_ast_statement *statement)
 
 	case MCC_AST_STATEMENT_WHILE:
 		mcc_ast_delete_expression(statement->while_cond);
-		mcc_ast_delete_statement(statement->while_sta);
+		mcc_ast_delete_statement(statement->while_stat);
 		break;
 
 	case MCC_AST_STATEMENT_COMPOUND:

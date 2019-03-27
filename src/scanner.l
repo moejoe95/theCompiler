@@ -55,6 +55,7 @@ identifier		{alpha}{alpha_num}*
 
 "if"              { return TK_IF; }
 "else"            { return TK_ELSE; }
+"while"           { return TK_WHILE; }
 
 {int_literal}     { yylval->TK_INT_LITERAL = atol(yytext); return TK_INT_LITERAL; }
 {float_literal}   { yylval->TK_FLOAT_LITERAL = atof(yytext); return TK_FLOAT_LITERAL; }
