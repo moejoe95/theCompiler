@@ -57,10 +57,10 @@ enum mcc_ast_binary_op {
 	MCC_AST_BINARY_OP_NEQ,
 };
 
-enum mcc_ast_unary_op { 
+enum mcc_ast_unary_op {
 	MCC_AST_UNARY_OP_MINUS,
 	MCC_AST_UNARY_OP_NOT,
- };
+};
 
 // ---------------------------------------------------------------- Expressions
 
@@ -188,19 +188,14 @@ struct mcc_ast_statement_list {
 	struct mcc_ast_statement_list *next_statement;
 };
 
-struct mcc_ast_statement *
-mcc_ast_new_statement_compound(struct mcc_ast_statement_list *statement_list);
+struct mcc_ast_statement *mcc_ast_new_statement_compound(struct mcc_ast_statement_list *statement_list);
 
-struct mcc_ast_statement_list *mcc_ast_new_statement_compound_stmt(
-    struct mcc_ast_statement *statement,
-    struct mcc_ast_statement_list *statement_list);
+struct mcc_ast_statement_list *mcc_ast_new_statement_compound_stmt(struct mcc_ast_statement *statement,
+                                                                   struct mcc_ast_statement_list *statement_list);
 
 void mcc_ast_delete_statement(struct mcc_ast_statement *statement);
 
-void mcc_ast_delete_statement_list(
-    struct mcc_ast_statement_list *statement_list);
-
-
+void mcc_ast_delete_statement_list(struct mcc_ast_statement_list *statement_list);
 
 // ------------------------------------------------------------------- Literals
 
@@ -311,14 +306,16 @@ struct mcc_ast_program *mcc_ast_new_program(void *program, enum mcc_ast_program_
 void mcc_ast_delete_program(struct mcc_ast_program *program);
 
 // -------------------------------------------------------------------- Statement
-struct mcc_ast_statement *
-mcc_ast_new_statement_expression(struct mcc_ast_expression *expression);
+struct mcc_ast_statement *mcc_ast_new_statement_expression(struct mcc_ast_expression *expression);
+
+struct mcc_ast_statement *mcc_ast_new_statement_assignment(struct mcc_ast_declare_assign *assignment);
+
+struct mcc_ast_statement *mcc_ast_new_statement_declaration(struct mcc_ast_declare_assign *declaration);
+
+struct mcc_ast_statement *mcc_ast_new_statement_if(struct mcc_ast_statement *);
 
 struct mcc_ast_statement *
-mcc_ast_new_statement_assignment(struct mcc_ast_declare_assign *assignment);
-
-struct mcc_ast_statement *
-mcc_ast_new_statement_declaration(struct mcc_ast_declare_assign *declaration);
+mcc_ast_new_if_stmt(struct mcc_ast_expression *, struct mcc_ast_statement *, struct mcc_ast_statement *);
 
 void mcc_ast_delete_statement(struct mcc_ast_statement *statement);
 
@@ -333,9 +330,10 @@ struct mcc_ast_func_definition {
 	struct mcc_ast_semantic_annotation_function *semantic_annotation;
 };
 
-struct mcc_ast_func_definition *mcc_ast_new_function(
-    enum mcc_ast_type type, struct mcc_ast_expression *identifier,
-    struct mcc_ast_statement *compound, struct mcc_ast_parameter *parameter);
+struct mcc_ast_func_definition *mcc_ast_new_function(enum mcc_ast_type type,
+                                                     struct mcc_ast_expression *identifier,
+                                                     struct mcc_ast_statement *compound,
+                                                     struct mcc_ast_parameter *parameter);
 
 void mcc_ast_delete_function_def(struct mcc_ast_func_definition *func_def);
 
@@ -347,12 +345,10 @@ struct mcc_ast_parameter {
 	struct mcc_ast_parameter *next_parameter;
 };
 
-struct mcc_ast_parameter *
-mcc_ast_new_parameter(struct mcc_ast_declare_assign *declaration,
-                      struct mcc_ast_parameter *parameter);
+struct mcc_ast_parameter *mcc_ast_new_parameter(struct mcc_ast_declare_assign *declaration,
+                                                struct mcc_ast_parameter *parameter);
 
 void mcc_ast_delete_parameter(struct mcc_ast_parameter *parameter);
-
 
 // -------------------------------------------------------------------- Utility
 

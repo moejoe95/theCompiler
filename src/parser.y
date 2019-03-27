@@ -69,6 +69,9 @@ void mcc_parser_error();
 %token LCURLYBRACKET            "{"
 %token RCURLYBRACKET            "}"
 
+%token IF                       "if"
+%token ELSE                     "else"
+
 %token EXPRESSION               "<expression>"
 %token DECLARATION_ASSIGNMENT   "<declaration_assignment>"
 %token STATEMENT                "<statement>"
@@ -83,11 +86,11 @@ void mcc_parser_error();
 %type <struct mcc_ast_declare_assign *> assignment
 %type <struct mcc_ast_expression *> id
 %type <struct mcc_ast_program *> toplevel
-%type <struct mcc_ast_statement *> statement
+%type <struct mcc_ast_statement *> statement if_stmt
 %type <struct mcc_ast_func_definition *> function_def
 %type <struct mcc_ast_statement *> compound_stmt
 %type <struct mcc_ast_parameter *> parameters
-%type <struct mCc_ast_statement_list *> statement_list
+%type <struct mcc_ast_statement_list *> statement_list
 
 %destructor { mcc_ast_delete_expression($$); }          expression
 %destructor { mcc_ast_delete_statement($$); }           statement
@@ -132,6 +135,7 @@ literal : BOOL_LITERAL { $$ = mcc_ast_new_literal_bool($1); loc($$, @1); }
 statement : declaration SEMICOLON  { $$ = mcc_ast_new_statement_declaration($1); }
  		  | assignment SEMICOLON   { $$ = mcc_ast_new_statement_assignment($1); }
           | expression SEMICOLON   { $$ = mcc_ast_new_statement_expression($1); }
+		  | if_stmt { $$ = mcc_ast_new_statement_if($1); }
           ;
 
 declaration : type id { $$ = mcc_ast_new_declaration($1, $2, 0, 0); }
@@ -141,6 +145,11 @@ assignment : id ASSIGN expression { $$ = mcc_ast_new_assignment($1, $3, NULL); }
            | id LSQUAREBRACKET expression RSQUAREBRACKET ASSIGN expression { $$ = mcc_ast_new_assignment($1, $6, $3); }
            ;
 		   
+if_stmt : IF LPARENTH expression RPARENTH statement ELSE statement  { $$ = mcc_ast_new_if_stmt($3, $5, $7); }
+        ;
+
+
+
 id : IDENTIFIER  { $$ = mcc_ast_new_expression_identifier($1); }
    ;
 

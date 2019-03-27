@@ -423,8 +423,7 @@ void mcc_ast_delete_program(struct mcc_ast_program *program)
 
 // ------------------------------------------------------------------- Statements
 
-struct mcc_ast_statement *
-mcc_ast_new_statement_expression(struct mcc_ast_expression *expression)
+struct mcc_ast_statement *mcc_ast_new_statement_expression(struct mcc_ast_expression *expression)
 {
 	assert(expression);
 
@@ -437,8 +436,7 @@ mcc_ast_new_statement_expression(struct mcc_ast_expression *expression)
 	return stat;
 }
 
-struct mcc_ast_statement *
-mcc_ast_new_statement_assignment(struct mcc_ast_declare_assign *assignment)
+struct mcc_ast_statement *mcc_ast_new_statement_assignment(struct mcc_ast_declare_assign *assignment)
 {
 	assert(assignment);
 
@@ -451,8 +449,7 @@ mcc_ast_new_statement_assignment(struct mcc_ast_declare_assign *assignment)
 	return assign;
 }
 
-struct mcc_ast_statement *
-mcc_ast_new_statement_declaration(struct mcc_ast_declare_assign *declaration)
+struct mcc_ast_statement *mcc_ast_new_statement_declaration(struct mcc_ast_declare_assign *declaration)
 {
 	assert(declaration);
 
@@ -460,9 +457,34 @@ mcc_ast_new_statement_declaration(struct mcc_ast_declare_assign *declaration)
 	dec->type = MCC_AST_STATEMENT_DECLARATION;
 	dec->declare_assign = declaration;
 
-	// mcc_ast_add_sloc(&dec->node, location);
-
 	return dec;
+}
+
+struct mcc_ast_statement *mcc_ast_new_statement_if(struct mcc_ast_statement *stmt)
+{
+	assert(stmt);
+
+	struct mcc_ast_statement *new_stmt = mcc_ast_get_new_statement_struct();
+	new_stmt = stmt;
+
+	return new_stmt;
+}
+
+struct mcc_ast_statement *mcc_ast_new_if_stmt(struct mcc_ast_expression *expr,
+                                              struct mcc_ast_statement *if_body,
+                                              struct mcc_ast_statement *else_body)
+{
+	assert(expr);
+	assert(if_body);
+	assert(else_body);
+
+	struct mcc_ast_statement *if_stmt = mcc_ast_get_new_statement_struct();
+	if_stmt->type = MCC_AST_STATEMENT_IF;
+	if_stmt->if_cond = expr;
+	if_stmt->if_stat = if_body;
+	if_stmt->else_stat = else_body;
+
+	return if_stmt;
 }
 
 void mcc_ast_delete_statement(struct mcc_ast_statement *statement)
@@ -508,8 +530,7 @@ void mcc_ast_delete_statement(struct mcc_ast_statement *statement)
 	free(statement);
 }
 
-struct mcc_ast_statement *
-mcc_ast_new_statement_compound(struct mcc_ast_statement_list *statement_list)
+struct mcc_ast_statement *mcc_ast_new_statement_compound(struct mcc_ast_statement_list *statement_list)
 {
 	struct mcc_ast_statement *statement = malloc(sizeof(*statement));
 	if (!statement) {
@@ -521,9 +542,8 @@ mcc_ast_new_statement_compound(struct mcc_ast_statement_list *statement_list)
 	return statement;
 }
 
-struct mcc_ast_statement_list *mcc_ast_new_statement_compound_stmt(
-    struct mcc_ast_statement *statement,
-    struct mcc_ast_statement_list *statement_list)
+struct mcc_ast_statement_list *mcc_ast_new_statement_compound_stmt(struct mcc_ast_statement *statement,
+                                                                   struct mcc_ast_statement_list *statement_list)
 {
 	struct mcc_ast_statement_list *stmt = malloc(sizeof(*stmt));
 	if (!stmt) {
@@ -535,8 +555,7 @@ struct mcc_ast_statement_list *mcc_ast_new_statement_compound_stmt(
 	return stmt;
 }
 
-void mcc_ast_delete_statement_list(
-    struct mcc_ast_statement_list *statement_list)
+void mcc_ast_delete_statement_list(struct mcc_ast_statement_list *statement_list)
 {
 	assert(statement_list);
 	if (statement_list->statement != NULL) {
@@ -550,15 +569,15 @@ void mcc_ast_delete_statement_list(
 
 // ------------------------------------------------------------------- Functions
 
-struct mcc_ast_func_definition *mcc_ast_new_function(
-    enum mcc_ast_type type, struct mcc_ast_expression *identifier,
-    struct mcc_ast_statement *compound, struct mcc_ast_parameter *parameter)
+struct mcc_ast_func_definition *mcc_ast_new_function(enum mcc_ast_type type,
+                                                     struct mcc_ast_expression *identifier,
+                                                     struct mcc_ast_statement *compound,
+                                                     struct mcc_ast_parameter *parameter)
 {
 	assert(identifier);
 	assert(compound);
 
-	struct mcc_ast_func_definition *func_def =
-	    mcc_ast_get_new_function_def_struct();
+	struct mcc_ast_func_definition *func_def = mcc_ast_get_new_function_def_struct();
 
 	func_def->func_type = type;
 	func_def->func_identifier = identifier;
@@ -609,4 +628,3 @@ void mcc_ast_delete_parameter(struct mcc_ast_parameter *parameter)
 	}
 	free(parameter);
 }
-

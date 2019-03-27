@@ -53,6 +53,9 @@ identifier		{alpha}{alpha_num}*
 "int"             { return TK_INT; }
 "void"            { return TK_VOID; }
 
+"if"              { return TK_IF; }
+"else"            { return TK_ELSE; }
+
 {int_literal}     { yylval->TK_INT_LITERAL = atol(yytext); return TK_INT_LITERAL; }
 {float_literal}   { yylval->TK_FLOAT_LITERAL = atof(yytext); return TK_FLOAT_LITERAL; }
 {bool_literal}	  { yylval->TK_BOOL_LITERAL = strcmp(yytext, "true") == 0; return TK_BOOL_LITERAL; }
