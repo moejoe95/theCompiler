@@ -69,7 +69,7 @@ cat ../examples/euclid/euclid.mc | ./mc_ast_to_dot | dot -Tpng > euclid_ast.png
 
 __Example output__
 
-![AST of euclid.mc](./doc/images/euclid_ast.png "AST of euclid.mc")
+![AST of euclid.mc](./docs/images/euclid_ast.png "AST of euclid.mc")
 
 
 ## Milestone 2
