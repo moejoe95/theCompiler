@@ -436,6 +436,17 @@ struct mcc_ast_statement *mcc_ast_new_statement_expression(struct mcc_ast_expres
 	return stat;
 }
 
+struct mcc_ast_statement *mcc_ast_new_statement_return_expression(struct mcc_ast_expression *expression)
+{
+	struct mcc_ast_statement *stat = mcc_ast_get_new_statement_struct();
+	stat->type = MCC_AST_STATEMENT_EXPRESSION;
+	stat->expression = expression;
+
+	// mcc_ast_add_sloc(&stat->node, location);
+
+	return stat;
+}
+
 struct mcc_ast_statement *mcc_ast_new_statement_assignment(struct mcc_ast_declare_assign *assignment)
 {
 	assert(assignment);

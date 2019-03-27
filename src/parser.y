@@ -140,6 +140,7 @@ statement : declaration SEMICOLON  { $$ = mcc_ast_new_statement_declaration($1);
 		  | if_stmt { $$ = mcc_ast_new_statement_if($1); }
 		  | while_stmt { $$ = mcc_ast_new_statement_while($1); }
 		  | return SEMICOLON { $$ = mcc_ast_new_statement_return($1); }
+		  | compound_stmt
           ;
 
 declaration : type id { $$ = mcc_ast_new_declaration($1, $2, 0, 0); }
@@ -149,8 +150,9 @@ assignment : id ASSIGN expression { $$ = mcc_ast_new_assignment($1, $3, NULL); }
            | id LSQUAREBRACKET expression RSQUAREBRACKET ASSIGN expression { $$ = mcc_ast_new_assignment($1, $6, $3); }
            ;
 
-return : RETURN expression { $$ = mcc_ast_new_statement_expression($2); }
-        ;
+return : RETURN { $$ = mcc_ast_new_statement_return_expression(NULL); } 
+	   | RETURN expression { $$ = mcc_ast_new_statement_return_expression($2); }
+       ;
 		   
 if_stmt : IF LPARENTH expression RPARENTH statement ELSE statement  { $$ = mcc_ast_new_if_stmt($3, $5, $7); }
         ;

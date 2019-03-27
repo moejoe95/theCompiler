@@ -308,6 +308,8 @@ void mcc_ast_delete_program(struct mcc_ast_program *program);
 // -------------------------------------------------------------------- Statement
 struct mcc_ast_statement *mcc_ast_new_statement_expression(struct mcc_ast_expression *expression);
 
+struct mcc_ast_statement *mcc_ast_new_statement_return_expression(struct mcc_ast_expression *expression);
+
 struct mcc_ast_statement *mcc_ast_new_statement_assignment(struct mcc_ast_declare_assign *assignment);
 
 struct mcc_ast_statement *mcc_ast_new_statement_declaration(struct mcc_ast_declare_assign *declaration);
