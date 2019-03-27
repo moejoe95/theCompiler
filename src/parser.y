@@ -81,34 +81,43 @@ void mcc_parser_error();
 %left PLUS MINUS
 %left ASTER SLASH
 
-%type <struct mcc_ast_expression *> expression
-%type <struct mcc_ast_literal *> literal
-%type <enum mcc_ast_type> type
-%type <struct mcc_ast_declare_assign *> declaration
-%type <struct mcc_ast_declare_assign *> assignment
-%type <struct mcc_ast_expression *> id
-%type <struct mcc_ast_program *> toplevel
-%type <struct mcc_ast_statement *> statement if_stmt while_stmt return
-%type <struct mcc_ast_func_definition *> function_def
-%type <struct mcc_ast_statement *> compound_stmt
-%type <struct mcc_ast_parameter *> parameters
-%type <struct mcc_ast_statement_list *> statement_list
+%type <enum mcc_ast_type>					type
+%type <struct mcc_ast_literal *>			literal
+%type <struct mcc_ast_expression *>			expression id
+%type <struct mcc_ast_parameter *>			parameters
+%type <struct mcc_ast_declare_assign *> 	declaration assignment
+%type <struct mcc_ast_statement *>			statement if_stmt while_stmt compound_stmt return
+%type <struct mcc_ast_func_definition *>	function_def
+%type <struct mcc_ast_statement_list *>		statement_list
+%type <struct mcc_ast_program *>			program
 
 %destructor { mcc_ast_delete_expression($$); }          expression
 %destructor { mcc_ast_delete_statement($$); }           statement
 %destructor { mcc_ast_delete_declare_assign($$); }      declaration
-%destructor { mcc_ast_delete_function_def($$); }        function_def
+%destructor { mcc_ast_delete_func_definition($$); }     function_def
 %destructor { mcc_ast_delete_statement($$); }           compound_stmt
 %destructor { mcc_ast_delete_statement_list($$); }      statement_list
 %destructor { mcc_ast_delete_parameter($$); }           parameters
 
-%start toplevel
+%start program
 
 %%
 
-toplevel : statement { *result = mcc_ast_new_program($1, MCC_AST_PROGRAM_TYPE_STATEMENT); }
+program : statement { *result = mcc_ast_new_program($1, MCC_AST_PROGRAM_TYPE_STATEMENT); }
 		 | function_def { *result = mcc_ast_new_program($1, MCC_AST_PROGRAM_TYPE_FUNCTION); }     
 		 ;
+
+type : BOOL    { $$ = MCC_AST_TYPE_BOOL; }
+     | INT     { $$ = MCC_AST_TYPE_INT; }
+     | FLOAT   { $$ = MCC_AST_TYPE_FLOAT; }
+     | STRING  { $$ = MCC_AST_TYPE_STRING; }
+     ;
+
+literal : BOOL_LITERAL { $$ = mcc_ast_new_literal_bool($1); loc($$, @1); }
+		| INT_LITERAL   { $$ = mcc_ast_new_literal_int($1);   loc($$, @1); }
+		| FLOAT_LITERAL { $$ = mcc_ast_new_literal_float($1); loc($$, @1); }
+		| STRING_LITERAL { $$ = mcc_ast_new_literal_string($1); loc($$, @1); }
+		;
 
 expression : literal              		  { $$ = mcc_ast_new_expression_literal($1);                              loc($$, @1); }
            | expression PLUS  expression  { $$ = mcc_ast_new_expression_binary_op(MCC_AST_BINARY_OP_ADD, $1, $3); loc($$, @1); }
@@ -128,11 +137,19 @@ expression : literal              		  { $$ = mcc_ast_new_expression_literal($1);
 		   | expression LOR expression { $$ = mcc_ast_new_expression_binary_op(MCC_AST_BINARY_OP_LOR, $1, $3); loc($$, @1); }
 		   ;
 
-literal : BOOL_LITERAL { $$ = mcc_ast_new_literal_bool($1); loc($$, @1); }
-		| INT_LITERAL   { $$ = mcc_ast_new_literal_int($1);   loc($$, @1); }
-		| FLOAT_LITERAL { $$ = mcc_ast_new_literal_float($1); loc($$, @1); }
-		| STRING_LITERAL { $$ = mcc_ast_new_literal_string($1); loc($$, @1); }
-		;
+id : IDENTIFIER  { $$ = mcc_ast_new_expression_identifier($1); }
+   ;
+
+parameters : declaration { $$ = mcc_ast_new_parameter($1, NULL); }
+           | declaration COMMA parameters { $$ = mcc_ast_new_parameter($1, $3); }
+           ;
+
+declaration : type id { $$ = mcc_ast_new_declaration($1, $2, 0, 0); }
+            ;
+
+assignment : id ASSIGN expression { $$ = mcc_ast_new_assignment($1, $3, NULL); }
+           | id LSQUAREBRACKET expression RSQUAREBRACKET ASSIGN expression { $$ = mcc_ast_new_assignment($1, $6, $3); }
+           ;
 
 statement : declaration SEMICOLON  { $$ = mcc_ast_new_statement_declaration($1); }
  		  | assignment SEMICOLON   { $$ = mcc_ast_new_statement_assignment($1); }
@@ -142,13 +159,6 @@ statement : declaration SEMICOLON  { $$ = mcc_ast_new_statement_declaration($1);
 		  | return SEMICOLON { $$ = mcc_ast_new_statement_return($1); }
 		  | compound_stmt
           ;
-
-declaration : type id { $$ = mcc_ast_new_declaration($1, $2, 0, 0); }
-            ;
-
-assignment : id ASSIGN expression { $$ = mcc_ast_new_assignment($1, $3, NULL); }
-           | id LSQUAREBRACKET expression RSQUAREBRACKET ASSIGN expression { $$ = mcc_ast_new_assignment($1, $6, $3); }
-           ;
 
 return : RETURN { $$ = mcc_ast_new_statement_return_expression(NULL); } 
 	   | RETURN expression { $$ = mcc_ast_new_statement_return_expression($2); }
@@ -160,15 +170,9 @@ if_stmt : IF LPARENTH expression RPARENTH statement ELSE statement  { $$ = mcc_a
 while_stmt : WHILE LPARENTH expression RPARENTH statement { $$ = mcc_ast_new_while_stmt($3, $5); }
         ;
 
-
-id : IDENTIFIER  { $$ = mcc_ast_new_expression_identifier($1); }
-   ;
-
-type : BOOL    { $$ = MCC_AST_TYPE_BOOL; }
-     | INT     { $$ = MCC_AST_TYPE_INT; }
-     | FLOAT   { $$ = MCC_AST_TYPE_FLOAT; }
-     | STRING  { $$ = MCC_AST_TYPE_STRING; }
-     ;
+compound_stmt : LCURLYBRACKET RCURLYBRACKET {  $$ = mcc_ast_new_statement_compound(NULL); }
+              | LCURLYBRACKET statement_list RCURLYBRACKET { $$ = mcc_ast_new_statement_compound($2); }
+              ;
 
 function_def : VOID id LPARENTH RPARENTH compound_stmt { $$ = mcc_ast_new_function(MCC_AST_TYPE_VOID, $2, $5, NULL); }
              | type id LPARENTH RPARENTH compound_stmt { $$ = mcc_ast_new_function($1, $2, $5, NULL); }
@@ -176,18 +180,9 @@ function_def : VOID id LPARENTH RPARENTH compound_stmt { $$ = mcc_ast_new_functi
              | type id LPARENTH parameters RPARENTH compound_stmt { $$ = mcc_ast_new_function($1, $2, $6, $4); }
              ;
 
-parameters : declaration { $$ = mcc_ast_new_parameter($1, NULL); }
-           | declaration COMMA parameters { $$ = mcc_ast_new_parameter($1, $3); }
-           ;
-
-compound_stmt : LCURLYBRACKET RCURLYBRACKET {  $$ = mcc_ast_new_statement_compound(NULL); }
-              | LCURLYBRACKET statement_list RCURLYBRACKET { $$ = mcc_ast_new_statement_compound($2); }
-              ;
-
 statement_list : statement { $$ = mcc_ast_new_statement_compound_stmt($1, NULL); }
                | statement statement_list { $$ = mcc_ast_new_statement_compound_stmt($1, $2); }
                ;
-
 %%
 
 #include <assert.h>
