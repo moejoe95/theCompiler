@@ -146,7 +146,7 @@ void mcc_ast_visit_statement(struct mcc_ast_statement *stat, struct mcc_ast_visi
 	assert(visitor);
 	switch (stat->type) {
 	case MCC_AST_STATEMENT_EXPRESSION:
-		// TODO
+		mcc_ast_visit_expression(stat->expression, visitor);
 		break;
 	case MCC_AST_STATEMENT_ASSIGNMENT:
 	case MCC_AST_STATEMENT_DECLARATION:

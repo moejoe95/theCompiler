@@ -101,10 +101,7 @@ void mcc_parser_error();
 
 %%
 
-toplevel : expression { *result = mcc_ast_new_program($1, MCC_AST_PROGRAM_TYPE_EXPRESSION); }
-		 | assignment { *result = mcc_ast_new_program($1, MCC_AST_PROGRAM_TYPE_DECLARATION); }
-		 | declaration { *result = mcc_ast_new_program($1, MCC_AST_PROGRAM_TYPE_DECLARATION); }
-		 | statement { *result = mcc_ast_new_program($1, MCC_AST_PROGRAM_TYPE_STATEMENT); }
+toplevel : statement { *result = mcc_ast_new_program($1, MCC_AST_PROGRAM_TYPE_STATEMENT); }
 		 | function_def { *result = mcc_ast_new_program($1, MCC_AST_PROGRAM_TYPE_FUNCTION); }     
 		 ;
 
