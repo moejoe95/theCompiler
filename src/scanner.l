@@ -41,7 +41,14 @@ bool_literal	"true"|"false"
 string_literal	\"[^"]*\"
 identifier		{alpha}{alpha_num}*
 
+%x comment
+
 %%
+
+"/*"                    { BEGIN(comment); }
+<comment>[^*]*
+<comment>"*"+[^*/\n]*
+<comment>"*"+"/"        { BEGIN(INITIAL); }
 
 "<expression>"                { return TK_EXPRESSION; }
 "<declaration_assignment>"    { return TK_DECLARATION_ASSIGNMENT; }
