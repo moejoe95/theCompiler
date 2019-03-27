@@ -144,18 +144,13 @@ void mcc_ast_visit_statement(struct mcc_ast_statement *stat, struct mcc_ast_visi
 {
 	assert(stat);
 	assert(visitor);
-
 	switch (stat->type) {
 	case MCC_AST_STATEMENT_EXPRESSION:
-		visit_if_pre_order(stat, visitor->statement, visitor);
-		mcc_ast_visit(stat->expression, visitor);
-		visit_if_post_order(stat, visitor->statement, visitor);
+		// TODO
 		break;
 	case MCC_AST_STATEMENT_ASSIGNMENT:
-		// TODO
-		break;
 	case MCC_AST_STATEMENT_DECLARATION:
-		// TODO
+		mcc_ast_visit_declare_assign(stat->declare_assign, visitor);
 		break;
 	case MCC_AST_STATEMENT_RETURN:
 		// TODO
