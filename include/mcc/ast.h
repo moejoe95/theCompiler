@@ -287,12 +287,8 @@ struct mcc_ast_statement *mcc_ast_new_statement_assignment(struct mcc_ast_declar
 
 struct mcc_ast_statement *mcc_ast_new_statement_declaration(struct mcc_ast_declare_assign *declaration);
 
-struct mcc_ast_statement *mcc_ast_new_statement_if(struct mcc_ast_statement *);
-
 struct mcc_ast_statement *
 mcc_ast_new_if_stmt(struct mcc_ast_expression *, struct mcc_ast_statement *, struct mcc_ast_statement *);
-
-struct mcc_ast_statement *mcc_ast_new_statement_while(struct mcc_ast_statement *);
 
 struct mcc_ast_statement *mcc_ast_new_while_stmt(struct mcc_ast_expression *expression, struct mcc_ast_statement *);
 

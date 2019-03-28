@@ -247,8 +247,15 @@ static void print_dot_statement_if(struct mcc_ast_statement *statement, void *da
 	print_dot_node(out, statement, "stmt: if");
 
 	print_dot_edge(out, statement, statement->if_cond, "cond.");
-	print_dot_edge(out, statement, statement->if_stat, "if");
-	print_dot_edge(out, statement, statement->else_stat, "else");
+	/*
+	        this works (even for dec./assign) but i really dont know why
+	        it should be:
+	        print_dot_edge(out, statement, statement->if_stat, "if");
+	        print_dot_edge(out, statement, statement->else_stat, "else");
+
+	*/
+	print_dot_edge(out, statement, statement->if_stat->expression, "if");
+	print_dot_edge(out, statement, statement->else_stat->expression, "else");
 }
 
 static void print_dot_statement_while(struct mcc_ast_statement *statement, void *data)
@@ -259,7 +266,7 @@ static void print_dot_statement_while(struct mcc_ast_statement *statement, void 
 	print_dot_node(out, statement, "stmt: while");
 
 	print_dot_edge(out, statement, statement->while_cond, "cond.");
-	print_dot_edge(out, statement, statement->while_stat, "while");
+	print_dot_edge(out, statement, statement->while_stat->expression, "body"); // see comment if statement
 }
 
 static void print_dot_statement_compound(struct mcc_ast_statement *statement, void *data)

@@ -177,7 +177,7 @@ void mcc_ast_visit_statement_while(struct mcc_ast_statement *while_stmt, struct 
 	visit_if_pre_order(while_stmt, visitor->statement_while, visitor);
 
 	// run condition
-	mcc_ast_visit_expression(while_stmt->expression, visitor);
+	mcc_ast_visit_expression(while_stmt->while_cond, visitor);
 	// loop body
 	mcc_ast_visit_statement(while_stmt->while_stat, visitor);
 
