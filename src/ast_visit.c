@@ -146,9 +146,7 @@ void mcc_ast_visit_statement_expression(struct mcc_ast_statement *exp_stmt, stru
 	assert(visitor);
 
 	visit_if_pre_order(exp_stmt, visitor->statement_expression, visitor);
-
 	mcc_ast_visit_expression(exp_stmt->expression, visitor);
-
 	visit_if_post_order(exp_stmt, visitor->statement_expression, visitor);
 }
 
@@ -158,9 +156,7 @@ void mcc_ast_visit_statement_declaration(struct mcc_ast_statement *dec_stmt, str
 	assert(visitor);
 
 	visit_if_pre_order(dec_stmt, visitor->statement_declaration, visitor);
-
-	mcc_ast_visit_declare_assign(dec_stmt->declare_assign, visitor);
-
+	mcc_ast_visit(dec_stmt->declare_assign, visitor);
 	visit_if_post_order(dec_stmt, visitor->statement_declaration, visitor);
 }
 
@@ -199,9 +195,7 @@ void mcc_ast_visit_statement_return(struct mcc_ast_statement *ret_stmt, struct m
 	assert(visitor);
 
 	visit_if_pre_order(ret_stmt, visitor->statement_return, visitor);
-
 	mcc_ast_visit_expression(ret_stmt->expression, visitor);
-
 	visit_if_post_order(ret_stmt, visitor->statement_return, visitor);
 }
 
