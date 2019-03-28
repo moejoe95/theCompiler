@@ -140,6 +140,42 @@ void mcc_ast_visit_declare_assign(struct mcc_ast_declare_assign *dec, struct mcc
 	}
 }
 
+void mcc_ast_visit_statement_expression(struct mcc_ast_statement *exp_stmt, struct mcc_ast_visitor *visitor)
+{
+	assert(exp_stmt);
+	assert(visitor);
+
+	visit_if_pre_order(exp_stmt, visitor->statement_expression, visitor);
+
+	mcc_ast_visit_expression(exp_stmt->expression, visitor);
+
+	visit_if_post_order(exp_stmt, visitor->statement_expression, visitor);
+}
+
+void mcc_ast_visit_statement_declaration(struct mcc_ast_statement *dec_stmt, struct mcc_ast_visitor *visitor)
+{
+	assert(dec_stmt);
+	assert(visitor);
+
+	visit_if_pre_order(dec_stmt, visitor->statement_declaration, visitor);
+
+	mcc_ast_visit_declare_assign(dec_stmt->declare_assign, visitor);
+
+	visit_if_post_order(dec_stmt, visitor->statement_declaration, visitor);
+}
+
+void mcc_ast_visit_statement_assignment(struct mcc_ast_statement *ass_stmt, struct mcc_ast_visitor *visitor)
+{
+	assert(ass_stmt);
+	assert(visitor);
+
+	visit_if_pre_order(ass_stmt, visitor->statement_assignment, visitor);
+
+	mcc_ast_visit_declare_assign(ass_stmt->declare_assign, visitor);
+
+	visit_if_post_order(ass_stmt, visitor->statement_assignment, visitor);
+}
+
 void mcc_ast_visit_statement_if(struct mcc_ast_statement *if_stmt, struct mcc_ast_visitor *visitor)
 {
 	assert(if_stmt);
@@ -181,7 +217,23 @@ void mcc_ast_visit_statement_while(struct mcc_ast_statement *while_stmt, struct 
 	// loop body
 	mcc_ast_visit_statement(while_stmt->while_stat, visitor);
 
-	visit_if_post_order(while_stmt, mcc_ast_visit_statement_while, visitor);
+	visit_if_post_order(while_stmt, visitor->statement_while, visitor);
+}
+
+void mcc_ast_visit_statement_compound(struct mcc_ast_statement *comp_stmt, struct mcc_ast_visitor *visitor)
+{
+	assert(comp_stmt);
+	assert(visitor);
+
+	visit_if_pre_order(comp_stmt, visitor->statement_compound, visitor);
+
+	struct mcc_ast_statement_list *stmt = comp_stmt->compound;
+	while (stmt != NULL) {
+		mcc_ast_visit_statement(stmt->statement, visitor);
+		stmt = stmt->next_statement;
+	}
+
+	visit_if_post_order(comp_stmt, visitor->statement_compound, visitor);
 }
 
 void mcc_ast_visit_statement(struct mcc_ast_statement *stat, struct mcc_ast_visitor *visitor)
@@ -190,11 +242,13 @@ void mcc_ast_visit_statement(struct mcc_ast_statement *stat, struct mcc_ast_visi
 	assert(visitor);
 	switch (stat->type) {
 	case MCC_AST_STATEMENT_EXPRESSION:
-		mcc_ast_visit_expression(stat->expression, visitor);
+		mcc_ast_visit_statement_expression(stat, visitor);
 		break;
 	case MCC_AST_STATEMENT_ASSIGNMENT:
+		mcc_ast_visit_statement_assignment(stat, visitor);
+		break;
 	case MCC_AST_STATEMENT_DECLARATION:
-		mcc_ast_visit_declare_assign(stat->declare_assign, visitor);
+		mcc_ast_visit_statement_declaration(stat, visitor);
 		break;
 	case MCC_AST_STATEMENT_RETURN:
 		mcc_ast_visit_statement_return(stat, visitor);
@@ -206,7 +260,7 @@ void mcc_ast_visit_statement(struct mcc_ast_statement *stat, struct mcc_ast_visi
 		mcc_ast_visit_statement_while(stat, visitor);
 		break;
 	case MCC_AST_STATEMENT_COMPOUND:
-		// TODO
+		mcc_ast_visit_statement_compound(stat, visitor);
 		break;
 	}
 }

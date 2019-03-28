@@ -226,7 +226,26 @@ static void print_dot_statement_expression(struct mcc_ast_statement *statement, 
 	assert(statement);
 	FILE *out = data;
 
-	// TODO
+	print_dot_node(out, statement, "stmt: expr");
+	print_dot_edge(out, statement, statement->expression, "expr");
+}
+
+static void print_dot_statement_declaration(struct mcc_ast_statement *statement, void *data)
+{
+	assert(statement);
+	FILE *out = data;
+
+	print_dot_node(out, statement, "stmt: dec");
+	print_dot_edge(out, statement, statement->declare_assign, "dec");
+}
+
+static void print_dot_statement_assignment(struct mcc_ast_statement *statement, void *data)
+{
+	assert(statement);
+	FILE *out = data;
+
+	print_dot_node(out, statement, "stmt: assign");
+	print_dot_edge(out, statement, statement->declare_assign, "assign");
 }
 
 static void print_dot_statement_return(struct mcc_ast_statement *statement, void *data)
@@ -235,7 +254,6 @@ static void print_dot_statement_return(struct mcc_ast_statement *statement, void
 	FILE *out = data;
 
 	print_dot_node(out, statement, "return");
-
 	print_dot_edge(out, statement, statement->expression, "expr.");
 }
 
@@ -247,15 +265,9 @@ static void print_dot_statement_if(struct mcc_ast_statement *statement, void *da
 	print_dot_node(out, statement, "stmt: if");
 
 	print_dot_edge(out, statement, statement->if_cond, "cond.");
-	/*
-	        this works (even for dec./assign) but i really dont know why
-	        it should be:
-	        print_dot_edge(out, statement, statement->if_stat, "if");
-	        print_dot_edge(out, statement, statement->else_stat, "else");
 
-	*/
-	print_dot_edge(out, statement, statement->if_stat->expression, "if");
-	print_dot_edge(out, statement, statement->else_stat->expression, "else");
+	print_dot_edge(out, statement, statement->if_stat, "if");
+	print_dot_edge(out, statement, statement->else_stat, "else");
 }
 
 static void print_dot_statement_while(struct mcc_ast_statement *statement, void *data)
@@ -266,7 +278,7 @@ static void print_dot_statement_while(struct mcc_ast_statement *statement, void 
 	print_dot_node(out, statement, "stmt: while");
 
 	print_dot_edge(out, statement, statement->while_cond, "cond.");
-	print_dot_edge(out, statement, statement->while_stat->expression, "body"); // see comment if statement
+	print_dot_edge(out, statement, statement->while_stat, "body");
 }
 
 static void print_dot_statement_compound(struct mcc_ast_statement *statement, void *data)
@@ -274,7 +286,15 @@ static void print_dot_statement_compound(struct mcc_ast_statement *statement, vo
 	assert(statement);
 	FILE *out = data;
 
-	// TODO
+	print_dot_node(out, statement, "stmt: block");
+	struct mcc_ast_statement_list *comp_stmt = statement->compound;
+	int i = 0;
+	while (comp_stmt != NULL) {
+		char label[LABEL_SIZE] = {0};
+		snprintf(label, sizeof(label), "%s %d", "stmt:", i++);
+		print_dot_edge(out, statement, comp_stmt->statement, label);
+		comp_stmt = comp_stmt->next_statement;
+	}
 }
 
 // Setup an AST Visitor for printing.
