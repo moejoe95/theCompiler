@@ -184,7 +184,8 @@ void mcc_ast_visit_statement_if(struct mcc_ast_statement *if_stmt, struct mcc_as
 	// then
 	mcc_ast_visit_statement(if_stmt->if_stat, visitor);
 	// else
-	mcc_ast_visit_statement(if_stmt->else_stat, visitor);
+	if (if_stmt->else_stat != NULL)
+		mcc_ast_visit_statement(if_stmt->else_stat, visitor);
 
 	visit_if_post_order(if_stmt, visitor->statement_if, visitor);
 }

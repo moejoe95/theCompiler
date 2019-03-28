@@ -165,6 +165,7 @@ return : RETURN { $$ = mcc_ast_new_statement_return_expression(NULL); }
        ;
 		   
 if_stmt : IF LPARENTH expression RPARENTH statement ELSE statement  { $$ = mcc_ast_new_if_stmt($3, $5, $7); }
+		| IF LPARENTH expression RPARENTH statement { $$ = mcc_ast_new_if_stmt($3, $5, NULL); }
         ;
 
 while_stmt : WHILE LPARENTH expression RPARENTH statement { $$ = mcc_ast_new_while_stmt($3, $5); }

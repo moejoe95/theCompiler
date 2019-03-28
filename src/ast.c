@@ -403,13 +403,13 @@ struct mcc_ast_statement *mcc_ast_new_if_stmt(struct mcc_ast_expression *expr,
 {
 	assert(expr);
 	assert(if_body);
-	assert(else_body);
 
 	struct mcc_ast_statement *if_stmt = mcc_ast_get_new_statement_struct();
 	if_stmt->type = MCC_AST_STATEMENT_IF;
 	if_stmt->if_cond = expr;
 	if_stmt->if_stat = if_body;
-	if_stmt->else_stat = else_body;
+	if (else_body != NULL)
+		if_stmt->else_stat = else_body;
 
 	return if_stmt;
 }

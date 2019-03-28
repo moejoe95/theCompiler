@@ -266,7 +266,9 @@ static void print_dot_statement_if(struct mcc_ast_statement *statement, void *da
 	print_dot_edge(out, statement, statement->if_cond, "cond.");
 
 	print_dot_edge(out, statement, statement->if_stat, "if");
-	print_dot_edge(out, statement, statement->else_stat, "else");
+
+	if (statement->else_stat != NULL)
+		print_dot_edge(out, statement, statement->else_stat, "else");
 }
 
 static void print_dot_statement_while(struct mcc_ast_statement *statement, void *data)
