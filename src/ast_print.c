@@ -256,7 +256,10 @@ static void print_dot_statement_while(struct mcc_ast_statement *statement, void 
 	assert(statement);
 	FILE *out = data;
 
-	// TODO
+	print_dot_node(out, statement, "stmt: while");
+
+	print_dot_edge(out, statement, statement->while_cond, "cond.");
+	print_dot_edge(out, statement, statement->while_stat, "while");
 }
 
 static void print_dot_statement_compound(struct mcc_ast_statement *statement, void *data)

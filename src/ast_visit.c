@@ -169,6 +169,21 @@ void mcc_ast_visit_statement_return(struct mcc_ast_statement *ret_stmt, struct m
 	visit_if_post_order(ret_stmt, visitor->statement_return, visitor);
 }
 
+void mcc_ast_visit_statement_while(struct mcc_ast_statement *while_stmt, struct mcc_ast_visitor *visitor)
+{
+	assert(while_stmt);
+	assert(visitor);
+
+	visit_if_pre_order(while_stmt, visitor->statement_while, visitor);
+
+	// run condition
+	mcc_ast_visit_expression(while_stmt->expression, visitor);
+	// loop body
+	mcc_ast_visit_statement(while_stmt->while_stat, visitor);
+
+	visit_if_post_order(while_stmt, mcc_ast_visit_statement_while, visitor);
+}
+
 void mcc_ast_visit_statement(struct mcc_ast_statement *stat, struct mcc_ast_visitor *visitor)
 {
 	assert(stat);
@@ -188,7 +203,7 @@ void mcc_ast_visit_statement(struct mcc_ast_statement *stat, struct mcc_ast_visi
 		mcc_ast_visit_statement_if(stat, visitor);
 		break;
 	case MCC_AST_STATEMENT_WHILE:
-		// TODO
+		mcc_ast_visit_statement_while(stat, visitor);
 		break;
 	case MCC_AST_STATEMENT_COMPOUND:
 		// TODO
