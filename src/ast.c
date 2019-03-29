@@ -242,6 +242,21 @@ struct mcc_ast_function_arguments *mcc_ast_new_expression_argument(struct mcc_as
 	return func_arg;
 }
 
+struct mcc_ast_expression *mcc_ast_new_expression_array_access(struct mcc_ast_expression *identifier,
+                                                               struct mcc_ast_expression *expression)
+{
+	assert(identifier);
+	assert(expression);
+
+	struct mcc_ast_expression *expr = mcc_ast_get_new_expression_struct();
+	expr->type = MCC_AST_EXPRESSION_TYPE_ARRAY_ACCESS;
+
+	expr->array_access_exp = expression;
+	expr->array_access_id = identifier;
+
+	return expr;
+}
+
 void mcc_ast_delete_expression(struct mcc_ast_expression *expression)
 {
 	assert(expression);

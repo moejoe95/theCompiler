@@ -188,6 +188,9 @@ struct mcc_ast_expression *mcc_ast_new_expression_function_call(struct mcc_ast_e
 struct mcc_ast_function_arguments *mcc_ast_new_expression_argument(struct mcc_ast_expression *expression,
                                                                    struct mcc_ast_function_arguments *arguments);
 
+struct mcc_ast_expression *mcc_ast_new_expression_array_access(struct mcc_ast_expression *identifier,
+                                                               struct mcc_ast_expression *expression);
+
 void mcc_ast_delete_function_arguments(struct mcc_ast_function_arguments *arguments);
 
 void mcc_ast_delete_expression(struct mcc_ast_expression *expression);
