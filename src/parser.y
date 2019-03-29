@@ -147,6 +147,7 @@ parameters : declaration { $$ = mcc_ast_new_parameter($1, NULL); }
            ;
 
 declaration : type id { $$ = mcc_ast_new_declaration($1, $2, 0, 0); }
+			| type LSQUAREBRACKET INT_LITERAL RSQUAREBRACKET id  { $$ = mcc_ast_new_declaration($1, $5, $3, 1); }
             ;
 
 assignment : id ASSIGN expression { $$ = mcc_ast_new_assignment($1, $3, NULL); }
