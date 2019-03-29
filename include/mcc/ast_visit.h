@@ -23,6 +23,7 @@ enum mcc_ast_visit_order {
 
 // Callbacks
 typedef void (*mcc_ast_visit_program_cb)(struct mcc_ast_program *, void *userdata);
+typedef void (*mcc_ast_visit_function_cb)(struct mcc_ast_func_definition *, void *userdata);
 typedef void (*mcc_ast_visit_statement_cb)(struct mcc_ast_statement *, void *userdata);
 typedef void (*mcc_ast_visit_expression_cb)(struct mcc_ast_expression *, void *userdata);
 typedef void (*mcc_ast_visit_declare_assign_cb)(struct mcc_ast_declare_assign *, void *userdata);
@@ -37,6 +38,10 @@ struct mcc_ast_visitor {
 	void *userdata;
 
 	mcc_ast_visit_program_cb program;
+
+	mcc_ast_visit_function_cb function;
+	mcc_ast_visit_function_cb function_identifier;
+	mcc_ast_visit_function_cb function_compound;
 
 	mcc_ast_visit_statement_cb statement;
 	mcc_ast_visit_statement_cb statement_expression;
@@ -69,6 +74,8 @@ struct mcc_ast_visitor {
 
 void mcc_ast_visit_program(struct mcc_ast_program *program, struct mcc_ast_visitor *visitor);
 
+void mcc_ast_visit_function(struct mcc_ast_func_definition *function, struct mcc_ast_visitor *visitor);
+
 void mcc_ast_visit_statement(struct mcc_ast_statement *statement, struct mcc_ast_visitor *visitor);
 
 void mcc_ast_visit_expression(struct mcc_ast_expression *expression, struct mcc_ast_visitor *visitor);
@@ -82,6 +89,7 @@ void mcc_ast_visit_declare_assign(struct mcc_ast_declare_assign *dec, struct mcc
 #define mcc_ast_visit(x, visitor) _Generic((x), \
 		struct mcc_ast_expression *: mcc_ast_visit_expression, \
 		struct mcc_ast_program *: mcc_ast_visit_program, \
+		struct mcc_ast_func_definition *: mcc_ast_visit_function, \
 		struct mcc_ast_statement *: mcc_ast_visit_statement, \
 		struct mcc_ast_literal *:    mcc_ast_visit_literal, \
 		struct mcc_ast_declare_assign *:    mcc_ast_visit_declare_assign \
