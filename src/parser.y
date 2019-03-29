@@ -83,8 +83,9 @@ void mcc_parser_error();
 
 %type <enum mcc_ast_type>					type
 %type <struct mcc_ast_literal *>			literal
-%type <struct mcc_ast_expression *>			expression id
+%type <struct mcc_ast_expression *>			expression id function_call
 %type <struct mcc_ast_parameter *>			parameters
+%type <struct mcc_ast_function_arguments *> argument_list
 %type <struct mcc_ast_declare_assign *> 	declaration assignment
 %type <struct mcc_ast_statement *>			statement if_stmt while_stmt compound_stmt return
 %type <struct mcc_ast_func_definition *>	function_def
@@ -137,7 +138,8 @@ expression : literal              		  	{ $$ = mcc_ast_new_expression_literal($1)
 		   | expression NEQ expression  	{ $$ = mcc_ast_new_expression_binary_op(MCC_AST_BINARY_OP_NEQ, $1, $3); loc($$, @1); }	
 		   | expression LAND expression 	{ $$ = mcc_ast_new_expression_binary_op(MCC_AST_BINARY_OP_LAND, $1, $3); loc($$, @1); }
 		   | expression LOR expression		{ $$ = mcc_ast_new_expression_binary_op(MCC_AST_BINARY_OP_LOR, $1, $3); loc($$, @1); }
-		   | id								{ $$ = mcc_ast_new_expression_identifier($1);                              loc($$, @1); }
+		   | id
+		   | function_call
 		   ;
 
 id : IDENTIFIER  { $$ = mcc_ast_new_expression_identifier($1); }
@@ -184,6 +186,14 @@ function_def : VOID id LPARENTH RPARENTH compound_stmt { $$ = mcc_ast_new_functi
              | VOID id LPARENTH parameters RPARENTH compound_stmt { $$ = mcc_ast_new_function(MCC_AST_TYPE_VOID, $2, $6, $4); }
              | type id LPARENTH parameters RPARENTH compound_stmt { $$ = mcc_ast_new_function($1, $2, $6, $4); }
              ;
+
+function_call : id LPARENTH RPARENTH { $$ = mcc_ast_new_expression_function_call($1, NULL); }
+              | id LPARENTH argument_list RPARENTH { $$ = mcc_ast_new_expression_function_call($1, $3); }
+              ;
+
+argument_list : expression { $$ = mcc_ast_new_expression_argument($1, NULL); }
+              | expression COMMA argument_list { $$ = mcc_ast_new_expression_argument($1, $3); }
+              ;
 
 statement_list : statement { $$ = mcc_ast_new_statement_compound_stmt($1, NULL); }
                | statement statement_list { $$ = mcc_ast_new_statement_compound_stmt($1, $2); }

@@ -18,6 +18,7 @@ struct mcc_ast_literal;
 struct mcc_ast_expression;
 struct mcc_ast_identifier;
 struct mcc_ast_parameter;
+struct mcc_ast_function_arguments;
 struct mcc_ast_declare_assign;
 struct mcc_ast_new_declaration;
 struct mcc_ast_new_assignment;
@@ -119,6 +120,7 @@ enum mcc_ast_expression_type {
 	MCC_AST_EXPRESSION_TYPE_PARENTH,
 	MCC_AST_EXPRESSION_TYPE_IDENTIFIER,
 	MCC_AST_EXPRESSION_TYPE_ARRAY_ACCESS,
+	MCC_AST_EXPRESSION_TYPE_FUNCTION_CALL
 };
 
 struct mcc_ast_expression {
@@ -153,7 +155,19 @@ struct mcc_ast_expression {
 			struct mcc_ast_expression *array_access_id;
 			struct mcc_ast_expression *array_access_exp;
 		};
+
+		// MCC_AST_EXPRESSION_TYPE_FUNCTION_CALL
+		struct {
+			struct mcc_ast_expression *function_call_identifier;
+			struct mcc_ast_function_arguments *function_call_arguments;
+		};
 	};
+};
+
+struct mcc_ast_function_arguments {
+	struct mcc_ast_node node;
+	struct mcc_ast_expression *expression;
+	struct mcc_ast_function_arguments *next_argument;
 };
 
 struct mcc_ast_expression *mcc_ast_new_expression_literal(struct mcc_ast_literal *literal);
@@ -167,6 +181,14 @@ struct mcc_ast_expression *mcc_ast_new_expression_binary_op(enum mcc_ast_binary_
 struct mcc_ast_expression *mcc_ast_new_expression_unary_op(enum mcc_ast_unary_op op, struct mcc_ast_expression *rhs);
 
 struct mcc_ast_expression *mcc_ast_new_expression_parenth(struct mcc_ast_expression *expression);
+
+struct mcc_ast_expression *mcc_ast_new_expression_function_call(struct mcc_ast_expression *identifier,
+                                                                struct mcc_ast_function_arguments *arguments);
+
+struct mcc_ast_function_arguments *mcc_ast_new_expression_argument(struct mcc_ast_expression *expression,
+                                                                   struct mcc_ast_function_arguments *arguments);
+
+void mcc_ast_delete_function_arguments(struct mcc_ast_function_arguments *arguments);
 
 void mcc_ast_delete_expression(struct mcc_ast_expression *expression);
 

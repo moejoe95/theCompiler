@@ -212,6 +212,36 @@ struct mcc_ast_expression *mcc_ast_new_expression_identifier(char *identifier)
 	return expr;
 }
 
+struct mcc_ast_expression *mcc_ast_new_expression_function_call(struct mcc_ast_expression *identifier,
+                                                                struct mcc_ast_function_arguments *arguments)
+{
+	assert(identifier);
+
+	struct mcc_ast_expression *expr = mcc_ast_get_new_expression_struct();
+	expr->type = MCC_AST_EXPRESSION_TYPE_FUNCTION_CALL;
+
+	expr->function_call_identifier = identifier;
+	expr->function_call_arguments = arguments;
+
+	return expr;
+}
+
+struct mcc_ast_function_arguments *mcc_ast_new_expression_argument(struct mcc_ast_expression *expression,
+                                                                   struct mcc_ast_function_arguments *arguments)
+{
+	assert(expression);
+
+	struct mcc_ast_function_arguments *func_arg = malloc(sizeof(*func_arg));
+	if (!func_arg) {
+		return NULL;
+	}
+
+	func_arg->expression = expression;
+	func_arg->next_argument = arguments;
+
+	return func_arg;
+}
+
 void mcc_ast_delete_expression(struct mcc_ast_expression *expression)
 {
 	assert(expression);
@@ -242,9 +272,25 @@ void mcc_ast_delete_expression(struct mcc_ast_expression *expression)
 		mcc_ast_delete_expression(expression->array_access_exp);
 		mcc_ast_delete_expression(expression->array_access_id);
 		break;
+
+	case MCC_AST_EXPRESSION_TYPE_FUNCTION_CALL:
+		mcc_ast_delete_expression(expression->function_call_identifier);
+		if (expression->function_call_arguments != NULL) {
+			mcc_ast_delete_function_arguments(expression->function_call_arguments);
+		}
+		break;
 	}
 
 	free(expression);
+}
+
+void mcc_ast_delete_function_arguments(struct mcc_ast_function_arguments *arguments)
+{
+	mcc_ast_delete_expression(arguments->expression);
+	if (arguments->next_argument != NULL) {
+		mcc_ast_delete_function_arguments(arguments->next_argument);
+	}
+	free(arguments);
 }
 
 // ------------------------------------------------------------------- Identifier
