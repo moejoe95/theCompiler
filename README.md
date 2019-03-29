@@ -7,8 +7,6 @@ This repository holds the code-base from UIBK [compiler construction course](htt
 - Josef Gugglberger (1518418)
 - Tobias Kupek (11828471)
 
-- See [Development Notes](docs/development_notes.md)
-
 ## Prerequisites
 
 - [Meson](http://mesonbuild.com/) in a recent version (`0.44.0`)
@@ -54,6 +52,7 @@ __Main goals__
 - An AST is constructed for valid inputs.
 - The obtained AST can be printed in the DOT format (see mc_ast_to_dot).
 
+__Testing the objective__
 To verify the correct behavious, please follow the [Build Instructions](#build-instructions) from above.
 Afterwards the `mc_ast_to_dot` binary can produce the DOT output:
 
@@ -70,6 +69,18 @@ cat ../examples/euclid/euclid.mc | ./mc_ast_to_dot | dot -Tpng > euclid_ast.png
 __Example output__
 
 ![AST of euclid.mc](./docs/images/euclid_ast.png "AST of euclid.mc")
+
+__Examples for rejected code__
+
+Code with incorrect syntax is rejected with an error that includes the line, column and a message.
+
+Examples are an invalid type, an incorrect comment and a missing semicolon.
+
+```
+echo 'int main() {int i; ind e;}' | ./mc_ast_to_dot
+echo 'int main() {/ this is an incorrect comment}' | ./mc_ast_to_dot
+echo 'int main() {int i; i = 1 + 1}' | ./mc_ast_to_dot
+```
 
 
 ## Milestone 2
