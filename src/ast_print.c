@@ -298,6 +298,21 @@ static void print_dot_statement_compound(struct mcc_ast_statement *statement, vo
 	}
 }
 
+static void print_dot_function(struct mcc_ast_func_definition *function, void *data)
+{
+	assert(function);
+	FILE *out = data;
+
+	print_dot_node(out, function, "fun_def");
+	
+	print_dot_edge(out, function, function->func_identifier, "id");
+
+	//print_dot_edge(out, function, function->func_type, "type"); //todo??
+
+	print_dot_edge(out, function, function->func_compound, "compound");
+}
+
+
 // Setup an AST Visitor for printing.
 static struct mcc_ast_visitor print_dot_visitor(FILE *out)
 {
@@ -330,6 +345,8 @@ static struct mcc_ast_visitor print_dot_visitor(FILE *out)
 	    .statement_if = print_dot_statement_if,
 	    .statement_while = print_dot_statement_while,
 	    .statement_compound = print_dot_statement_compound,
+
+		.function = print_dot_function,
 	};
 }
 

@@ -339,7 +339,7 @@ struct mcc_ast_func_definition {
 
 struct mcc_ast_func_list {
 	struct mcc_ast_node node;
-	struct mcc_ast_statement *function;
+	struct mcc_ast_func_definition *function;
 	struct mcc_ast_function_list *next_function;
 };
 
@@ -373,7 +373,7 @@ struct mcc_ast_program {
 		struct mcc_ast_declare_assign *declaration;
 		struct mcc_ast_statement *statement;
 		struct mcc_ast_func_definition *function;
-		struct mcc_ast_function_list *program;
+		struct mcc_ast_func_list *function_list;
 	};
 };
 

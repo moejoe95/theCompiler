@@ -39,7 +39,7 @@ void mcc_ast_visit_program(struct mcc_ast_program *pro, struct mcc_ast_visitor *
 		mcc_ast_visit_statement(pro->statement, visitor);
 		break;
 	case MCC_AST_PROGRAM_TYPE_FUNCTION:
-		// TODO
+		mcc_ast_visit_function(pro->function, visitor);
 		break;
 	}
 }
@@ -232,7 +232,7 @@ void mcc_ast_visit_statement_compound(struct mcc_ast_statement *comp_stmt, struc
 }
 
 void mcc_ast_visit_statement(struct mcc_ast_statement *stat, struct mcc_ast_visitor *visitor)
-{
+{	
 	assert(stat);
 	assert(visitor);
 	switch (stat->type) {
@@ -258,4 +258,20 @@ void mcc_ast_visit_statement(struct mcc_ast_statement *stat, struct mcc_ast_visi
 		mcc_ast_visit_statement_compound(stat, visitor);
 		break;
 	}
+}
+
+void mcc_ast_visit_function(struct mcc_ast_func_definition *function, struct mcc_ast_visitor *visitor)
+{
+	assert(function);
+	assert(visitor);
+
+	visit_if_pre_order(function, visitor->function, visitor);
+
+	// identifier
+	mcc_ast_visit_expression(function->func_identifier, visitor);
+
+	// compund
+	mcc_ast_visit_statement_compound(function->func_compound, visitor);
+
+	visit_if_post_order(function, visitor->function, visitor);
 }
