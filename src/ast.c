@@ -528,6 +528,19 @@ struct mcc_ast_func_definition *mcc_ast_new_function(enum mcc_ast_type type,
 	return func_def;
 }
 
+struct mcc_ast_func_list *mcc_ast_new_function_list(struct mcc_ast_func_definition *function,
+                                                    struct mcc_ast_func_list *function_list)
+{
+	struct mcc_ast_func_list *list = malloc(sizeof(*list));
+	if (!list) {
+		return NULL;
+	}
+	list->function = function;
+	list->next_function = function_list;
+
+	return list;
+}
+
 void mcc_ast_delete_func_definition(struct mcc_ast_func_definition *func_def)
 {
 	assert(func_def);
@@ -541,6 +554,18 @@ void mcc_ast_delete_func_definition(struct mcc_ast_func_definition *func_def)
 	}
 	mcc_ast_delete_statement(func_def->func_compound);
 	free(func_def);
+}
+
+void mcc_ast_delete_func_list(struct mcc_ast_func_list *func_list)
+{
+	assert(func_list);
+	if (func_list->function != NULL) {
+		mcc_ast_delete_func_definition(func_list->function);
+	}
+	if (func_list->next_function != NULL) {
+		mcc_ast_delete_func_list(func_list->next_function);
+	}
+	free(func_list);
 }
 
 // ------------------------------------------------------------------- Program

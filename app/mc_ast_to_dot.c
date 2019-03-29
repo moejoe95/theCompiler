@@ -11,7 +11,7 @@ int main(void)
 
 	// parsing phase
 	{
-		struct mcc_parser_result result = mcc_parse_string("if (true) 1+2;");
+		struct mcc_parser_result result = mcc_parse_string("void test (){}");
 
 		if (result.status != MCC_PARSER_STATUS_OK) {
 			fprintf(stdout, "parsing failed\n");

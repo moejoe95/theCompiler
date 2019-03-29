@@ -24,6 +24,7 @@ struct mcc_ast_new_assignment;
 struct mcc_ast_statement;
 struct mcc_ast_func_definition;
 struct mcc_ast_statement_list;
+struct mcc_ast_func_list;
 struct mcc_ast_program;
 
 // ------------------------------------------------------------------- AST Node
@@ -314,12 +315,23 @@ struct mcc_ast_func_definition {
 	struct mcc_ast_semantic_annotation_function *semantic_annotation;
 };
 
+struct mcc_ast_func_list {
+	struct mcc_ast_node node;
+	struct mcc_ast_statement *function;
+	struct mcc_ast_function_list *next_function;
+};
+
 struct mcc_ast_func_definition *mcc_ast_new_function(enum mcc_ast_type type,
                                                      struct mcc_ast_expression *identifier,
                                                      struct mcc_ast_statement *compound,
                                                      struct mcc_ast_parameter *parameter);
 
+struct mcc_ast_func_list *mcc_ast_new_function_list(struct mcc_ast_func_definition *function,
+                                                    struct mcc_ast_func_list *function_list);
+
 void mcc_ast_delete_func_definition(struct mcc_ast_func_definition *func_def);
+
+void mcc_ast_delete_func_list(struct mcc_ast_func_list *func_list);
 
 // ------------------------------------------------------------------- Program
 
@@ -339,6 +351,7 @@ struct mcc_ast_program {
 		struct mcc_ast_declare_assign *declaration;
 		struct mcc_ast_statement *statement;
 		struct mcc_ast_func_definition *function;
+		struct mcc_ast_function_list *program;
 	};
 };
 
