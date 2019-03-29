@@ -123,7 +123,8 @@ literal : BOOL_LITERAL { $$ = mcc_ast_new_literal_bool($1); loc($$, @1); }
 		| STRING_LITERAL { $$ = mcc_ast_new_literal_string($1); loc($$, @1); }
 		;
 
-expression : literal              		  	{ $$ = mcc_ast_new_expression_literal($1);                              loc($$, @1); }
+expression : id
+		   | literal              		  	{ $$ = mcc_ast_new_expression_literal($1);                              loc($$, @1); }
            | expression PLUS  expression  	{ $$ = mcc_ast_new_expression_binary_op(MCC_AST_BINARY_OP_ADD, $1, $3); loc($$, @1); }
            | expression MINUS expression  	{ $$ = mcc_ast_new_expression_binary_op(MCC_AST_BINARY_OP_SUB, $1, $3); loc($$, @1); }
            | expression ASTER expression  	{ $$ = mcc_ast_new_expression_binary_op(MCC_AST_BINARY_OP_MUL, $1, $3); loc($$, @1); }
@@ -139,7 +140,6 @@ expression : literal              		  	{ $$ = mcc_ast_new_expression_literal($1)
 		   | expression NEQ expression  	{ $$ = mcc_ast_new_expression_binary_op(MCC_AST_BINARY_OP_NEQ, $1, $3); loc($$, @1); }	
 		   | expression LAND expression 	{ $$ = mcc_ast_new_expression_binary_op(MCC_AST_BINARY_OP_LAND, $1, $3); loc($$, @1); }
 		   | expression LOR expression		{ $$ = mcc_ast_new_expression_binary_op(MCC_AST_BINARY_OP_LOR, $1, $3); loc($$, @1); }
-		   | id
 		   | function_call
 		   ;
 
