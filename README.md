@@ -53,6 +53,7 @@ __Main goals__
 - The obtained AST can be printed in the DOT format (see mc_ast_to_dot).
 
 __Testing the objective__
+
 To verify the correct behavious, please follow the [Build Instructions](#build-instructions) from above.
 Afterwards the `mc_ast_to_dot` binary can produce the DOT output:
 
