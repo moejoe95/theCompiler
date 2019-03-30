@@ -253,7 +253,9 @@ static void print_dot_statement_return(struct mcc_ast_statement *statement, void
 	FILE *out = data;
 
 	print_dot_node(out, statement, "return");
-	print_dot_edge(out, statement, statement->expression, "expr.");
+	if(statement->expression != NULL){
+		print_dot_edge(out, statement, statement->expression, "expr.");
+	}
 }
 
 static void print_dot_statement_if(struct mcc_ast_statement *statement, void *data)

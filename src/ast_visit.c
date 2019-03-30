@@ -196,7 +196,9 @@ void mcc_ast_visit_statement_return(struct mcc_ast_statement *ret_stmt, struct m
 	assert(visitor);
 
 	visit_if_pre_order(ret_stmt, visitor->statement_return, visitor);
-	mcc_ast_visit_expression(ret_stmt->expression, visitor);
+	if(ret_stmt->expression != NULL){
+		mcc_ast_visit_expression(ret_stmt->expression, visitor);
+	}
 	visit_if_post_order(ret_stmt, visitor->statement_return, visitor);
 }
 
