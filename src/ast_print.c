@@ -309,8 +309,6 @@ static void print_dot_function(struct mcc_ast_func_definition *function, void *d
 	
 	print_dot_edge(out, function, function->func_identifier, "id");
 
-	//print_dot_edge(out, function, function->func_type, "type"); //todo??
-
 	print_dot_edge(out, function, function->func_compound, "compound");
 }
 

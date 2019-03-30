@@ -38,8 +38,17 @@ void mcc_ast_visit_program(struct mcc_ast_program *pro, struct mcc_ast_visitor *
 	case MCC_AST_PROGRAM_TYPE_STATEMENT:
 		mcc_ast_visit_statement(pro->statement, visitor);
 		break;
-	case MCC_AST_PROGRAM_TYPE_FUNCTION:
-		mcc_ast_visit_function(pro->function, visitor);
+	case MCC_AST_PROGRAM_TYPE_FUNCTION_LIST:
+		visit_if_pre_order(pro, visitor->program, visitor);
+
+		struct mcc_ast_func_list *list = pro->function_list;
+		while (list != NULL) {
+			mcc_ast_visit_function(list->function, visitor);
+			list = list->next_function;
+		}
+
+		visit_if_post_order(pro, visitor->program, visitor);
+		
 		break;
 	}
 }

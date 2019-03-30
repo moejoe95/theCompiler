@@ -653,9 +653,6 @@ struct mcc_ast_program *mcc_ast_new_program(void *program, enum mcc_ast_program_
 	case MCC_AST_PROGRAM_TYPE_STATEMENT:
 		pro->statement = (struct mcc_ast_statement *)program;
 		break;
-	case MCC_AST_PROGRAM_TYPE_FUNCTION:
-		pro->function = (struct mcc_ast_func_definition *)program;
-		break;
 	case MCC_AST_PROGRAM_TYPE_FUNCTION_LIST:
 		pro->function_list = (struct mcc_ast_func_list *)program;
 		break;
@@ -678,9 +675,6 @@ void mcc_ast_delete_program(struct mcc_ast_program *program)
 		break;
 
 	case MCC_AST_PROGRAM_TYPE_STATEMENT:
-		// TODO
-		break;
-	case MCC_AST_PROGRAM_TYPE_FUNCTION:
 		// TODO
 		break;
 	case MCC_AST_PROGRAM_TYPE_FUNCTION_LIST:

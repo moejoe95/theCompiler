@@ -106,9 +106,8 @@ void mcc_parser_error();
 
 %%
 
-program : statement { *result = mcc_ast_new_program($1, MCC_AST_PROGRAM_TYPE_STATEMENT); }
-		| function_def { *result = mcc_ast_new_program($1, MCC_AST_PROGRAM_TYPE_FUNCTION); }   
-		| function_list { *result = mcc_ast_new_program($1, MCC_AST_PROGRAM_TYPE_FUNCTION); }     
+program : statement { *result = mcc_ast_new_program($1, MCC_AST_PROGRAM_TYPE_STATEMENT); } 
+		| function_list { *result = mcc_ast_new_program($1, MCC_AST_PROGRAM_TYPE_FUNCTION_LIST); }     
 		;
 
 type : BOOL    { $$ = MCC_AST_TYPE_BOOL; }
