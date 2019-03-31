@@ -90,7 +90,7 @@ void mcc_parser_error();
 %type <struct mcc_ast_statement *>			statement if_stmt while_stmt compound_stmt return
 %type <struct mcc_ast_func_definition *>	function_def
 %type <struct mcc_ast_statement_list *>		statement_list
-%type <struct mcc_ast_function_list *>		function_list
+%type <struct mcc_ast_func_list *>			func_list
 %type <struct mcc_ast_program *>			program
 
 %destructor { mcc_ast_delete_expression($$); }          expression
@@ -99,16 +99,19 @@ void mcc_parser_error();
 %destructor { mcc_ast_delete_func_definition($$); }     function_def
 %destructor { mcc_ast_delete_statement($$); }           compound_stmt
 %destructor { mcc_ast_delete_statement_list($$); }      statement_list
-%destructor { mcc_ast_delete_func_list($$); }           function_list
+%destructor { mcc_ast_delete_program($$); }           	program
+%destructor { mcc_ast_delete_func_list($$); }           func_list
 %destructor { mcc_ast_delete_parameter($$); }           parameters
 
 %start program
 
 %%
 
-program : statement { *result = mcc_ast_new_program($1, MCC_AST_PROGRAM_TYPE_STATEMENT); } 
-		| function_list { *result = mcc_ast_new_program($1, MCC_AST_PROGRAM_TYPE_FUNCTION_LIST); }     
-		;
+program : func_list { *result = mcc_ast_new_program($1); }
+
+func_list  : function_def { $$ = mcc_ast_new_function_list($1, NULL); }
+           | function_def func_list { $$ = mcc_ast_new_function_list($1, $2); }
+           ;
 
 type : BOOL    { $$ = MCC_AST_TYPE_BOOL; }
      | INT     { $$ = MCC_AST_TYPE_INT; }
@@ -198,10 +201,6 @@ argument_list : expression { $$ = mcc_ast_new_expression_argument($1, NULL); }
 
 statement_list : statement { $$ = mcc_ast_new_statement_compound_stmt($1, NULL); }
                | statement statement_list { $$ = mcc_ast_new_statement_compound_stmt($1, $2); }
-               ;
-
-function_list  : function_def { $$ = mcc_ast_new_function_list($1, NULL); }
-               | function_def function_list { $$ = mcc_ast_new_function_list($1, $2); }
                ;
 
 %%

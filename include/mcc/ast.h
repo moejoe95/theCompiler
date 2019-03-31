@@ -343,7 +343,7 @@ struct mcc_ast_func_definition {
 struct mcc_ast_func_list {
 	struct mcc_ast_node node;
 	struct mcc_ast_func_definition *function;
-	struct mcc_ast_function_list *next_function;
+	struct mcc_ast_func_list *next_function;
 };
 
 struct mcc_ast_func_definition *mcc_ast_new_function(enum mcc_ast_type type,
@@ -379,7 +379,7 @@ struct mcc_ast_program {
 	};
 };
 
-struct mcc_ast_program *mcc_ast_new_program(void *program, enum mcc_ast_program_type type);
+struct mcc_ast_program *mcc_ast_new_program(struct mcc_ast_func_list *func_list);
 
 void mcc_ast_delete_program(struct mcc_ast_program *program);
 

@@ -23,32 +23,35 @@
 #define visit_if_post_order(node, callback, visitor) \
 	visit_if((visitor)->order == MCC_AST_VISIT_POST_ORDER, node, callback, visitor)
 
-void mcc_ast_visit_program(struct mcc_ast_program *pro, struct mcc_ast_visitor *visitor)
+void mcc_ast_visit_func_list(struct mcc_ast_func_list *func_list, struct mcc_ast_visitor *visitor)
 {
-	assert(pro);
+	assert(func_list);
 	assert(visitor);
 
-	switch (pro->type) {
-	case MCC_AST_PROGRAM_TYPE_EXPRESSION:
-		mcc_ast_visit_expression(pro->expression, visitor);
+	struct mcc_ast_func_list *list = func_list;
+	while (list != NULL) {
+		mcc_ast_visit_function(list->function, visitor);
+		list = list->next_function;
+	}
+}
+
+void mcc_ast_visit_program(struct mcc_ast_program *program, struct mcc_ast_visitor *visitor)
+{
+	assert(program);
+	assert(visitor);
+
+	switch (program->type) {
+	case MCC_AST_PROGRAM_TYPE_FUNCTION_LIST:
+		mcc_ast_visit_func_list(program->function_list, visitor);
 		break;
 	case MCC_AST_PROGRAM_TYPE_DECLARATION:
-		mcc_ast_visit_declare_assign(pro->declaration, visitor);
+		// TODO
+		break;
+	case MCC_AST_PROGRAM_TYPE_EXPRESSION:
+		// TODO
 		break;
 	case MCC_AST_PROGRAM_TYPE_STATEMENT:
-		mcc_ast_visit_statement(pro->statement, visitor);
-		break;
-	case MCC_AST_PROGRAM_TYPE_FUNCTION_LIST:
-		visit_if_pre_order(pro, visitor->program, visitor);
-
-		struct mcc_ast_func_list *list = pro->function_list;
-		while (list != NULL) {
-			mcc_ast_visit_function(list->function, visitor);
-			list = list->next_function;
-		}
-
-		visit_if_post_order(pro, visitor->program, visitor);
-		
+		// TODO
 		break;
 	}
 }
@@ -95,6 +98,9 @@ void mcc_ast_visit_expression(struct mcc_ast_expression *expression, struct mcc_
 		mcc_ast_visit_expression(expression->array_access_id, visitor);
 		mcc_ast_visit_expression(expression->array_access_exp, visitor);
 		visit_if_post_order(expression, visitor->expression_array_access, visitor);
+		break;
+	case MCC_AST_EXPRESSION_TYPE_FUNCTION_CALL:
+		// TODO
 		break;
 	}
 
@@ -205,7 +211,7 @@ void mcc_ast_visit_statement_return(struct mcc_ast_statement *ret_stmt, struct m
 	assert(visitor);
 
 	visit_if_pre_order(ret_stmt, visitor->statement_return, visitor);
-	if(ret_stmt->expression != NULL){
+	if (ret_stmt->expression != NULL) {
 		mcc_ast_visit_expression(ret_stmt->expression, visitor);
 	}
 	visit_if_post_order(ret_stmt, visitor->statement_return, visitor);
@@ -243,9 +249,10 @@ void mcc_ast_visit_statement_compound(struct mcc_ast_statement *comp_stmt, struc
 }
 
 void mcc_ast_visit_statement(struct mcc_ast_statement *stat, struct mcc_ast_visitor *visitor)
-{	
+{
 	assert(stat);
 	assert(visitor);
+
 	switch (stat->type) {
 	case MCC_AST_STATEMENT_EXPRESSION:
 		mcc_ast_visit_statement_expression(stat, visitor);
