@@ -107,7 +107,8 @@ void mcc_parser_error();
 
 %%
 
-program : func_list { *result = mcc_ast_new_program($1); }
+program : func_list { *result = mcc_ast_new_program($1, MCC_AST_PROGRAM_TYPE_FUNCTION_LIST); }
+		;
 
 func_list  : function_def { $$ = mcc_ast_new_function_list($1, NULL); }
            | function_def func_list { $$ = mcc_ast_new_function_list($1, $2); }

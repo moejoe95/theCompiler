@@ -379,7 +379,7 @@ struct mcc_ast_program {
 	};
 };
 
-struct mcc_ast_program *mcc_ast_new_program(struct mcc_ast_func_list *func_list);
+struct mcc_ast_program *mcc_ast_new_program(struct mcc_ast_func_list *func_list, enum mcc_ast_program_type type);
 
 void mcc_ast_delete_program(struct mcc_ast_program *program);
 

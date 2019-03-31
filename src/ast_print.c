@@ -93,7 +93,7 @@ static void print_dot_expression_literal(struct mcc_ast_expression *expression, 
 
 	FILE *out = data;
 	print_dot_node(out, expression, "expr: lit");
-	print_dot_edge(out, expression, expression->literal, "literal");
+	print_dot_edge(out, expression, expression->literal, "lit");
 }
 
 static void print_dot_expression_binary_op(struct mcc_ast_expression *expression, void *data)
@@ -130,7 +130,7 @@ static void print_dot_expression_parenth(struct mcc_ast_expression *expression, 
 
 	FILE *out = data;
 	print_dot_node(out, expression, "( )");
-	print_dot_edge(out, expression, expression->expression, "expression");
+	print_dot_edge(out, expression, expression->expression, "expr.");
 }
 
 static void print_dot_expression_identifier(struct mcc_ast_expression *expression, void *data)
@@ -143,6 +143,28 @@ static void print_dot_expression_identifier(struct mcc_ast_expression *expressio
 
 	FILE *out = data;
 	print_dot_node(out, expression, label);
+}
+
+static void print_dot_expression_call(struct mcc_ast_expression *expression, void *data)
+{
+	assert(expression);
+	assert(data);
+
+	FILE *out = data;
+
+	print_dot_node(out, expression, "expr: call");
+	print_dot_node(out, expression->function_call_identifier,
+	               expression->function_call_identifier->identifier->name);
+	print_dot_edge(out, expression, expression->function_call_identifier, "id");
+
+	struct mcc_ast_function_arguments *args = expression->function_call_arguments;
+	int i = 0;
+	while (args != NULL) {
+		char label[LABEL_SIZE] = {0};
+		snprintf(label, sizeof(label), "%s %d", "arg:", i++);
+		print_dot_edge(out, expression, args->expression, label);
+		args = args->next_argument;
+	}
 }
 
 static void print_dot_literal_int(struct mcc_ast_literal *literal, void *data)
@@ -344,6 +366,7 @@ static struct mcc_ast_visitor print_dot_visitor(FILE *out)
 	    .expression_unary_op = print_dot_expression_unary_op,
 	    .expression_parenth = print_dot_expression_parenth,
 	    .expression_identifier = print_dot_expression_identifier,
+	    .expression_call = print_dot_expression_call,
 
 	    .literal_int = print_dot_literal_int,
 	    .literal_float = print_dot_literal_float,
