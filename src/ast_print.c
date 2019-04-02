@@ -1,6 +1,7 @@
 #include "mcc/ast_print.h"
 
 #include <assert.h>
+#include <string.h>
 
 #include "mcc/ast_visit.h"
 
@@ -225,7 +226,8 @@ static void print_dot_literal_string(struct mcc_ast_literal *literal, void *data
 	assert(data);
 
 	char label[LABEL_SIZE] = {0};
-	snprintf(label, sizeof(label), "%s", literal->str_value);
+	char *string_escaped = strndup(literal->str_value + 1, strlen(literal->str_value) - 2);
+	snprintf(label, sizeof(label), "\\\"%s\\\"", string_escaped);
 
 	FILE *out = data;
 	print_dot_node(out, literal, label);
@@ -241,6 +243,9 @@ static void print_dot_declaration(struct mcc_ast_declare_assign *declaration, vo
 
 	print_dot_node(out, declaration, label);
 	print_dot_edge(out, declaration, declaration->declare_id, "id");
+	if (declaration->declare_array_size != NULL) {
+		print_dot_edge(out, declaration, *declaration->declare_array_size, "size");
+	}
 }
 
 static void print_dot_assignment(struct mcc_ast_declare_assign *assignment, void *data)
