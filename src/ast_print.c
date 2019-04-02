@@ -154,16 +154,16 @@ static void print_dot_expression_call(struct mcc_ast_expression *expression, voi
 	FILE *out = data;
 
 	print_dot_node(out, expression, "expr: call");
-	print_dot_node(out, expression->function_call_identifier,
-	               expression->function_call_identifier->identifier->name);
+	char label[LABEL_SIZE] = {0};
+	snprintf(label, sizeof(label), "%s %s", "id:", expression->function_call_identifier->identifier->name);
+	print_dot_node(out, expression->function_call_identifier, label);
 	print_dot_edge(out, expression, expression->function_call_identifier, "id");
 
 	int i = 0;
 	struct mcc_ast_function_arguments *args = expression->function_call_arguments;
 	while (args != NULL) {
-		char label[LABEL_SIZE] = {0};
 		snprintf(label, sizeof(label), "%s %d", "arg:", i++);
-		print_dot_edge(out, expression->function_call_identifier, args->expression, label);
+		print_dot_edge(out, expression, args->expression, label);
 		args = args->next_argument;
 	}
 }
@@ -255,7 +255,9 @@ static void print_dot_assignment(struct mcc_ast_declare_assign *assignment, void
 	assert(assignment);
 	FILE *out = data;
 
-	print_dot_node(out, assignment, "assign");
+	char label[LABEL_SIZE] = {0};
+	snprintf(label, sizeof(label), "%s %d", "assign:", assignment->type);
+	print_dot_node(out, assignment, label);
 
 	print_dot_edge(out, assignment, assignment->assign_lhs, "lhs");
 	print_dot_edge(out, assignment, assignment->assign_rhs, "rhs");
@@ -294,7 +296,7 @@ static void print_dot_statement_return(struct mcc_ast_statement *statement, void
 
 	print_dot_node(out, statement, "return");
 	if (statement->expression != NULL) {
-		print_dot_edge(out, statement, statement->expression, "expr.");
+		print_dot_edge(out, statement, statement->expression, "expr");
 	}
 }
 
