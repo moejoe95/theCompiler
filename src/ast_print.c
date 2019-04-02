@@ -243,6 +243,9 @@ static void print_dot_declaration(struct mcc_ast_declare_assign *declaration, vo
 
 	print_dot_node(out, declaration, label);
 	print_dot_edge(out, declaration, declaration->declare_id, "id");
+	if (declaration->declare_array_size != NULL) {
+		print_dot_edge(out, declaration, *declaration->declare_array_size, "size");
+	}
 }
 
 static void print_dot_assignment(struct mcc_ast_declare_assign *assignment, void *data)
