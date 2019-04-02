@@ -5,6 +5,6 @@ int add(int n, int m)
 
 int main()
 {
-    add(1, 2);
+    add(1, 2+1);
     return 0;
 }

@@ -162,7 +162,7 @@ static void print_dot_expression_call(struct mcc_ast_expression *expression, voi
 	while (args != NULL) {
 		char label[LABEL_SIZE] = {0};
 		snprintf(label, sizeof(label), "%s %d", "arg:", i++);
-		print_dot_edge(out, expression, args->expression, label);
+		print_dot_edge(out, expression->function_call_identifier, args->expression, label);
 		args = args->next_argument;
 	}
 }
@@ -171,7 +171,7 @@ static void print_dot_expression_argument(struct mcc_ast_expression *expression,
 {
 	assert(expression);
 	assert(data);
-	printf("test\n");
+
 	FILE *out = data;
 
 	print_dot_edge(out, expression->function_call_arguments, expression->function_call_arguments->expression,
