@@ -40,20 +40,7 @@ void mcc_ast_visit_program(struct mcc_ast_program *program, struct mcc_ast_visit
 	assert(program);
 	assert(visitor);
 
-	switch (program->type) {
-	case MCC_AST_PROGRAM_TYPE_FUNCTION_LIST:
-		mcc_ast_visit_func_list(program->function_list, visitor);
-		break;
-	case MCC_AST_PROGRAM_TYPE_DECLARATION:
-		// TODO
-		break;
-	case MCC_AST_PROGRAM_TYPE_EXPRESSION:
-		// TODO
-		break;
-	case MCC_AST_PROGRAM_TYPE_STATEMENT:
-		// TODO
-		break;
-	}
+	mcc_ast_visit_func_list(program->function_list, visitor);
 }
 
 void mcc_ast_visit_expression(struct mcc_ast_expression *expression, struct mcc_ast_visitor *visitor)
