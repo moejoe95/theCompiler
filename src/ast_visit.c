@@ -101,18 +101,14 @@ void mcc_ast_visit_expression(struct mcc_ast_expression *expression, struct mcc_
 		break;
 	case MCC_AST_EXPRESSION_TYPE_FUNCTION_CALL:
 		visit_if_pre_order(expression, visitor->expression_call, visitor);
-
 		mcc_ast_visit_expression(expression->function_call_identifier, visitor);
 
 		struct mcc_ast_function_arguments *args = expression->function_call_arguments;
 		while (args != NULL) {
-
-			// TODO fix argument visiting
-			// mcc_ast_visit_expression(args->expression, visitor);
+			mcc_ast_visit_expression(args->expression, visitor);
 			args = args->next_argument;
 		}
 
-		visit_if_post_order(expression, visitor->expression_call, visitor);
 		break;
 	}
 

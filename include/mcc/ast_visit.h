@@ -62,6 +62,7 @@ struct mcc_ast_visitor {
 	mcc_ast_visit_expression_cb expression_identifier;
 	mcc_ast_visit_expression_cb expression_array_access;
 	mcc_ast_visit_expression_cb expression_call;
+	mcc_ast_visit_expression_cb expression_argument;
 
 	mcc_ast_visit_literal_cb literal;
 	mcc_ast_visit_literal_cb literal_int;
