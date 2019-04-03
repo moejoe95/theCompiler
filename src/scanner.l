@@ -15,20 +15,20 @@
 #define YYSTYPE MCC_PARSER_STYPE
 #define YYLTYPE MCC_PARSER_LTYPE
 
-// TODO:
-// - track lines
-// - take line breaks into account
-// perhaps have to change ignore in line 87 for \n
 #define YY_USER_ACTION \
-	yylloc->first_column = yylloc->last_column; \
-	if(yytext == '\n'){ \
-		yylloc->first_column = yylloc->last_column; \
-		yylloc->last_column = 0; \
-	} \
-	else{ \
-		yylloc->last_column += yyleng; \
-	} \
-	yylloc->last_line = yylineno; 
+    yylloc->first_line = yylloc->last_line; \
+    yylloc->first_column = yylloc->last_column; \
+    for(int i = 0; yytext[i] != '\0'; i++) { \
+        if(yytext[i] == '\n') { \
+            yylloc->last_line++; \
+            yylloc->last_column = 0; \
+        } \
+        else { \
+            yylloc->last_column++; \
+        } \
+    }
+
+
 %}
 
 alpha            [a-zA-Z_]
@@ -105,4 +105,4 @@ identifier		{alpha}{alpha_num}*
 
 <<EOF>>           { return TK_END; }
 
-.                 { fprintf(stderr, "unknown character '%c'\n", yytext[0]); }
+.                 { fprintf(stderr, "Scanner Error: unknown character '%c'\n", yytext[0]); }

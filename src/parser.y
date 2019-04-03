@@ -213,8 +213,7 @@ statement_list : statement { $$ = mcc_ast_new_statement_compound_stmt($1, NULL);
 
 void mcc_parser_error(struct MCC_PARSER_LTYPE *yylloc, yyscan_t *scanner, const char *msg)
 {
-	// TODO
-	fprintf(stderr, "invalid character at line %d and column %d\n", yylloc->last_line, yylloc->first_column);
+	fprintf(stderr, "Parser Error: unexpected character at line %d and column %d\n", yylloc->last_line, yylloc->last_column);
 	
 	UNUSED(yylloc);
 	UNUSED(scanner);
