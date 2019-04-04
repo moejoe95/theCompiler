@@ -200,7 +200,6 @@ void mcc_ast_delete_expression(struct mcc_ast_expression *expression);
 struct mcc_ast_identifier {
 	struct mcc_ast_node node;
 	char *name;
-	struct mcc_ast_symbol_declaration *sym_declaration;
 };
 
 void mcc_ast_delete_identifier(struct mcc_ast_identifier *id);
@@ -229,7 +228,6 @@ struct mcc_ast_declare_assign {
 	struct mcc_ast_node node;
 
 	enum mcc_ast_declare_assign_type type;
-	struct mcc_ast_symbol_declaration *sym_declaration;
 
 	union {
 		// MCC_AST_TYPE_DECLARATION
@@ -337,7 +335,6 @@ struct mcc_ast_func_definition {
 	struct mcc_ast_expression *func_identifier;
 	struct mcc_ast_parameter *parameter_list;
 	struct mcc_ast_statement *func_compound;
-	struct mcc_ast_semantic_annotation_function *semantic_annotation;
 };
 
 struct mcc_ast_func_list {
@@ -360,8 +357,15 @@ void mcc_ast_delete_func_list(struct mcc_ast_func_list *func_list);
 
 // ------------------------------------------------------------------- Program
 
+enum mcc_ast_program_type {
+	MCC_AST_PROGRAM_TYPE_FUNCTION,
+	MCC_AST_PROGRAM_TYPE_FUNCTION_LIST,
+
+};
+
 struct mcc_ast_program {
 	struct mcc_ast_node node;
+	enum mcc_ast_program_type type;
 	union {
 		struct mcc_ast_expression *expression;
 		struct mcc_ast_declare_assign *declaration;

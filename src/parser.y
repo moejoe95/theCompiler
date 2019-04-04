@@ -30,10 +30,10 @@ void mcc_parser_error();
 %token END 0 "EOF"
 
 %token <char *> IDENTIFIER      "identifier"
-%token <long>   INT_LITERAL   "integer literal"
-%token <double> FLOAT_LITERAL "float literal"
-%token <int> 	BOOL_LITERAL "bool literal"
-%token <char *> STRING_LITERAL "string literal"
+%token <long>   INT_LITERAL   	"integer literal"
+%token <double> FLOAT_LITERAL 	"float literal"
+%token <int> 	BOOL_LITERAL 	"bool literal"
+%token <char *> STRING_LITERAL 	"string literal"
 
 %token LPARENTH "("
 %token RPARENTH ")"
@@ -71,8 +71,8 @@ void mcc_parser_error();
 
 %token IF                       "if"
 %token ELSE                     "else"
-%token WHILE                     "while"
-%token RETURN                     "return"
+%token WHILE                    "while"
+%token RETURN                   "return"
 
 %token EXPRESSION               "<expression>"
 %token DECLARATION_ASSIGNMENT   "<declaration_assignment>"
@@ -93,15 +93,16 @@ void mcc_parser_error();
 %type <struct mcc_ast_func_list *>			func_list
 %type <struct mcc_ast_program *>			program
 
-%destructor { mcc_ast_delete_expression($$); }          expression
-%destructor { mcc_ast_delete_statement($$); }           statement
-%destructor { mcc_ast_delete_declare_assign($$); }      declaration
-%destructor { mcc_ast_delete_func_definition($$); }     function_def
-%destructor { mcc_ast_delete_statement($$); }           compound_stmt
-%destructor { mcc_ast_delete_statement_list($$); }      statement_list
-%destructor { mcc_ast_delete_program($$); }           	program
+%destructor { mcc_ast_delete_program($$); }             program
 %destructor { mcc_ast_delete_func_list($$); }           func_list
+%destructor { mcc_ast_delete_func_definition($$); }     function_def
 %destructor { mcc_ast_delete_parameter($$); }           parameters
+%destructor { mcc_ast_delete_statement($$); }           statement return if_stmt while_stmt compound_stmt
+%destructor { mcc_ast_delete_statement_list($$); }      statement_list
+%destructor { mcc_ast_delete_expression($$); }          expression id function_call
+%destructor { mcc_ast_delete_declare_assign($$); }      declaration assignment
+%destructor { free($$); }                               STRING_LITERAL IDENTIFIER
+
 
 %start program
 

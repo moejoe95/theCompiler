@@ -63,7 +63,6 @@ struct mcc_ast_func_definition *mcc_ast_get_new_function_def_struct()
 	if (!func_def) {
 		return NULL;
 	}
-	func_def->semantic_annotation = NULL;
 	return func_def;
 }
 
@@ -206,7 +205,6 @@ struct mcc_ast_expression *mcc_ast_new_expression_identifier(char *identifier)
 
 	struct mcc_ast_identifier *id = mcc_ast_get_new_identifier_struct();
 	id->name = identifier;
-	id->sym_declaration = NULL;
 
 	expr->identifier = id;
 	return expr;
@@ -313,7 +311,7 @@ void mcc_ast_delete_function_arguments(struct mcc_ast_function_arguments *argume
 void mcc_ast_delete_identifier(struct mcc_ast_identifier *id)
 {
 	assert(id);
-	free(id->name);
+
 	free(id);
 }
 
@@ -357,7 +355,6 @@ mcc_ast_new_declaration(enum mcc_ast_type type, struct mcc_ast_expression *ident
 	decl->declare_type = type;
 	decl->declare_id = identifier;
 	decl->declare_id->type = MCC_AST_EXPRESSION_TYPE_IDENTIFIER;
-	decl->sym_declaration = NULL;
 
 	if (literal_flag) {
 		long *temp = malloc(sizeof(long));
@@ -577,6 +574,7 @@ struct mcc_ast_func_definition *mcc_ast_new_function(enum mcc_ast_type type,
 {
 	assert(identifier);
 	assert(compound);
+	assert(identifier);
 
 	struct mcc_ast_func_definition *func_def = mcc_ast_get_new_function_def_struct();
 
@@ -584,7 +582,6 @@ struct mcc_ast_func_definition *mcc_ast_new_function(enum mcc_ast_type type,
 	func_def->func_identifier = identifier;
 	func_def->func_compound = compound;
 	func_def->parameter_list = parameter;
-	func_def->semantic_annotation = NULL;
 
 	return func_def;
 }
@@ -605,13 +602,9 @@ struct mcc_ast_func_list *mcc_ast_new_function_list(struct mcc_ast_func_definiti
 void mcc_ast_delete_func_definition(struct mcc_ast_func_definition *func_def)
 {
 	assert(func_def);
-
 	mcc_ast_delete_expression(func_def->func_identifier);
 	if (func_def->parameter_list != NULL) {
 		mcc_ast_delete_parameter(func_def->parameter_list);
-	}
-	if (func_def->semantic_annotation) {
-		free(func_def->semantic_annotation);
 	}
 	mcc_ast_delete_statement(func_def->func_compound);
 	free(func_def);
@@ -619,13 +612,13 @@ void mcc_ast_delete_func_definition(struct mcc_ast_func_definition *func_def)
 
 void mcc_ast_delete_func_list(struct mcc_ast_func_list *func_list)
 {
-	assert(func_list);
-	if (func_list->function != NULL) {
-		mcc_ast_delete_func_definition(func_list->function);
-	}
 	if (func_list->next_function != NULL) {
 		mcc_ast_delete_func_list(func_list->next_function);
 	}
+	if (func_list->function != NULL) {
+		mcc_ast_delete_func_definition(func_list->function);
+	}
+
 	free(func_list);
 }
 
@@ -640,7 +633,13 @@ struct mcc_ast_program *mcc_ast_new_program(struct mcc_ast_func_list *func_list)
 		return NULL;
 	}
 
-	pro->function_list = func_list;
+	if (func_list->next_function != NULL) {
+		pro->type = MCC_AST_PROGRAM_TYPE_FUNCTION_LIST;
+		pro->function_list = func_list->next_function;
+	} else {
+		pro->type = MCC_AST_PROGRAM_TYPE_FUNCTION;
+		pro->function = func_list->function;
+	}
 	return pro;
 }
 
@@ -648,5 +647,15 @@ void mcc_ast_delete_program(struct mcc_ast_program *program)
 {
 	assert(program);
 
-	// TODO
+	switch (program->type) {
+	case MCC_AST_PROGRAM_TYPE_FUNCTION:
+		mcc_ast_delete_func_definition(program->function);
+		break;
+
+	case MCC_AST_PROGRAM_TYPE_FUNCTION_LIST:
+		mcc_ast_delete_func_list(program->function_list);
+		break;
+	}
+
+	free(program);
 }
