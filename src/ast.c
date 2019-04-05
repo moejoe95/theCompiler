@@ -492,11 +492,11 @@ void mcc_ast_delete_statement(struct mcc_ast_statement *statement)
 	switch (statement->type) {
 
 	case MCC_AST_STATEMENT_EXPRESSION:
-		mcc_ast_delete_expression(statement->expression);
+		// mcc_ast_delete_expression(statement->expression);
 		break;
 	case MCC_AST_STATEMENT_RETURN:
 		if (statement->expression != NULL) {
-			mcc_ast_delete_expression(statement->expression);
+			// mcc_ast_delete_expression(statement->expression);
 		}
 		break;
 
