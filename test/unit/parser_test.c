@@ -13,7 +13,7 @@ void BinaryOp_1(CuTest *tc)
 
 	CuAssertIntEquals(tc, MCC_PARSER_STATUS_OK, result.status);
 
-	struct mcc_ast_expression *expr = result.expression;
+	struct mcc_ast_expression *expr = result.program->expression;
 
 	// root
 	CuAssertIntEquals(tc, MCC_AST_EXPRESSION_TYPE_BINARY_OP, expr->type);
@@ -43,7 +43,7 @@ void NestedExpression_1(CuTest *tc)
 
 	CuAssertIntEquals(tc, MCC_PARSER_STATUS_OK, result.status);
 
-	struct mcc_ast_expression *expr = result.expression;
+	struct mcc_ast_expression *expr = result.program->expression;
 
 	// root
 	CuAssertIntEquals(tc, MCC_AST_EXPRESSION_TYPE_BINARY_OP, expr->type);
@@ -90,7 +90,7 @@ void MissingClosingParenthesis_1(CuTest *tc)
 	struct mcc_parser_result result = mcc_parse_string(input);
 
 	CuAssertTrue(tc, MCC_PARSER_STATUS_OK != result.status);
-	CuAssertTrue(tc, NULL == result.expression);
+	CuAssertTrue(tc, NULL == result.program);
 }
 
 void SourceLocation_SingleLineColumn(CuTest *tc)
@@ -100,8 +100,7 @@ void SourceLocation_SingleLineColumn(CuTest *tc)
 
 	CuAssertIntEquals(tc, MCC_PARSER_STATUS_OK, result.status);
 
-	struct mcc_ast_expression *expr = result.expression;
-
+	struct mcc_ast_expression *expr = result.program->expression;
 	CuAssertIntEquals(tc, MCC_AST_EXPRESSION_TYPE_PARENTH, expr->type);
 	CuAssertIntEquals(tc, 1, expr->node.sloc.start_col);
 

@@ -1,0 +1,14 @@
+image: debian:buster
+
+before_script:
+  - apt-get update && apt-get install -y python3 python3-pip ninja-build flex bison gcc build-essential
+  - pip3 install meson
+
+stages:
+  - build
+
+meson_build:
+  stage: build
+  script:
+    - meson builddir
+    - ninja -C builddir
