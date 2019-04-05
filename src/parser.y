@@ -212,11 +212,11 @@ statement_list : statement { $$ = mcc_ast_new_statement_compound_stmt($1, NULL);
 #include "scanner.h"
 #include "utils/unused.h"
 
-void mcc_parser_error(struct MCC_PARSER_LTYPE *yylloc, yyscan_t *scanner, const char *msg)
+void mcc_parser_error(struct MCC_PARSER_LTYPE *yylloc, yyscan_t *scanner, struct mcc_ast_program** result, const char *msg)
 {
-	fprintf(stderr, "Parser Error: unexpected character at line %d and column %d\n", yylloc->last_line, yylloc->last_column);
+	fprintf(stderr, "Parser Error:\n\t--unexpected character at line %d and column %d\n\t--error message: %s \n", yylloc->last_line, yylloc->last_column, msg);
 	
-	UNUSED(yylloc);
+	UNUSED(result);
 	UNUSED(scanner);
 	UNUSED(msg);
 }

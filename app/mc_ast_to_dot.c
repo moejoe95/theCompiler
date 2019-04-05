@@ -14,7 +14,7 @@ int main(void)
 		struct mcc_parser_result result = mcc_parse_file(stdin);
 
 		if (result.status != MCC_PARSER_STATUS_OK) {
-			fprintf(stdout, "parsing failed\n");
+			fprintf(stdout, "...parsing failed...\n");
 			return EXIT_FAILURE;
 		}
 		pro = result.program;
