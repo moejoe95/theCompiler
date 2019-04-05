@@ -89,4 +89,4 @@ echo 'int main() {int i; i = 1 + 1}' | ./mc_ast_to_dot
 TODO
 
 ## Known Issues
-See the [GitLab Project](https://git.uibk.ac.at/csas7462/theCompiler/issues) for all current issues.
+See the [GitLab Project](https://git.uibk.ac.at/csas7462/theCompiler/issues?state=opened&label_name[]=BUG) for all current issues.
