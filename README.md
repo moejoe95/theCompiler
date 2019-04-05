@@ -89,4 +89,8 @@ echo 'int main() {int i; i = 1 + 1}' | ./mc_ast_to_dot
 TODO
 
 ## Known Issues
-See the [GitLab Project](https://git.uibk.ac.at/csas7462/theCompiler/issues) for all current issues.
+* Units Tests not passing
+    * parser only accepts inputs that are valid mC code (only functions as top level)
+* memory leak in delete_func_list
+* strdup function in scanner.l leaks memory
+* parser leaks memory on invalid inputs
