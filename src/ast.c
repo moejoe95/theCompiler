@@ -613,10 +613,10 @@ void mcc_ast_delete_func_definition(struct mcc_ast_func_definition *func_def)
 void mcc_ast_delete_func_list(struct mcc_ast_func_list *func_list)
 {
 	if (func_list->next_function != NULL) {
-		mcc_ast_delete_func_list(func_list->next_function);
+		// mcc_ast_delete_func_list(func_list->next_function);
 	}
 	if (func_list->function != NULL) {
-		mcc_ast_delete_func_definition(func_list->function);
+		// mcc_ast_delete_func_definition(func_list->function);
 	}
 
 	free(func_list);
