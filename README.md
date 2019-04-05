@@ -90,3 +90,9 @@ TODO
 
 ## Known Issues
 See the [GitLab Project](https://git.uibk.ac.at/csas7462/theCompiler/issues?state=opened&label_name[]=BUG) for all current issues.
+
+* Units Tests not passing
+    * parser only accepts inputs that are valid mC code (only functions as top level)
+* memory leak in delete_func_list
+* strdup function in scanner.l leaks memory
+* parser leaks memory on invalid inputs
