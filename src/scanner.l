@@ -84,23 +84,8 @@ identifier		{alpha}{alpha_num}*
 "{"               { return TK_LCURLYBRACKET; }
 "}"               { return TK_RCURLYBRACKET; }
 
-"<"               { return TK_LT; }
+"<"               { return TK_ST; }
 ">"               { return TK_GT; }
-"!"               { return TK_NOT; }
-"["               { return TK_LSQUAREBRACKET; }
-"]"               { return TK_RSQUAREBRACKET; }
-"{"               { return TK_LCURLYBRACKET; }
-"}"               { return TK_RCURLYBRACKET; }
-";"               { return TK_SEMICOLON; }
-","               { return TK_COLON; }
-
-"<="              { return TK_LTEQ; }
-">="              { return TK_GTEQ; }
-"&&"              { return TK_AND; }
-"||"              { return TK_OR; }
-"=="              { return TK_EQ; }
-"!="              { return TK_NEQ; }
-"="               { return TK_ASSIGN; }
 
 "<="			  { return TK_SE; }
 ">="			  { return TK_GE; }
