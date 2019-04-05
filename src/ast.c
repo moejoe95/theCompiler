@@ -635,7 +635,7 @@ struct mcc_ast_program *mcc_ast_new_program(struct mcc_ast_func_list *func_list)
 
 	if (func_list->next_function != NULL) {
 		pro->type = MCC_AST_PROGRAM_TYPE_FUNCTION_LIST;
-		pro->function_list = func_list->next_function;
+		pro->function_list = func_list;
 	} else {
 		pro->type = MCC_AST_PROGRAM_TYPE_FUNCTION;
 		pro->function = func_list->function;
