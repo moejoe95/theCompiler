@@ -5,13 +5,19 @@
 #include "mcc/ast_print.h"
 #include "mcc/parser.h"
 
-int main(void)
+int main(int argc, char **argv)
 {
+	if (argc != 2) {
+		fprintf(stdout, "invalid number of arguments");
+		return EXIT_FAILURE;
+	}
+	FILE *f = fopen(argv[1], "r");
+
 	struct mcc_ast_program *pro = NULL;
 
 	// parsing phase
 	{
-		struct mcc_parser_result result = mcc_parse_file(stdin);
+		struct mcc_parser_result result = mcc_parse_file(f);
 
 		if (result.status != MCC_PARSER_STATUS_OK) {
 			fprintf(stdout, "...parsing failed...\n");
