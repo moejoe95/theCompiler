@@ -1,4 +1,0 @@
-{
-    "editor.formatOnSave": true,
-    "clang-format.executable": "/usr/bin/clang-format",
-}
