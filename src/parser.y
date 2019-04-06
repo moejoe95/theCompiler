@@ -93,7 +93,6 @@ void mcc_parser_error();
 %type <struct mcc_ast_func_list *>			func_list
 %type <struct mcc_ast_program *>			program
 
-%destructor { mcc_ast_delete_program($$); }             program
 %destructor { mcc_ast_delete_func_list($$); }           func_list
 %destructor { mcc_ast_delete_func_definition($$); }     function_def
 %destructor { mcc_ast_delete_parameter($$); }           parameters
