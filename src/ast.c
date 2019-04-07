@@ -274,7 +274,7 @@ void mcc_ast_delete_expression(struct mcc_ast_expression *expression)
 		break;
 
 	case MCC_AST_EXPRESSION_TYPE_UNARY_OP:
-		mcc_ast_delete_expression(expression->expression);
+		mcc_ast_delete_expression(expression->rhs);
 		break;
 
 	case MCC_AST_EXPRESSION_TYPE_IDENTIFIER:
