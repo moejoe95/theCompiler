@@ -32,7 +32,7 @@ int main() {
 	if (array[0] == 0) {
 		print_int(array[0]);
 		print_nl();
-    }
+	}
 
 	if (array[1] == 2) {
 		print_int(0);
