@@ -43,6 +43,14 @@ Taken from the [Meson Documentation](https://mesonbuild.com/Unit-tests.html#cove
 > Meson will autodetect what coverage generator tools you have installed and will generate the corresponding targets.
 > These targets are `coverage-xml` and `coverage-text` which are both provided by Gcovr and `coverage-html`, which requires Lcov and GenHTML or Gcovr with html support.
 
+## Known Issues
+* Units Tests not passing
+    * parser only accepts inputs that are valid mC code (only functions as top level)
+* memory leak in delete_func_list
+* strdup function in scanner.l leaks memory
+* parser leaks memory on invalid inputs
+
+
 ## Milestone 1 Parser
 
 __Main goals__
@@ -87,10 +95,3 @@ echo 'int main() {int i; i = 1 + 1}' | ./mc_ast_to_dot
 ## Milestone 2
 
 TODO
-
-## Known Issues
-* Units Tests not passing
-    * parser only accepts inputs that are valid mC code (only functions as top level)
-* memory leak in delete_func_list
-* strdup function in scanner.l leaks memory
-* parser leaks memory on invalid inputs
