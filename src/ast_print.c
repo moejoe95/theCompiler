@@ -348,26 +348,8 @@ static void print_dot_function(struct mcc_ast_func_definition *function, void *d
 	FILE *out = data;
 
 	print_dot_node(out, function, "fun_def");
-
 	print_dot_edge(out, function, function->func_identifier, "id");
-
 	print_dot_edge(out, function, function->func_compound, "compound");
-}
-
-static void print_dot_program(struct mcc_ast_program *program, void *data)
-{
-	assert(program);
-	FILE *out = data;
-
-	print_dot_node(out, program, "program");
-
-	struct mcc_ast_func_list *list = program->function_list;
-	while (list != NULL) {
-		char label[LABEL_SIZE] = {0};
-		snprintf(label, sizeof(label), "%s %s", "fun:", list->function->func_identifier->identifier->name);
-		print_dot_edge(out, list, list->function, label);
-		list = list->next_function;
-	}
 }
 
 // Setup an AST Visitor for printing.
@@ -406,8 +388,6 @@ static struct mcc_ast_visitor print_dot_visitor(FILE *out)
 	    .statement_compound = print_dot_statement_compound,
 
 	    .function = print_dot_function,
-
-	    .program = print_dot_program,
 	};
 }
 

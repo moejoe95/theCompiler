@@ -26,6 +26,8 @@ int main(int argc, char **argv)
 	                                       {"output", optional_argument, NULL, 'o'},
 	                                       {"function", optional_argument, NULL, 'f'}};
 
+	char func_name_scope[64] = {0};
+	int isScoped = 0;
 	char outfile[64] = {0};
 	snprintf(outfile, sizeof(outfile), "%s", "-");
 	int c;
@@ -39,7 +41,8 @@ int main(int argc, char **argv)
 			snprintf(outfile, sizeof(outfile), "%s", optarg);
 			break;
 		case 'f':
-			// TODO
+			isScoped = 1;
+			snprintf(func_name_scope, sizeof(func_name_scope), "%s", optarg);
 			break;
 		default:
 			return EXIT_FAILURE;
@@ -82,6 +85,20 @@ int main(int argc, char **argv)
 				return EXIT_FAILURE;
 			}
 			pro = result.program;
+		}
+
+		if (isScoped) {
+			struct mcc_ast_func_list *list = pro->function_list;
+			struct mcc_ast_func_list *scope_func_list;
+			while (list != NULL) {
+				char *id = list->function->func_identifier->identifier->name;
+				if (strcmp(func_name_scope, id) == 0) {
+					scope_func_list = list;
+				}
+				list = list->next_function;
+			}
+			pro->function_list = scope_func_list;
+			pro->function_list->next_function = NULL;
 		}
 
 		// print
