@@ -22,16 +22,12 @@ can be visualised using graphviz. Errors are reported on invalid inputs. \
 
 int main(int argc, char **argv)
 {
-	if (argc < 2) {
-		fprintf(stdout, "Invalid number of arguments. Try -h or --help for more informatiotion.");
-		return EXIT_FAILURE;
-	}
 	static struct option long_options[] = {{"help", no_argument, NULL, 'h'},
 	                                       {"output", optional_argument, NULL, 'o'},
 	                                       {"function", optional_argument, NULL, 'f'}};
 
-	char output[64] = {0};
-	snprintf(output, sizeof(output), "%s", "-");
+	char outfile[64] = {0};
+	snprintf(outfile, sizeof(outfile), "%s", "-");
 	int c;
 	while ((c = getopt_long(argc, argv, "ho:f:", long_options, NULL)) != -1)
 		switch (c) {
@@ -40,7 +36,7 @@ int main(int argc, char **argv)
 			return EXIT_SUCCESS;
 			break;
 		case 'o':
-			snprintf(output, sizeof(output), "%s", optarg);
+			snprintf(outfile, sizeof(outfile), "%s", optarg);
 			break;
 		case 'f':
 			break;
@@ -48,13 +44,22 @@ int main(int argc, char **argv)
 			return EXIT_FAILURE;
 		}
 
-	FILE *f = fopen(argv[optind], "r");
+	FILE *in;
+	if (strcmp("-", argv[optind]) == 0) {
+		in = stdin;
+	} else {
+		in = fopen(argv[optind], "r");
+		if (!in) {
+			perror("fopen");
+			return EXIT_FAILURE;
+		}
+	}
 
 	struct mcc_ast_program *pro = NULL;
 
 	// parsing phase
 	{
-		struct mcc_parser_result result = mcc_parse_file(f);
+		struct mcc_parser_result result = mcc_parse_file(in);
 
 		if (result.status != MCC_PARSER_STATUS_OK) {
 			fprintf(stdout, "...parsing failed...\n");
@@ -64,12 +69,13 @@ int main(int argc, char **argv)
 	}
 
 	FILE *out;
-	if (strcmp("-", output) == 0) {
+	if (strcmp("-", outfile) == 0) {
 		out = stdout;
 	} else {
-		out = fopen(output, "w");
-		if (out == NULL) {
-			fprintf(stdout, "failed to open file: %s\n", output);
+		out = fopen(outfile, "w");
+		if (!out) {
+			perror("fopen");
+			return EXIT_FAILURE;
 		}
 	}
 	mcc_ast_print_dot(out, pro);
