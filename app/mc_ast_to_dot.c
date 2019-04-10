@@ -39,35 +39,13 @@ int main(int argc, char **argv)
 			snprintf(outfile, sizeof(outfile), "%s", optarg);
 			break;
 		case 'f':
+			// TODO
 			break;
 		default:
 			return EXIT_FAILURE;
 		}
 
-	FILE *in;
-	if (strcmp("-", argv[optind]) == 0) {
-		in = stdin;
-	} else {
-		in = fopen(argv[optind], "r");
-		if (!in) {
-			perror("fopen");
-			return EXIT_FAILURE;
-		}
-	}
-
-	struct mcc_ast_program *pro = NULL;
-
-	// parsing phase
-	{
-		struct mcc_parser_result result = mcc_parse_file(in);
-
-		if (result.status != MCC_PARSER_STATUS_OK) {
-			fprintf(stdout, "...parsing failed...\n");
-			return EXIT_FAILURE;
-		}
-		pro = result.program;
-	}
-
+	// get output file / stdout
 	FILE *out;
 	if (strcmp("-", outfile) == 0) {
 		out = stdout;
@@ -78,10 +56,48 @@ int main(int argc, char **argv)
 			return EXIT_FAILURE;
 		}
 	}
-	mcc_ast_print_dot(out, pro);
 
-	// cleanup
-	mcc_ast_delete(pro);
+	for (int i = optind; i < argc; i++) { // loop through given files
 
+		// get input file / stdin
+		FILE *in;
+		if (strcmp("-", argv[i]) == 0) {
+			in = stdin;
+		} else {
+			in = fopen(argv[i], "r");
+			if (!in) {
+				perror("fopen");
+				return EXIT_FAILURE;
+			}
+		}
+
+		struct mcc_ast_program *pro = NULL;
+
+		// parsing phase
+		{
+			struct mcc_parser_result result = mcc_parse_file(in);
+
+			if (result.status != MCC_PARSER_STATUS_OK) {
+				fprintf(stdout, "...parsing failed...\n");
+				return EXIT_FAILURE;
+			}
+			pro = result.program;
+		}
+
+		// print
+		mcc_ast_print_dot(out, pro);
+
+		// cleanup
+		mcc_ast_delete(pro);
+
+		if (fclose(in) != 0) {
+			perror("fclose input");
+			return EXIT_FAILURE;
+		}
+	}
+	if (fclose(out) != 0) {
+		perror("fclose output");
+		return EXIT_FAILURE;
+	}
 	return EXIT_SUCCESS;
 }
