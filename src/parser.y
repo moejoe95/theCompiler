@@ -78,8 +78,16 @@ void mcc_parser_error();
 %token DECLARATION_ASSIGNMENT   "<declaration_assignment>"
 %token STATEMENT                "<statement>"
 
-%left PLUS MINUS
+%precedence THEN
+%precedence ELSE
+
 %left ASTER SLASH
+%left PLUS MINUS
+%left ST GT SE GE 
+%left EQ NEQ
+%left LAND
+%left LOR
+
 
 %type <enum mcc_ast_type>					type
 %type <struct mcc_ast_literal *>			literal
@@ -176,7 +184,7 @@ return : RETURN { $$ = mcc_ast_new_statement_return_expression(NULL); }
        ;
 		   
 if_stmt : IF LPARENTH expression RPARENTH statement ELSE statement  { $$ = mcc_ast_new_if_stmt($3, $5, $7); }
-		| IF LPARENTH expression RPARENTH statement { $$ = mcc_ast_new_if_stmt($3, $5, NULL); }
+		| IF LPARENTH expression RPARENTH %prec THEN statement { $$ = mcc_ast_new_if_stmt($3, $5, NULL); }
         ;
 
 while_stmt : WHILE LPARENTH expression RPARENTH statement { $$ = mcc_ast_new_while_stmt($3, $5); }
