@@ -50,10 +50,6 @@ identifier		{alpha}{alpha_num}*
 <comment>"*"+[^*/\n]*
 <comment>"*"+"/"        { BEGIN(INITIAL); }
 
-"<expression>"                { return TK_EXPRESSION; }
-"<declaration_assignment>"    { return TK_DECLARATION_ASSIGNMENT; }
-"<statement>"                 { return TK_STATEMENT; }
-
 "bool"            { return TK_BOOL; }
 "float"           { return TK_FLOAT; }
 "string"          { return TK_STRING; }
