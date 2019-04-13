@@ -30,6 +30,7 @@ mcc_inc = include_directories('include')
 mcc_src = [ 'src/ast.c',
             'src/ast_print.c',
             'src/ast_visit.c',
+            'src/ast_symbol_table.c',
             lgen.process('src/scanner.l'),
             pgen.process('src/parser.y') ]
 
@@ -39,7 +40,7 @@ mcc_lib = library('mcc', mcc_src,
 
 # ---------------------------------------------------------------- Applications
 
-mcc_apps = [ 'mcc', 'mc_ast_to_dot' ]
+mcc_apps = [ 'mcc', 'mc_ast_to_dot', 'mc_symbol_table' ]
 
 foreach app : mcc_apps
     executable(app, 'app/' + app + '.c',

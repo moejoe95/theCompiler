@@ -1,4 +1,13 @@
 int add(int n, int m)
 {   
-    return n+m
+    n = 0;
+    m = 1;
+
+    string k;
+    {
+        int n;
+        n = 1;
+    }
+
+    return n + m;
 }

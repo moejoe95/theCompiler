@@ -40,4 +40,8 @@ void mcc_ast_print_dot_declare_assign(FILE *out, struct mcc_ast_declare_assign *
 
 // clang-format on
 
+// ---------------------------------------------------------------- Symbol Table Printer
+
+void mcc_symbol_table_print(FILE *out, struct mcc_ast_program *pro);
+
 #endif // MCC_AST_PRINT_H

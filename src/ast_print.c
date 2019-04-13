@@ -406,3 +406,8 @@ void mcc_ast_print_dot_program(FILE *out, struct mcc_ast_program *program)
 
 	print_dot_end(out);
 }
+
+void mcc_symbol_table_print(FILE *out, struct mcc_ast_program *pro)
+{
+	fprintf(out, "here comes the symbol table...\n");
+}
