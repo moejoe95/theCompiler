@@ -12,6 +12,12 @@ static struct mcc_symbol_table *allocate_symbol_table(struct mcc_symbol_table *s
 		return NULL;
 	}
 
+	if (symbol_table_parent == NULL) {
+		symbol_table->label = "global";
+	} else {
+		symbol_table_parent->label = "";
+	}
+
 	symbol_table->parent = symbol_table_parent;
 	symbol_table->symbols = NULL;
 
@@ -175,13 +181,14 @@ void mcc_print_symbol_table(FILE *out, struct mcc_symbol_table *symbol_table)
 		return;
 	}
 
-	fprintf(out, "here comes the symbol table...\n\n");
+	fprintf(out, "symbol_table ");
+	fprintf(out, symbol_table->label);
+	fprintf(out, "\n\nname\t\t|\ttype\n--------------------------\n");
 
 	struct mcc_symbol *current_symbol = symbol_table->symbols;
-
 	while (current_symbol != NULL) {
 		fprintf(out, current_symbol->identifier->name);
-		fprintf(out, "\t|\t");
+		fprintf(out, "\t\t|\t");
 		fprintf(out, get_type_string(current_symbol->type));
 		fprintf(out, "\n");
 

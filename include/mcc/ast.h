@@ -82,6 +82,8 @@ static char *get_type_string(enum mcc_ast_type type)
 	case MCC_AST_TYPE_VOID:
 		return "VOID";
 	}
+
+	return "";
 }
 
 // ------------------------------------------------------------------- Literals

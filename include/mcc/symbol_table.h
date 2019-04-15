@@ -24,6 +24,7 @@ struct temp_create_symbol_table {
 };
 
 struct mcc_symbol_table {
+	char *label;
 	struct mcc_symbol *symbols;
 	struct mcc_symbol_table *parent;
 };
