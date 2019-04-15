@@ -3,8 +3,8 @@
 
 #include "mcc/ast.h"
 #include "mcc/ast_print.h"
-#include "mcc/ast_symbol_table.h"
 #include "mcc/parser.h"
+#include "mcc/symbol_table.h"
 #include <getopt.h>
 #include <string.h>
 
@@ -100,13 +100,12 @@ int main(int argc, char **argv)
 			pro->function_list->next_function = NULL;
 		}
 
-		struct mcc_ast_symbol_table *st = mcc_ast_create_symbol_table(pro);
-
-		// print
-		mcc_symbol_table_print(out, pro);
+		struct mcc_symbol_table *st = NULL;
+		st = mcc_create_symbol_table(pro);
+		mcc_print_symbol_table(out, st);
 
 		// cleanup
-		mcc_ast_delete_symbol_table(st);
+		mcc_delete_symbol_table(st);
 		mcc_ast_delete_program(pro);
 
 		if (fclose(in) != 0) {

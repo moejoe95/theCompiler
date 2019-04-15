@@ -35,6 +35,7 @@ struct mcc_ast_source_location {
 	int start_col;
 	int end_line;
 	int end_col;
+	char *filename;
 };
 
 struct mcc_ast_node {
@@ -65,13 +66,23 @@ enum mcc_ast_unary_op {
 
 // -------------------------------------------------------------------- Types
 
-enum mcc_ast_type {
-	MCC_AST_TYPE_BOOL,
-	MCC_AST_TYPE_INT,
-	MCC_AST_TYPE_FLOAT,
-	MCC_AST_TYPE_STRING,
-	MCC_AST_TYPE_VOID,
-};
+enum mcc_ast_type { MCC_AST_TYPE_BOOL, MCC_AST_TYPE_INT, MCC_AST_TYPE_FLOAT, MCC_AST_TYPE_STRING, MCC_AST_TYPE_VOID };
+
+static char *get_type_string(enum mcc_ast_type type)
+{
+	switch (type) {
+	case MCC_AST_TYPE_BOOL:
+		return "BOOL";
+	case MCC_AST_TYPE_INT:
+		return "INT";
+	case MCC_AST_TYPE_FLOAT:
+		return "FLOAT";
+	case MCC_AST_TYPE_STRING:
+		return "STRING";
+	case MCC_AST_TYPE_VOID:
+		return "VOID";
+	}
+}
 
 // ------------------------------------------------------------------- Literals
 
@@ -200,7 +211,18 @@ void mcc_ast_delete_expression(struct mcc_ast_expression *expression);
 struct mcc_ast_identifier {
 	struct mcc_ast_node node;
 	char *name;
+	// struct mcc_symbol_declaration *sym_declaration;
 };
+
+// struct mcc_ast_symbol_declaration {
+
+// 	enum mcc_ast_type type;
+// 	int index;
+// 	long *array_size;
+// 	struct mcc_ast_identifier *identifier;
+
+// 	// mcc_array *parameter_declaration;
+// };
 
 void mcc_ast_delete_identifier(struct mcc_ast_identifier *id);
 
