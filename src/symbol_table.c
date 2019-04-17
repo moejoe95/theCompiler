@@ -115,8 +115,8 @@ struct mcc_symbol_table *mcc_create_symbol_table(struct mcc_ast_program *program
 
 	add_built_ins(temp_st);
 
-	// struct mcc_ast_visitor visitor = generate_symbol_table_visitor(temp_st);
-	// mcc_ast_visit(program, &visitor);
+	struct mcc_ast_visitor visitor = generate_symbol_table_visitor(temp_st);
+	mcc_ast_visit(program, &visitor);
 
 	// temp_st = visitor.userdata;
 
@@ -127,8 +127,50 @@ struct mcc_symbol_table *mcc_create_symbol_table(struct mcc_ast_program *program
 	struct mcc_symbol_table *symbol_table = temp_st->symbol_table;
 
 	free(temp_st);
-	// return symbol_table;
-	return temp_st->symbol_table;
+	return symbol_table;
+}
+
+static void symbol_table_declaration(struct mcc_ast_declare_assign *declaration, void *data)
+{
+	assert(declaration);
+	assert(data);
+
+	struct temp_create_symbol_table *temp = data;
+	struct mcc_symbol *previous_declaration =
+	    lookup_symbol_in_scope(temp->symbol_table, declaration->declare_id->identifier->name);
+
+	if (previous_declaration != NULL) {
+		// TODO Andreas, add error
+		printf("error, duplicate declaration\n");
+		return;
+	}
+
+	struct mcc_symbol *symbol =
+	    create_symbol_built_in(declaration->declare_type, declaration->declare_id->identifier->name, NULL);
+
+	add_symbol_to_list(temp->symbol_table->symbols, symbol);
+
+	// if (!userdata->create_inner_scope && !userdata->is_duplicate) {
+	// 	assert(userdata->current_function->parameter_declaration);
+	// 	ARRAY_ADD(userdata->current_function->parameter_declaration, tmp);
+	// }
+}
+
+struct mcc_symbol *lookup_symbol_in_scope(struct mcc_symbol_table *symbol_table, char *key)
+{
+	struct mcc_symbol *tmp = symbol_table->symbols->head;
+
+	while (tmp != NULL && tmp->next_symbol != NULL) {
+		// FIXME, segfault
+		// printf(tmp->identifier->name);
+		// printf("\n");
+		if (tmp->identifier->name == key) {
+			return tmp;
+		}
+		tmp = tmp->next_symbol;
+	}
+
+	return NULL;
 }
 
 struct mcc_ast_visitor generate_symbol_table_visitor(struct temp_create_symbol_table *temp_st)
@@ -140,7 +182,7 @@ struct mcc_ast_visitor generate_symbol_table_visitor(struct temp_create_symbol_t
 	    .userdata = temp_st,
 	    // .pre_visit_function = 1,
 
-	    // .declaration = symbol_table_declaration
+	    .declaration = symbol_table_declaration
 
 	    // .statement_compound = symbol_table_compound_pre,
 	    // .statement_compound_post = symbol_table_compound_post,
@@ -177,7 +219,8 @@ void mcc_print_symbol_table(FILE *out, struct mcc_symbol_table *symbol_table)
 
 	struct mcc_symbol *current_symbol = symbol_table->symbols->head;
 	while (current_symbol != NULL) {
-		fprintf(out, current_symbol->identifier->name);
+		// FIXME segfault
+		// fprintf(out, current_symbol->identifier->name);
 		fprintf(out, "\t\t|\t");
 		fprintf(out, get_type_string(current_symbol->type));
 		fprintf(out, "\n");
@@ -188,6 +231,9 @@ void mcc_print_symbol_table(FILE *out, struct mcc_symbol_table *symbol_table)
 
 void add_symbol_to_list(struct mcc_symbol_list *list, struct mcc_symbol *symbol)
 {
+	assert(list);
+	assert(symbol);
+
 	struct mcc_symbol *current = list->head;
 
 	if (current == NULL) {
