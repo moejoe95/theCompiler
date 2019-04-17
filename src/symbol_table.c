@@ -19,7 +19,13 @@ static struct mcc_symbol_table *allocate_symbol_table(struct mcc_symbol_table *s
 	}
 
 	symbol_table->parent = symbol_table_parent;
-	symbol_table->symbols = NULL;
+
+	struct mcc_symbol_list *symbol_list = malloc(sizeof(*symbol_list));
+	if (!symbol_list) {
+		return NULL;
+	}
+	symbol_list->head = NULL;
+	symbol_table->symbols = symbol_list;
 
 	return symbol_table;
 }
@@ -73,7 +79,8 @@ void insert_built_in_symbol(struct temp_create_symbol_table *temp_st,
 	// 	ARRAY_ADD(parameter_declaration, sym_parameter);
 	// 	sym_declaration->parameter_declaration = parameter_declaration;
 	// }
-	insert_symbol(temp_st, symbol);
+
+	add_symbol_to_list(temp_st->symbol_table->symbols, symbol);
 }
 
 struct mcc_symbol *create_symbol_built_in(enum mcc_ast_type type, struct mcc_ast_identifier *identifier, long *arr_size)
@@ -89,23 +96,6 @@ struct mcc_symbol *create_symbol_built_in(enum mcc_ast_type type, struct mcc_ast
 	sym->next_symbol = NULL;
 
 	return sym;
-}
-
-void insert_symbol(struct temp_create_symbol_table *temp_st, struct mcc_symbol *sym)
-{
-	assert(temp_st);
-	assert(sym);
-
-	struct mcc_symbol *current_sym = temp_st->symbol_table->symbols;
-
-	if (current_sym == NULL) {
-		temp_st->symbol_table->symbols = sym;
-	} else {
-		while (current_sym->next_symbol != NULL) {
-			current_sym = current_sym->next_symbol;
-		}
-		current_sym->next_symbol = sym;
-	}
 }
 
 struct mcc_symbol_table *mcc_create_symbol_table(struct mcc_ast_program *program)
@@ -185,7 +175,7 @@ void mcc_print_symbol_table(FILE *out, struct mcc_symbol_table *symbol_table)
 	fprintf(out, symbol_table->label);
 	fprintf(out, "\n\nname\t\t|\ttype\n--------------------------\n");
 
-	struct mcc_symbol *current_symbol = symbol_table->symbols;
+	struct mcc_symbol *current_symbol = symbol_table->symbols->head;
 	while (current_symbol != NULL) {
 		fprintf(out, current_symbol->identifier->name);
 		fprintf(out, "\t\t|\t");
@@ -194,4 +184,36 @@ void mcc_print_symbol_table(FILE *out, struct mcc_symbol_table *symbol_table)
 
 		current_symbol = current_symbol->next_symbol;
 	}
+}
+
+void add_symbol_to_list(struct mcc_symbol_list *list, struct mcc_symbol *symbol)
+{
+	struct mcc_symbol *current = list->head;
+
+	if (current == NULL) {
+		list->head = symbol;
+		return;
+	}
+
+	while (current->next_symbol != NULL) {
+		current = current->next_symbol;
+	}
+
+	current->next_symbol = symbol;
+}
+
+void add_symbol_table_to_list(struct mcc_symbol_table_list *list, struct mcc_symbol_table *table)
+{
+	struct mcc_symbol_table *current = list->head;
+
+	if (current == NULL) {
+		list->head = table;
+		return;
+	}
+
+	while (current->next != NULL) {
+		current = current->next;
+	}
+
+	current->next = table;
 }

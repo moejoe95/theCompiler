@@ -25,8 +25,14 @@ struct temp_create_symbol_table {
 
 struct mcc_symbol_table {
 	char *label;
-	struct mcc_symbol *symbols;
+	struct mcc_symbol_list *symbols;
 	struct mcc_symbol_table *parent;
+	struct mcc_symbol_table *next;
+	struct mcc_symbol_table_list *sub_tables;
+};
+
+struct mcc_symbol_table_list {
+	struct mcc_symbol_table *head;
 };
 
 struct mcc_symbol {
@@ -36,6 +42,13 @@ struct mcc_symbol {
 	struct mcc_ast_identifier *identifier;
 	struct mcc_symbol *next_symbol;
 };
+
+struct mcc_symbol_list {
+	struct mcc_symbol *head;
+};
+
+void add_symbol_to_list(struct mcc_symbol_list *list, struct mcc_symbol *symbol);
+void add_symbol_table_to_list(struct mcc_symbol_table_list *list, struct mcc_symbol_table *table);
 
 struct mcc_symbol_table *mcc_create_symbol_table(struct mcc_ast_program *program);
 
@@ -53,8 +66,6 @@ void insert_built_in_symbol(struct temp_create_symbol_table *temp_st,
 
 struct mcc_symbol *
 create_symbol_built_in(enum mcc_ast_type type, struct mcc_ast_identifier *identifier, long *arr_size);
-
-void insert_symbol(struct temp_create_symbol_table *temp_st, struct mcc_symbol *sym);
 
 void mcc_delete_symbol_table(struct mcc_symbol_table *symbol_table);
 
