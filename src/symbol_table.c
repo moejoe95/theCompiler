@@ -141,12 +141,14 @@ static void symbol_table_declaration(struct mcc_ast_declare_assign *declaration,
 
 	if (previous_declaration != NULL) {
 		// TODO Andreas, add error
-		printf("error, duplicate declaration\n");
+		printf("error, duplicate declaration of '");
+		printf(declaration->declare_id->identifier->name);
+		printf("'\n");
 		return;
 	}
 
-	struct mcc_symbol *symbol =
-	    create_symbol_built_in(declaration->declare_type, declaration->declare_id->identifier->name, NULL);
+	struct mcc_symbol *symbol = create_symbol_built_in(
+	    declaration->declare_type, declaration->declare_id->identifier, declaration->declare_array_size);
 
 	add_symbol_to_list(temp->symbol_table->symbols, symbol);
 
@@ -160,12 +162,16 @@ struct mcc_symbol *lookup_symbol_in_scope(struct mcc_symbol_table *symbol_table,
 {
 	struct mcc_symbol *tmp = symbol_table->symbols->head;
 
-	while (tmp != NULL && tmp->next_symbol != NULL) {
-		// FIXME, segfault
-		// printf(tmp->identifier->name);
-		// printf("\n");
-		if (tmp->identifier->name == key) {
+	if (tmp == NULL) {
+		return NULL;
+	}
+
+	while (tmp != NULL) {
+		if (strcmp(tmp->identifier->name, key) == 0) {
 			return tmp;
+		}
+		if (tmp->next_symbol == NULL) {
+			break;
 		}
 		tmp = tmp->next_symbol;
 	}
@@ -213,14 +219,13 @@ void mcc_print_symbol_table(FILE *out, struct mcc_symbol_table *symbol_table)
 		return;
 	}
 
-	fprintf(out, "symbol_table ");
+	fprintf(out, "\nsymbol_table ");
 	fprintf(out, symbol_table->label);
 	fprintf(out, "\n\nname\t\t|\ttype\n--------------------------\n");
 
 	struct mcc_symbol *current_symbol = symbol_table->symbols->head;
 	while (current_symbol != NULL) {
-		// FIXME segfault
-		// fprintf(out, current_symbol->identifier->name);
+		fprintf(out, current_symbol->identifier->name);
 		fprintf(out, "\t\t|\t");
 		fprintf(out, get_type_string(current_symbol->type));
 		fprintf(out, "\n");
