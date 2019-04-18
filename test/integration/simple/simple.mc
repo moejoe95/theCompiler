@@ -1,4 +1,4 @@
-int add(int n, int m)
+int add(int i, int j)
 {   
     n = 0;
     m = 1;

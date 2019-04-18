@@ -16,9 +16,9 @@ struct temp_create_symbol_table {
 	int create_inner_scope;
 	int main_found;
 	// int index;
-	// int is_duplicate;
+	int is_duplicate;
 	struct mcc_symbol_table *symbol_table;
-	// struct mcc_ast_symbol_declaration *current_function;
+	// struct mcc_symbol *current_function;
 	// struct mcc_sc_if_else_stmt *check_return;
 	// mcc_array *error_list;
 };
@@ -68,6 +68,8 @@ void insert_built_in_symbol(struct temp_create_symbol_table *temp_st,
 
 struct mcc_symbol *
 create_symbol_built_in(enum mcc_ast_type type, struct mcc_ast_identifier *identifier, long *arr_size);
+
+void insert_symbol_function(struct temp_create_symbol_table *tmp, struct mcc_ast_func_definition *function_def);
 
 void enter_scope(struct temp_create_symbol_table *tmp, struct mcc_symbol_table *symbol_table);
 void exit_scope(struct temp_create_symbol_table *tmp);

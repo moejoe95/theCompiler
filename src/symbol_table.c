@@ -216,6 +216,92 @@ struct mcc_symbol *lookup_symbol_in_scope(struct mcc_symbol_table *symbol_table,
 	return NULL;
 }
 
+static void symbol_table_pre_function_def(struct mcc_ast_func_definition *function, void *data)
+{
+	struct temp_create_symbol_table *tmp = data;
+
+	if (!tmp->main_found) {
+		int compare = strcmp("main", function->func_identifier->identifier->name);
+		if (compare == 0 && function->func_type == MCC_AST_TYPE_VOID && function->parameter_list == NULL) {
+			tmp->main_found = 1;
+		}
+	}
+
+	struct mcc_ast_symbol_declaration *previous_declaration =
+	    lookup_symbol_in_scope(tmp->symbol_table, function->func_identifier->identifier->name);
+
+	if (previous_declaration != NULL) {
+		// TODO Andreas, add error
+		printf("duplicate function definition with id '");
+		printf(function->func_identifier->identifier->name);
+		printf("'\n");
+		return;
+	}
+	// set_semantic_annotation_function_duplicate(function, 0);
+	insert_symbol_function(tmp, function);
+}
+
+static void symbol_table_function_def(struct mcc_ast_func_definition *function, void *data)
+{
+	struct temp_create_symbol_table *tmp = data;
+	struct mcc_symbol_table *symbol_table = allocate_symbol_table(tmp->symbol_table);
+
+	// tmp->check_return = get_if_else_stmt_struct(NULL, MCC_SC_IF_ELSE_TYPE_PATH_MAIN);
+
+	add_child_symbol_table(tmp->symbol_table, symbol_table);
+	enter_scope(tmp, symbol_table);
+	tmp->create_inner_scope = 0;
+	// tmp->current_function = lookup_function_symbol(symbol_table, function->func_identifier->identifier->name);
+	if (function->parameter_list) {
+		struct mcc_ast_parameter *param = function->parameter_list;
+		do {
+			symbol_table_declaration(param->parameter, tmp);
+			param = param->next_parameter;
+		} while (param);
+	}
+}
+
+void insert_symbol_function(struct temp_create_symbol_table *tmp, struct mcc_ast_func_definition *function_def)
+{
+	assert(function_def);
+	struct mcc_symbol *sym =
+	    create_symbol_built_in(function_def->func_type, function_def->func_identifier->identifier, NULL);
+
+	// function_def->func_identifier->identifier->sym_declaration = sym;
+
+	add_symbol_to_list(tmp->symbol_table, sym);
+}
+
+static void post_function_def(struct mcc_ast_func_definition *function, void *data)
+{
+	assert(data);
+	assert(function);
+
+	// struct userdata_create_symbol_table *userdata = data;
+	// struct mCc_sc_if_else_stmt *if_stmt_res = userdata->check_return;
+
+	// int return_found = delete_and_return_found(if_stmt_res);
+	// set_semantic_annotation_function_return(function, return_found);
+
+	// if (!return_found && function->fun_type != MCC_AST_TYPE_VOID) {
+	// 	struct mCc_sc_error *error = mCc_error_get_semantic_error_struct(MCC_SC_ERROR_TYPE_MISSING_RETURN);
+	// 	error->identifier = function->fun_identifier->identifier;
+	// 	error->sloc = &error->identifier->node.sloc;
+	// 	ARRAY_ADD(userdata->error_list, error);
+	// }
+}
+
+struct mcc_symbol *lookup_symbol(struct mcc_symbol_table *symbol_table, char *symbol)
+{
+	struct mcc_symbol *sym = NULL;
+	do {
+		sym = lookup_symbol_in_scope(symbol_table, symbol);
+		symbol_table = symbol_table->parent;
+	} while (!sym && symbol_table);
+
+	return sym;
+}
+
 struct mcc_ast_visitor generate_symbol_table_visitor(struct temp_create_symbol_table *temp_st)
 {
 	return (struct mcc_ast_visitor){
@@ -228,14 +314,15 @@ struct mcc_ast_visitor generate_symbol_table_visitor(struct temp_create_symbol_t
 	    .declaration = symbol_table_declaration,
 
 	    .statement_compound = symbol_table_compound_pre,
-	    .statement_compound_post = symbol_table_compound_post
-	    // .declaration = symbol_table_declaration,
-	    // .function_def = symbol_table_function_def,
+	    .statement_compound_post = symbol_table_compound_post,
+
+	    .function = symbol_table_function_def,
+	    .function_identifier = symbol_table_pre_function_def,
+	    .function_compound = post_function_def,
+
 	    // .expression_identifier = symbol_table_identifier,
 	    // .expression_function_call = symbol_table_function_call,
-	    // .pre_function = symbol_table_pre_function_def,
 
-	    // .function_def_post = post_function_def,
 	    // .statement_if = check_if_stmt_start_if_else,
 	    // .statement_return = check_if_statement_return,
 	    // .statement_if_end = check_if_statement_end_if_else,
@@ -256,9 +343,9 @@ void mcc_print_symbol_table(FILE *out, struct mcc_symbol_table *symbol_table)
 		return;
 	}
 
-	fprintf(out, "\nsymbol_table ");
+	fprintf(out, "\n[symbol_table ");
 	fprintf(out, symbol_table->label);
-	fprintf(out, "\n\nname\t\t|\ttype\n--------------------------\n");
+	fprintf(out, "]\nname\t\t|\ttype\n-----------------------------\n");
 
 	if (symbol_table->symbols != NULL) {
 		struct mcc_symbol *current_symbol = symbol_table->symbols->head;
