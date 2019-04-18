@@ -223,7 +223,7 @@ static void symbol_table_function_def(struct mcc_ast_func_definition *function, 
 
 	if (!tmp->main_found) {
 		int compare = strcmp("main", function->func_identifier->identifier->name);
-		if (compare == 0 && function->func_type == MCC_AST_TYPE_VOID && function->parameter_list == NULL) {
+		if (compare == 0 && function->func_type == MCC_AST_TYPE_INT && function->parameter_list == NULL) {
 			tmp->main_found = 1;
 		}
 	}
@@ -300,6 +300,24 @@ struct mcc_symbol *lookup_symbol(struct mcc_symbol_table *symbol_table, char *sy
 	return sym;
 }
 
+static void symbol_table_function_call(struct mcc_ast_expression *expression, void *data)
+{
+	assert(expression);
+	assert(data);
+
+	struct temp_create_symbol_table *tmp = data;
+
+	struct mcc_symbol *sym =
+	    lookup_symbol(tmp->symbol_table, expression->function_call_identifier->identifier->name);
+
+	if (!sym) {
+		// TODO Andreas, error, function not declared
+		printf("error, function not declared [");
+		printf(expression->function_call_identifier->identifier->name);
+		printf("]\n");
+	}
+}
+
 struct mcc_ast_visitor generate_symbol_table_visitor(struct temp_create_symbol_table *temp_st)
 {
 	return (struct mcc_ast_visitor){
@@ -318,7 +336,7 @@ struct mcc_ast_visitor generate_symbol_table_visitor(struct temp_create_symbol_t
 	    .function_compound = post_function_def,
 
 	    // .expression_identifier = symbol_table_identifier,
-	    // .expression_function_call = symbol_table_function_call,
+	    .expression_call = symbol_table_function_call
 
 	    // .statement_if = check_if_stmt_start_if_else,
 	    // .statement_return = check_if_statement_return,
