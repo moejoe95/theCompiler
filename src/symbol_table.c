@@ -5,17 +5,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-static struct mcc_symbol_table *allocate_symbol_table(struct mcc_symbol_table *symbol_table_parent)
+static struct mcc_symbol_table *allocate_symbol_table(struct mcc_symbol_table *symbol_table_parent, char *label)
 {
 	struct mcc_symbol_table *symbol_table = malloc(sizeof(*symbol_table));
 	if (!symbol_table) {
 		return NULL;
 	}
 
-	if (symbol_table_parent == NULL) {
-		symbol_table->label = "global";
+	if (label != NULL) {
+		symbol_table->label = label;
 	} else {
-		symbol_table->label = "sub";
+		symbol_table->label = "anonymous";
 	}
 
 	symbol_table->parent = symbol_table_parent;
@@ -111,7 +111,7 @@ struct mcc_symbol_table *mcc_create_symbol_table(struct mcc_ast_program *program
 	temp_st->main_found = 0;
 	// temp_st->index = 0;
 	// temp_st->error_list = error_list;
-	temp_st->symbol_table = allocate_symbol_table(NULL);
+	temp_st->symbol_table = allocate_symbol_table(NULL, "global");
 	// temp_st->is_duplicate = 0;
 	// temp_st->check_return = NULL;
 
@@ -170,7 +170,7 @@ static void symbol_table_compound(struct mcc_ast_statement __attribute__((unused
 
 	switch (order) {
 	case MCC_AST_VISIT_PRE_ORDER:
-		symbol_table = allocate_symbol_table(tmp->symbol_table);
+		symbol_table = allocate_symbol_table(tmp->symbol_table, NULL);
 		add_child_symbol_table(tmp->symbol_table, symbol_table);
 		enter_scope(tmp, symbol_table);
 		break;
@@ -241,21 +241,22 @@ static void symbol_table_function_def(struct mcc_ast_func_definition *function, 
 	// set_semantic_annotation_function_duplicate(function, 0);
 	insert_symbol_function(tmp, function);
 
-	// struct mcc_symbol_table *symbol_table = allocate_symbol_table(tmp->symbol_table);
+	struct mcc_symbol_table *symbol_table =
+	    allocate_symbol_table(tmp->symbol_table, function->func_identifier->identifier->name);
 
-	// // tmp->check_return = get_if_else_stmt_struct(NULL, MCC_SC_IF_ELSE_TYPE_PATH_MAIN);
+	// tmp->check_return = get_if_else_stmt_struct(NULL, MCC_SC_IF_ELSE_TYPE_PATH_MAIN);
 
-	// add_child_symbol_table(tmp->symbol_table, symbol_table);
-	// enter_scope(tmp, symbol_table);
-	// tmp->create_inner_scope = 0;
-	// // tmp->current_function = lookup_function_symbol(symbol_table, function->func_identifier->identifier->name);
-	// if (function->parameter_list) {
-	// 	struct mcc_ast_parameter *param = function->parameter_list;
-	// 	do {
-	// 		symbol_table_declaration(param->parameter, tmp);
-	// 		param = param->next_parameter;
-	// 	} while (param);
-	// }
+	add_child_symbol_table(tmp->symbol_table, symbol_table);
+	enter_scope(tmp, symbol_table);
+	tmp->create_inner_scope = 0;
+	// tmp->current_function = lookup_function_symbol(symbol_table, function->func_identifier->identifier->name);
+	if (function->parameter_list) {
+		struct mcc_ast_parameter *param = function->parameter_list;
+		do {
+			symbol_table_declaration(param->parameter, tmp);
+			param = param->next_parameter;
+		} while (param);
+	}
 }
 
 void insert_symbol_function(struct temp_create_symbol_table *tmp, struct mcc_ast_func_definition *function_def)
