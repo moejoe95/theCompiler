@@ -124,6 +124,7 @@ struct mcc_symbol_table *mcc_create_symbol_table(struct mcc_ast_program *program
 
 	if (!temp_st->main_found) {
 		// TODO Andreas, print error
+		printf("error, no main found\n");
 	}
 
 	struct mcc_symbol_table *symbol_table = temp_st->symbol_table;
@@ -216,7 +217,7 @@ struct mcc_symbol *lookup_symbol_in_scope(struct mcc_symbol_table *symbol_table,
 	return NULL;
 }
 
-static void symbol_table_pre_function_def(struct mcc_ast_func_definition *function, void *data)
+static void symbol_table_function_def(struct mcc_ast_func_definition *function, void *data)
 {
 	struct temp_create_symbol_table *tmp = data;
 
@@ -239,26 +240,22 @@ static void symbol_table_pre_function_def(struct mcc_ast_func_definition *functi
 	}
 	// set_semantic_annotation_function_duplicate(function, 0);
 	insert_symbol_function(tmp, function);
-}
 
-static void symbol_table_function_def(struct mcc_ast_func_definition *function, void *data)
-{
-	struct temp_create_symbol_table *tmp = data;
-	struct mcc_symbol_table *symbol_table = allocate_symbol_table(tmp->symbol_table);
+	// struct mcc_symbol_table *symbol_table = allocate_symbol_table(tmp->symbol_table);
 
-	// tmp->check_return = get_if_else_stmt_struct(NULL, MCC_SC_IF_ELSE_TYPE_PATH_MAIN);
+	// // tmp->check_return = get_if_else_stmt_struct(NULL, MCC_SC_IF_ELSE_TYPE_PATH_MAIN);
 
-	add_child_symbol_table(tmp->symbol_table, symbol_table);
-	enter_scope(tmp, symbol_table);
-	tmp->create_inner_scope = 0;
-	// tmp->current_function = lookup_function_symbol(symbol_table, function->func_identifier->identifier->name);
-	if (function->parameter_list) {
-		struct mcc_ast_parameter *param = function->parameter_list;
-		do {
-			symbol_table_declaration(param->parameter, tmp);
-			param = param->next_parameter;
-		} while (param);
-	}
+	// add_child_symbol_table(tmp->symbol_table, symbol_table);
+	// enter_scope(tmp, symbol_table);
+	// tmp->create_inner_scope = 0;
+	// // tmp->current_function = lookup_function_symbol(symbol_table, function->func_identifier->identifier->name);
+	// if (function->parameter_list) {
+	// 	struct mcc_ast_parameter *param = function->parameter_list;
+	// 	do {
+	// 		symbol_table_declaration(param->parameter, tmp);
+	// 		param = param->next_parameter;
+	// 	} while (param);
+	// }
 }
 
 void insert_symbol_function(struct temp_create_symbol_table *tmp, struct mcc_ast_func_definition *function_def)
@@ -269,7 +266,7 @@ void insert_symbol_function(struct temp_create_symbol_table *tmp, struct mcc_ast
 
 	// function_def->func_identifier->identifier->sym_declaration = sym;
 
-	add_symbol_to_list(tmp->symbol_table, sym);
+	add_symbol_to_list(tmp->symbol_table->symbols, sym);
 }
 
 static void post_function_def(struct mcc_ast_func_definition *function, void *data)
@@ -317,7 +314,6 @@ struct mcc_ast_visitor generate_symbol_table_visitor(struct temp_create_symbol_t
 	    .statement_compound_post = symbol_table_compound_post,
 
 	    .function = symbol_table_function_def,
-	    .function_identifier = symbol_table_pre_function_def,
 	    .function_compound = post_function_def,
 
 	    // .expression_identifier = symbol_table_identifier,
