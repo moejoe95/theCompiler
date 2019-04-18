@@ -4,7 +4,6 @@ int add(int n, int m)
     m = 1;
 
     string k;
-    int k;
     {
         int n;
         n = 1;

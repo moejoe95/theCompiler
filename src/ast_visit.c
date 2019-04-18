@@ -247,7 +247,8 @@ void mcc_ast_visit_statement_compound(struct mcc_ast_statement *comp_stmt, struc
 		stmt = stmt->next_statement;
 	}
 
-	visit_if_post_order(comp_stmt, visitor->statement_compound, visitor);
+	visit_if_pre_order(comp_stmt, visitor->statement_compound_post, visitor);
+	visit_if_post_order(comp_stmt, visitor->statement_compound_post, visitor);
 }
 
 void mcc_ast_visit_statement(struct mcc_ast_statement *stat, struct mcc_ast_visitor *visitor)
@@ -290,7 +291,7 @@ void mcc_ast_visit_function(struct mcc_ast_func_definition *function, struct mcc
 	// identifier
 	mcc_ast_visit_expression(function->func_identifier, visitor);
 
-	// compund
+	// compound
 	mcc_ast_visit_statement_compound(function->func_compound, visitor);
 
 	visit_if_post_order(function, visitor->function, visitor);

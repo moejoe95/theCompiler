@@ -13,7 +13,7 @@
 
 struct temp_create_symbol_table {
 	// TODO Andreas, define errors
-	// int create_inner_scope;
+	int create_inner_scope;
 	int main_found;
 	// int index;
 	// int is_duplicate;
@@ -68,6 +68,9 @@ void insert_built_in_symbol(struct temp_create_symbol_table *temp_st,
 
 struct mcc_symbol *
 create_symbol_built_in(enum mcc_ast_type type, struct mcc_ast_identifier *identifier, long *arr_size);
+
+void enter_scope(struct temp_create_symbol_table *tmp, struct mcc_symbol_table *symbol_table);
+void exit_scope(struct temp_create_symbol_table *tmp);
 
 void mcc_delete_symbol_table(struct mcc_symbol_table *symbol_table);
 

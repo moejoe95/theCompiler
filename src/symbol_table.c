@@ -15,7 +15,7 @@ static struct mcc_symbol_table *allocate_symbol_table(struct mcc_symbol_table *s
 	if (symbol_table_parent == NULL) {
 		symbol_table->label = "global";
 	} else {
-		symbol_table_parent->label = "";
+		symbol_table->label = "sub";
 	}
 
 	symbol_table->parent = symbol_table_parent;
@@ -26,6 +26,8 @@ static struct mcc_symbol_table *allocate_symbol_table(struct mcc_symbol_table *s
 	}
 	symbol_list->head = NULL;
 	symbol_table->symbols = symbol_list;
+	symbol_table->next = NULL;
+	symbol_table->sub_tables = NULL;
 
 	return symbol_table;
 }
@@ -105,7 +107,7 @@ struct mcc_symbol_table *mcc_create_symbol_table(struct mcc_ast_program *program
 	}
 
 	struct temp_create_symbol_table *temp_st = malloc(sizeof(*temp_st));
-	// temp_st->create_inner_scope = 1;
+	temp_st->create_inner_scope = 1;
 	temp_st->main_found = 0;
 	// temp_st->index = 0;
 	// temp_st->error_list = error_list;
@@ -158,6 +160,41 @@ static void symbol_table_declaration(struct mcc_ast_declare_assign *declaration,
 	// }
 }
 
+static void symbol_table_compound(struct mcc_ast_statement __attribute__((unused)) * statement,
+                                  void *data,
+                                  enum mcc_ast_visit_order order)
+{
+	struct mcc_ast_symbol_table *symbol_table;
+	struct temp_create_symbol_table *tmp = data;
+
+	switch (order) {
+	case MCC_AST_VISIT_PRE_ORDER:
+		symbol_table = allocate_symbol_table(tmp->symbol_table);
+		add_child_symbol_table(tmp->symbol_table, symbol_table);
+		enter_scope(tmp, symbol_table);
+		break;
+
+	case MCC_AST_VISIT_POST_ORDER:
+		exit_scope(tmp);
+		break;
+	}
+}
+
+static void symbol_table_compound_pre(struct mcc_ast_statement *statement, void *data)
+{
+	struct temp_create_symbol_table *tmp = data;
+	if (tmp->create_inner_scope) {
+		symbol_table_compound(statement, data, MCC_AST_VISIT_PRE_ORDER);
+	} else {
+		tmp->create_inner_scope = 1;
+	}
+}
+
+static void symbol_table_compound_post(struct mcc_ast_statement *statement, void *data)
+{
+	symbol_table_compound(statement, data, MCC_AST_VISIT_POST_ORDER);
+}
+
 struct mcc_symbol *lookup_symbol_in_scope(struct mcc_symbol_table *symbol_table, char *key)
 {
 	struct mcc_symbol *tmp = symbol_table->symbols->head;
@@ -188,10 +225,10 @@ struct mcc_ast_visitor generate_symbol_table_visitor(struct temp_create_symbol_t
 	    .userdata = temp_st,
 	    // .pre_visit_function = 1,
 
-	    .declaration = symbol_table_declaration
+	    .declaration = symbol_table_declaration,
 
-	    // .statement_compound = symbol_table_compound_pre,
-	    // .statement_compound_post = symbol_table_compound_post,
+	    .statement_compound = symbol_table_compound_pre,
+	    .statement_compound_post = symbol_table_compound_post
 	    // .declaration = symbol_table_declaration,
 	    // .function_def = symbol_table_function_def,
 	    // .expression_identifier = symbol_table_identifier,
@@ -223,14 +260,24 @@ void mcc_print_symbol_table(FILE *out, struct mcc_symbol_table *symbol_table)
 	fprintf(out, symbol_table->label);
 	fprintf(out, "\n\nname\t\t|\ttype\n--------------------------\n");
 
-	struct mcc_symbol *current_symbol = symbol_table->symbols->head;
-	while (current_symbol != NULL) {
-		fprintf(out, current_symbol->identifier->name);
-		fprintf(out, "\t\t|\t");
-		fprintf(out, get_type_string(current_symbol->type));
-		fprintf(out, "\n");
+	if (symbol_table->symbols != NULL) {
+		struct mcc_symbol *current_symbol = symbol_table->symbols->head;
+		while (current_symbol != NULL) {
+			fprintf(out, current_symbol->identifier->name);
+			fprintf(out, "\t\t|\t");
+			fprintf(out, get_type_string(current_symbol->type));
+			fprintf(out, "\n");
 
-		current_symbol = current_symbol->next_symbol;
+			current_symbol = current_symbol->next_symbol;
+		}
+	}
+
+	if (symbol_table->next != NULL) {
+		mcc_print_symbol_table(out, symbol_table->next);
+	}
+
+	if (symbol_table->sub_tables != NULL && symbol_table->sub_tables->head != NULL) {
+		mcc_print_symbol_table(out, symbol_table->sub_tables->head);
 	}
 }
 
@@ -253,18 +300,32 @@ void add_symbol_to_list(struct mcc_symbol_list *list, struct mcc_symbol *symbol)
 	current->next_symbol = symbol;
 }
 
-void add_symbol_table_to_list(struct mcc_symbol_table_list *list, struct mcc_symbol_table *table)
+void add_child_symbol_table(struct mcc_symbol_table *parent, struct mcc_symbol_table *table)
 {
-	struct mcc_symbol_table *current = list->head;
-
-	if (current == NULL) {
-		list->head = table;
+	if (parent->sub_tables == NULL) {
+		struct mcc_symbol_table_list *symbol_table_list = malloc(sizeof(*symbol_table_list));
+		if (!symbol_table_list) {
+			return NULL;
+		}
+		symbol_table_list->head = table;
+		parent->sub_tables = symbol_table_list;
 		return;
 	}
+	struct mcc_symbol_table *current = parent->sub_tables->head;
 
 	while (current->next != NULL) {
 		current = current->next;
 	}
 
 	current->next = table;
+}
+
+void enter_scope(struct temp_create_symbol_table *tmp, struct mcc_symbol_table *symbol_table)
+{
+	tmp->symbol_table = symbol_table;
+}
+
+void exit_scope(struct temp_create_symbol_table *tmp)
+{
+	tmp->symbol_table = tmp->symbol_table->parent;
 }
