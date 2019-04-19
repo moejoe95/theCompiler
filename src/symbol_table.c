@@ -318,6 +318,21 @@ static void symbol_table_function_call(struct mcc_ast_expression *expression, vo
 	}
 }
 
+static void symbol_table_assignment(struct mcc_ast_declare_assign *assignment, void *data)
+{
+	assert(assignment);
+	assert(data);
+
+	struct temp_create_symbol_table *temp = data;
+	char *id = assignment->assign_lhs->identifier->name;
+	struct mcc_symbol *previous_declaration = lookup_symbol(temp->symbol_table, id);
+	if (previous_declaration == NULL) {
+		// TODO Andreas, add error
+		printf("error, assignment to '%s' without previous declartion\n", id);
+		return;
+	}
+}
+
 struct mcc_ast_visitor generate_symbol_table_visitor(struct temp_create_symbol_table *temp_st)
 {
 	return (struct mcc_ast_visitor){
@@ -328,6 +343,7 @@ struct mcc_ast_visitor generate_symbol_table_visitor(struct temp_create_symbol_t
 	    // .pre_visit_function = 1,
 
 	    .declaration = symbol_table_declaration,
+	    .assignment = symbol_table_assignment,
 
 	    .statement_compound = symbol_table_compound_pre,
 	    .statement_compound_post = symbol_table_compound_post,
