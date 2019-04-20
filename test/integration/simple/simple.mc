@@ -15,4 +15,10 @@ int add(int i, int j)
 int main() {
     func();
     return add(1, 2);
+
+    if (x){
+        a;
+    } else b;
+
+    return u;
 }

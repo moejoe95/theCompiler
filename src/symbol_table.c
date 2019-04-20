@@ -326,7 +326,7 @@ static void check_identifier(struct mcc_symbol_table *symbol_table, char *id)
 	struct mcc_symbol *previous_declaration = lookup_symbol(symbol_table, id);
 	if (previous_declaration == NULL) {
 		// TODO Andreas, add error
-		printf("error, assignment to '%s' without previous declaration\n", id);
+		printf("error, undefined identifier '%s'\n", id);
 		return;
 	}
 }
@@ -376,6 +376,8 @@ static void symbol_table_expression(struct mcc_ast_expression *expr, void *data)
 	case MCC_AST_EXPRESSION_TYPE_LITERAL:
 		if (expr->expression->type == MCC_AST_EXPRESSION_TYPE_IDENTIFIER) {
 			check_identifier(temp->symbol_table, expr->expression->identifier->name);
+		} else if (expr->expression->type == MCC_AST_EXPRESSION_TYPE_ARRAY_ACCESS) {
+			symbol_table_expression(expr->array_access_id, data);
 		}
 		break;
 	}
@@ -398,6 +400,14 @@ static void symbol_table_while_statement(struct mcc_ast_statement *if_stmt, void
 	symbol_table_expression(if_stmt->while_cond, data);
 }
 
+static void symbol_table_return_statement(struct mcc_ast_statement *ret, void *data)
+{
+	assert(ret);
+	assert(data);
+
+	symbol_table_expression(ret->expression, data);
+}
+
 struct mcc_ast_visitor generate_symbol_table_visitor(struct temp_create_symbol_table *temp_st)
 {
 	return (struct mcc_ast_visitor){
@@ -406,8 +416,6 @@ struct mcc_ast_visitor generate_symbol_table_visitor(struct temp_create_symbol_t
 
 	    .userdata = temp_st,
 	    // .pre_visit_function = 1,
-
-	    //.expression_identifier = symbol_table_expression_identifier,
 
 	    .declaration = symbol_table_declaration,
 	    .assignment = symbol_table_assignment,
@@ -422,7 +430,7 @@ struct mcc_ast_visitor generate_symbol_table_visitor(struct temp_create_symbol_t
 
 	    .statement_if = symbol_table_if_statement,
 	    .statement_while = symbol_table_while_statement,
-	    .statement_return = symbol_table_expression,
+	    .statement_return = symbol_table_return_statement,
 	    .statement_expression = symbol_table_expression,
 	};
 }
