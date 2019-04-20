@@ -318,6 +318,16 @@ static void symbol_table_function_call(struct mcc_ast_expression *expression, vo
 	}
 }
 
+static void check_assignment(struct mcc_symbol_table *symbol_table, char *id)
+{
+	struct mcc_symbol *previous_declaration = lookup_symbol(symbol_table, id);
+	if (previous_declaration == NULL) {
+		// TODO Andreas, add error
+		printf("error, assignment to '%s' without previous declartion\n", id);
+		return;
+	}
+}
+
 static void symbol_table_assignment(struct mcc_ast_declare_assign *assignment, void *data)
 {
 	assert(assignment);
@@ -325,12 +335,44 @@ static void symbol_table_assignment(struct mcc_ast_declare_assign *assignment, v
 
 	struct temp_create_symbol_table *temp = data;
 	char *id = assignment->assign_lhs->identifier->name;
-	struct mcc_symbol *previous_declaration = lookup_symbol(temp->symbol_table, id);
-	if (previous_declaration == NULL) {
-		// TODO Andreas, add error
-		printf("error, assignment to '%s' without previous declartion\n", id);
-		return;
+	check_assignment(temp->symbol_table, id);
+}
+
+static void symbol_table_expression(struct mcc_ast_expression *expr, void *data)
+{
+	assert(expr);
+	assert(data);
+	struct temp_create_symbol_table *temp = data;
+
+	switch (expr->type) {
+	case MCC_AST_EXPRESSION_TYPE_IDENTIFIER:
+		check_assignment(temp->symbol_table, expr->identifier->name);
+		break;
+	case MCC_AST_EXPRESSION_TYPE_UNARY_OP:
+		symbol_table_expression(expr->rhs, data);
+		break;
+	case MCC_AST_EXPRESSION_TYPE_BINARY_OP:
+		symbol_table_expression(expr->lhs, data);
+		symbol_table_expression(expr->rhs, data);
+		break;
+	case MCC_AST_EXPRESSION_TYPE_PARENTH:
+		symbol_table_expression(expr->expression, data);
+		break;
+	case MCC_AST_EXPRESSION_TYPE_ARRAY_ACCESS:
+		symbol_table_expression(expr->array_access_id, data);
+		break;
 	}
+}
+
+static void symbol_table_if_statement(struct mcc_ast_statement *if_stmt, void *data)
+{
+	assert(if_stmt);
+	assert(data);
+
+	// check if condition
+	symbol_table_expression(if_stmt->if_cond, data);
+
+	// TODO check if stmt and else_stmt
 }
 
 struct mcc_ast_visitor generate_symbol_table_visitor(struct temp_create_symbol_table *temp_st)
@@ -351,13 +393,10 @@ struct mcc_ast_visitor generate_symbol_table_visitor(struct temp_create_symbol_t
 	    .function = symbol_table_function_def,
 	    .function_compound = post_function_def,
 
-	    // .expression_identifier = symbol_table_identifier,
-	    .expression_call = symbol_table_function_call
+	    .expression_call = symbol_table_function_call,
 
-	    // .statement_if = check_if_stmt_start_if_else,
+	    .statement_if = symbol_table_if_statement,
 	    // .statement_return = check_if_statement_return,
-	    // .statement_if_end = check_if_statement_end_if_else,
-	    // .statement_if_start_else = check_if_statement_end_if_else,
 	};
 }
 
