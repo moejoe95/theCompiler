@@ -318,8 +318,11 @@ static void symbol_table_function_call(struct mcc_ast_expression *expression, vo
 	}
 }
 
-static void check_assignment(struct mcc_symbol_table *symbol_table, char *id)
+static void check_identifier(struct mcc_symbol_table *symbol_table, char *id)
 {
+	assert(symbol_table);
+	assert(id);
+
 	struct mcc_symbol *previous_declaration = lookup_symbol(symbol_table, id);
 	if (previous_declaration == NULL) {
 		// TODO Andreas, add error
@@ -335,7 +338,16 @@ static void symbol_table_assignment(struct mcc_ast_declare_assign *assignment, v
 
 	struct temp_create_symbol_table *temp = data;
 	char *id = assignment->assign_lhs->identifier->name;
-	check_assignment(temp->symbol_table, id);
+	check_identifier(temp->symbol_table, id);
+}
+
+static void symbol_table_expression_identifier(struct mcc_ast_expression_identifier *id, void *data)
+{
+	assert(id);
+	assert(data);
+
+	struct temp_create_symbol_table *temp = data;
+	check_identifier(temp->symbol_table, id);
 }
 
 static void symbol_table_expression(struct mcc_ast_expression *expr, void *data)
@@ -346,7 +358,7 @@ static void symbol_table_expression(struct mcc_ast_expression *expr, void *data)
 
 	switch (expr->type) {
 	case MCC_AST_EXPRESSION_TYPE_IDENTIFIER:
-		check_assignment(temp->symbol_table, expr->identifier->name);
+		check_identifier(temp->symbol_table, expr->identifier->name);
 		break;
 	case MCC_AST_EXPRESSION_TYPE_UNARY_OP:
 		symbol_table_expression(expr->rhs, data);
@@ -360,7 +372,11 @@ static void symbol_table_expression(struct mcc_ast_expression *expr, void *data)
 		break;
 	case MCC_AST_EXPRESSION_TYPE_ARRAY_ACCESS:
 		symbol_table_expression(expr->array_access_id, data);
-
+		break;
+	case MCC_AST_EXPRESSION_TYPE_LITERAL:
+		if (expr->expression->type == MCC_AST_EXPRESSION_TYPE_IDENTIFIER) {
+			check_identifier(temp->symbol_table, expr->expression->identifier->name);
+		}
 		break;
 	}
 }
@@ -391,6 +407,8 @@ struct mcc_ast_visitor generate_symbol_table_visitor(struct temp_create_symbol_t
 	    .userdata = temp_st,
 	    // .pre_visit_function = 1,
 
+	    //.expression_identifier = symbol_table_expression_identifier,
+
 	    .declaration = symbol_table_declaration,
 	    .assignment = symbol_table_assignment,
 
@@ -405,6 +423,7 @@ struct mcc_ast_visitor generate_symbol_table_visitor(struct temp_create_symbol_t
 	    .statement_if = symbol_table_if_statement,
 	    .statement_while = symbol_table_while_statement,
 	    .statement_return = symbol_table_expression,
+	    .statement_expression = symbol_table_expression,
 	};
 }
 
