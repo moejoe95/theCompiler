@@ -217,34 +217,57 @@ struct mcc_symbol *lookup_symbol_in_scope(struct mcc_symbol_table *symbol_table,
 	return NULL;
 }
 
+static int check_return(struct mcc_symbol_table *symbol_table, struct mcc_ast_func_definition *function_def){
+	assert(symbol_table);
+	assert(function_def);
+
+	// void functions need no return statement
+	if(function_def->func_type == 'void') return 1;
+
+	// search for return statement
+	// TODO recursive search through statments to find return statements
+	struct mcc_ast_statement_list *list = function_def->func_compound->compound;
+	while(list != NULL){
+		if (list->statement->type == MCC_AST_STATEMENT_RETURN){
+			return 1;
+		}
+		list = list->next_statement;
+	}
+	return 0;
+}
+
 static void symbol_table_function_def(struct mcc_ast_func_definition *function, void *data)
 {
 	struct temp_create_symbol_table *tmp = data;
+	char *func_id = function->func_identifier->identifier->name;
 
 	if (!tmp->main_found) {
-		int compare = strcmp("main", function->func_identifier->identifier->name);
+		int compare = strcmp("main", func_id);
 		if (compare == 0 && function->func_type == MCC_AST_TYPE_INT && function->parameter_list == NULL) {
 			tmp->main_found = 1;
 		}
 	}
 
 	struct mcc_ast_symbol_declaration *previous_declaration =
-	    lookup_symbol_in_scope(tmp->symbol_table, function->func_identifier->identifier->name);
+	    lookup_symbol_in_scope(tmp->symbol_table, func_id);
 
 	if (previous_declaration != NULL) {
 		// TODO Andreas, add error
-		printf("duplicate function definition with id '");
-		printf(function->func_identifier->identifier->name);
-		printf("'\n");
+		printf("duplicate function definition with id '%s'\n", func_id);
 		return;
 	}
 	// set_semantic_annotation_function_duplicate(function, 0);
 	insert_symbol_function(tmp, function);
 
 	struct mcc_symbol_table *symbol_table =
-	    allocate_symbol_table(tmp->symbol_table, function->func_identifier->identifier->name);
+	    allocate_symbol_table(tmp->symbol_table, func_id);
 
-	// tmp->check_return = get_if_else_stmt_struct(NULL, MCC_SC_IF_ELSE_TYPE_PATH_MAIN);
+	int ret = check_return(symbol_table, function);
+	if (!ret){
+		// TODO error, no return
+		printf("no return value in non void function '%s' \n", func_id);
+		return;
+	}
 
 	add_child_symbol_table(tmp->symbol_table, symbol_table);
 	enter_scope(tmp, symbol_table);

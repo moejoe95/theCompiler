@@ -12,6 +12,10 @@ int add(int i, int j)
     return n + m;
 }
 
+int func(){
+    int x;
+}
+
 int main() {
     func();
     return add(1, 2);
