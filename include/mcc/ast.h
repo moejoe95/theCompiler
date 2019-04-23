@@ -140,6 +140,7 @@ struct mcc_ast_expression {
 	struct mcc_ast_node node;
 
 	enum mcc_ast_expression_type type;
+	enum mcc_ast_type expression_type;
 	union {
 		// MCC_AST_EXPRESSION_TYPE_LITERAL
 		struct mcc_ast_literal *literal;

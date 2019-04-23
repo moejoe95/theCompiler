@@ -5,6 +5,7 @@
 #include "mcc/ast_print.h"
 #include "mcc/parser.h"
 #include "mcc/symbol_table.h"
+#include "mcc/type_checking.h"
 #include <getopt.h>
 #include <string.h>
 
@@ -103,6 +104,10 @@ int main(int argc, char **argv)
 		struct mcc_symbol_table *st = NULL;
 		st = mcc_create_symbol_table(pro);
 		mcc_print_symbol_table(out, st);
+
+		// type checking
+		printf("\ntype errors: \n");
+		mcc_check_types(pro, st);
 
 		// cleanup
 		mcc_delete_symbol_table(st);

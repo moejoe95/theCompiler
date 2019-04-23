@@ -1,10 +1,11 @@
 #ifndef MCC_TYPE_CHECKING_H
 #define MCC_TYPE_CHECKING_H
 
-#include "mcc/ast_print.h"
-#include "mcc/symbol_table.h"
 #include "mcc/ast.h"
-
+#include "mcc/ast_visit.h"
+#include <assert.h>
+#include <mcc/ast_print.h>
+#include <stdio.h>
 
 struct mcc_type_checking {
 	struct mcc_symbol_table *symbol_table;
