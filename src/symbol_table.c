@@ -218,8 +218,15 @@ struct mcc_symbol *lookup_symbol_in_scope(struct mcc_symbol_table *symbol_table,
 	return NULL;
 }
 
-static int check_compound_return(struct mcc_symbol_table *symbol_table, struct mcc_ast_statement_list *list){
-	assert(symbol_table);
+static int check_statement_return(struct mcc_ast_statement *stmt){
+	assert(stmt);
+	if (stmt->type == MCC_AST_STATEMENT_RETURN){
+		return 1;
+	}
+	return 0;
+}
+
+static int check_compound_return(struct mcc_ast_statement_list *list){
 	assert(list);
 
 	int ret = 0;
@@ -232,18 +239,26 @@ static int check_compound_return(struct mcc_symbol_table *symbol_table, struct m
 				break;
 		
 			case MCC_AST_STATEMENT_COMPOUND:
-				if(check_compound_return(symbol_table, stmt->compound)) ret++;
+				if(check_compound_return(stmt->compound)) ret++;
 				break;
 
 			case MCC_AST_STATEMENT_IF:
-				if(check_compound_return(symbol_table, stmt->if_stat->compound)) ret++;
-				if (stmt->else_stat != NULL){
-						if(check_compound_return(symbol_table, stmt->else_stat->compound)) ret++;
+				if(stmt->if_stat->type == MCC_AST_STATEMENT_COMPOUND){
+					if(check_compound_return(stmt->if_stat->compound)) ret++;
+					if (stmt->else_stat != NULL){
+							if(check_compound_return(stmt->else_stat->compound)) ret++;
+					}
+				} else {
+					return check_statement_return(stmt->if_stat);
 				}
 				break;
 
 			case MCC_AST_STATEMENT_WHILE:
-				if(check_compound_return(symbol_table, stmt->while_stat->compound)) ret++;
+				if(stmt->if_stat->type == MCC_AST_STATEMENT_COMPOUND){
+					if(check_compound_return(stmt->while_stat->compound)) ret++;
+				} else {
+					return check_statement_return(stmt->while_stat);
+				}
 				break;
 			default:
 				break;
@@ -254,15 +269,14 @@ static int check_compound_return(struct mcc_symbol_table *symbol_table, struct m
 	return ret;
 }
 
-static int check_return(struct mcc_symbol_table *symbol_table, struct mcc_ast_func_definition *function_def){
-	assert(symbol_table);
+static int check_return(struct mcc_ast_func_definition *function_def){
 	assert(function_def);
 
 	// void functions need no return statement
 	if(function_def->func_type == MCC_AST_TYPE_VOID) return 1;
 
 	struct mcc_ast_statement_list *list = function_def->func_compound->compound;
-	return check_compound_return(symbol_table, list);
+	return check_compound_return(list);
 }
 
 static void symbol_table_function_def(struct mcc_ast_func_definition *function, void *data)
@@ -291,7 +305,7 @@ static void symbol_table_function_def(struct mcc_ast_func_definition *function, 
 	struct mcc_symbol_table *symbol_table =
 	    allocate_symbol_table(tmp->symbol_table, func_id);
 
-	int ret = check_return(symbol_table, function);
+	int ret = check_return(function);
 	if (!ret){
 		// TODO error, no return
 		printf("no return value in non void function '%s' \n", func_id);
