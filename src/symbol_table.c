@@ -219,13 +219,6 @@ struct mcc_symbol *lookup_symbol_in_scope(struct mcc_symbol_table *symbol_table,
 	return NULL;
 }
 
-static void set_statement_return(struct temp_create_symbol_table *tmp, struct mcc_ast_statement *stmt){
-	assert(stmt);
-	if (stmt->type == MCC_AST_STATEMENT_RETURN){
-		tmp->is_returned = 1;
-	}
-}
-
 // forward declaration
 static void check_compound_return(struct temp_create_symbol_table *tmp, struct mcc_ast_statement_list *list);
 
@@ -258,7 +251,7 @@ static void check_compound_return(struct temp_create_symbol_table *tmp, struct m
 		switch (stmt->type)
 		{
 			case MCC_AST_STATEMENT_RETURN:
-				set_statement_return(tmp, stmt);
+				tmp->is_returned = 1;
 				return;
 				break;
 		
@@ -317,8 +310,8 @@ static void symbol_table_function_def(struct mcc_ast_func_definition *function, 
 	// check if non-void function returns value
 	check_return(tmp, function);
 	if (!tmp->is_returned){
-		// TODO error, no return
-		printf("no return value in non void function '%s' \n", func_id);
+		// TODO error, no return in non void function
+		printf("error, no return value in non void function '%s' \n", func_id);
 		return;
 	}
 	tmp->is_returned = 0;
