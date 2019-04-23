@@ -17,6 +17,7 @@ struct temp_create_symbol_table {
 	int main_found;
 	// int index;
 	int is_duplicate;
+	int is_returned;
 	struct mcc_symbol_table *symbol_table;
 	// struct mcc_symbol *current_function;
 	// struct mcc_sc_if_else_stmt *check_return;

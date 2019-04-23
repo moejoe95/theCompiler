@@ -113,6 +113,7 @@ struct mcc_symbol_table *mcc_create_symbol_table(struct mcc_ast_program *program
 	// temp_st->index = 0;
 	// temp_st->error_list = error_list;
 	temp_st->symbol_table = allocate_symbol_table(NULL, "global");
+	temp_st->is_returned = 0;
 	// temp_st->is_duplicate = 0;
 	// temp_st->check_return = NULL;
 
@@ -218,15 +219,38 @@ struct mcc_symbol *lookup_symbol_in_scope(struct mcc_symbol_table *symbol_table,
 	return NULL;
 }
 
-static int check_statement_return(struct mcc_ast_statement *stmt){
+static void set_statement_return(struct temp_create_symbol_table *tmp, struct mcc_ast_statement *stmt){
 	assert(stmt);
 	if (stmt->type == MCC_AST_STATEMENT_RETURN){
-		return 1;
+		tmp->is_returned = 1;
 	}
-	return 0;
 }
 
-static int check_compound_return(struct mcc_ast_statement_list *list){
+// forward declaration
+static void check_compound_return(struct temp_create_symbol_table *tmp, struct mcc_ast_statement_list *list);
+
+static void check_if_statement_return(struct temp_create_symbol_table *tmp, struct mcc_ast_statement *stmt){
+	assert(stmt);
+
+	if (stmt->else_stat == NULL){ // if there is no else, there must be a return in the scope above
+		return;
+	}
+
+	if(stmt->if_stat->type == MCC_AST_STATEMENT_RETURN){
+		if(stmt->else_stat->type == MCC_AST_STATEMENT_RETURN)
+			tmp->is_returned = 1;
+		else if(stmt->else_stat->type == MCC_AST_STATEMENT_COMPOUND)
+			check_compound_return(tmp, stmt->else_stat->compound);
+	} else if (stmt->if_stat->type == MCC_AST_STATEMENT_COMPOUND){	
+		check_compound_return(tmp, stmt->if_stat->compound);
+				if (tmp->is_returned){
+			tmp->is_returned = 0;
+			check_compound_return(tmp, stmt->else_stat->compound);
+		}
+	}
+}
+
+static void check_compound_return(struct temp_create_symbol_table *tmp, struct mcc_ast_statement_list *list){
 	assert(list);
 
 	while(list != NULL){
@@ -234,48 +258,34 @@ static int check_compound_return(struct mcc_ast_statement_list *list){
 		switch (stmt->type)
 		{
 			case MCC_AST_STATEMENT_RETURN:
-				return 1;
+				set_statement_return(tmp, stmt);
+				return;
 				break;
 		
 			case MCC_AST_STATEMENT_COMPOUND:
-				check_compound_return(stmt->compound);
+				check_compound_return(tmp, stmt->compound);
 				break;
 
 			case MCC_AST_STATEMENT_IF:
-				if(stmt->if_stat->type == MCC_AST_STATEMENT_COMPOUND){
-					check_compound_return(stmt->if_stat->compound);
-					if (stmt->else_stat != NULL){
-						check_compound_return(stmt->else_stat->compound);
-					}
-				} else {
-					return check_statement_return(stmt->if_stat);
-				}
+				check_if_statement_return(tmp, stmt);
 				break;
 
-			case MCC_AST_STATEMENT_WHILE:
-				if(stmt->if_stat->type == MCC_AST_STATEMENT_COMPOUND){
-					check_compound_return(stmt->while_stat->compound);
-				} else {
-					return check_statement_return(stmt->while_stat);
-				}
-				break;
 			default:
 				break;
 		}
 		
 		list = list->next_statement;
 	}
-	return 0;
 }
 
-static int check_return(struct mcc_ast_func_definition *function_def){
+static void check_return(struct temp_create_symbol_table *tmp, struct mcc_ast_func_definition *function_def){
 	assert(function_def);
 
 	// void functions need no return statement
-	if(function_def->func_type == MCC_AST_TYPE_VOID) return 1;
+	if(function_def->func_type == MCC_AST_TYPE_VOID) tmp->is_returned = 1;
 
 	struct mcc_ast_statement_list *list = function_def->func_compound->compound;
-	return check_compound_return(list);
+	check_compound_return(tmp, list);
 }
 
 static void symbol_table_function_def(struct mcc_ast_func_definition *function, void *data)
@@ -304,12 +314,14 @@ static void symbol_table_function_def(struct mcc_ast_func_definition *function, 
 	struct mcc_symbol_table *symbol_table =
 	    allocate_symbol_table(tmp->symbol_table, func_id);
 
-	int ret = check_return(function);
-	if (!ret){
+	// check if non-void function returns value
+	check_return(tmp, function);
+	if (!tmp->is_returned){
 		// TODO error, no return
 		printf("no return value in non void function '%s' \n", func_id);
 		return;
 	}
+	tmp->is_returned = 0;
 
 	add_child_symbol_table(tmp->symbol_table, symbol_table);
 	enter_scope(tmp, symbol_table);
