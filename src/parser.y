@@ -9,6 +9,7 @@
 
 %code requires {
 #include "mcc/parser.h"
+#include "mcc/error_handler.h"
 }
 
 %{
@@ -222,11 +223,11 @@ statement_list : statement { $$ = mcc_ast_new_statement_compound_stmt($1, NULL);
 
 void mcc_parser_error(struct MCC_PARSER_LTYPE *yylloc, yyscan_t *scanner, struct mcc_ast_program** result, const char *msg)
 {
-	fprintf(stderr, "%s:%d:%d: error: %s \n", filename, yylloc->last_line, yylloc->last_column, msg);
+	//fprintf(stderr, "%s:%d:%d: error: %s \n", filename, yylloc->last_line, yylloc->last_column, msg);
+	print_lexer_error(filename, yylloc, msg);
 	
 	UNUSED(result);
 	UNUSED(scanner);
-	UNUSED(msg);
 }
 
 struct mcc_parser_result mcc_parse_string(const char *input)
