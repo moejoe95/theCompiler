@@ -229,7 +229,6 @@ static int check_statement_return(struct mcc_ast_statement *stmt){
 static int check_compound_return(struct mcc_ast_statement_list *list){
 	assert(list);
 
-	int ret = 0;
 	while(list != NULL){
 		struct mcc_ast_statement *stmt = list->statement;
 		switch (stmt->type)
@@ -239,14 +238,14 @@ static int check_compound_return(struct mcc_ast_statement_list *list){
 				break;
 		
 			case MCC_AST_STATEMENT_COMPOUND:
-				if(check_compound_return(stmt->compound)) ret++;
+				check_compound_return(stmt->compound);
 				break;
 
 			case MCC_AST_STATEMENT_IF:
 				if(stmt->if_stat->type == MCC_AST_STATEMENT_COMPOUND){
-					if(check_compound_return(stmt->if_stat->compound)) ret++;
+					check_compound_return(stmt->if_stat->compound);
 					if (stmt->else_stat != NULL){
-							if(check_compound_return(stmt->else_stat->compound)) ret++;
+						check_compound_return(stmt->else_stat->compound);
 					}
 				} else {
 					return check_statement_return(stmt->if_stat);
@@ -255,7 +254,7 @@ static int check_compound_return(struct mcc_ast_statement_list *list){
 
 			case MCC_AST_STATEMENT_WHILE:
 				if(stmt->if_stat->type == MCC_AST_STATEMENT_COMPOUND){
-					if(check_compound_return(stmt->while_stat->compound)) ret++;
+					check_compound_return(stmt->while_stat->compound);
 				} else {
 					return check_statement_return(stmt->while_stat);
 				}
@@ -266,7 +265,7 @@ static int check_compound_return(struct mcc_ast_statement_list *list){
 		
 		list = list->next_statement;
 	}
-	return ret;
+	return 0;
 }
 
 static int check_return(struct mcc_ast_func_definition *function_def){
