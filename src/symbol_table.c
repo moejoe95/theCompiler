@@ -4,6 +4,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 static struct mcc_symbol_table *allocate_symbol_table(struct mcc_symbol_table *symbol_table_parent, char *label)
 {
@@ -217,23 +218,51 @@ struct mcc_symbol *lookup_symbol_in_scope(struct mcc_symbol_table *symbol_table,
 	return NULL;
 }
 
+static int check_compound_return(struct mcc_symbol_table *symbol_table, struct mcc_ast_statement_list *list){
+	assert(symbol_table);
+	assert(list);
+
+	int ret = 0;
+	while(list != NULL){
+		struct mcc_ast_statement *stmt = list->statement;
+		switch (stmt->type)
+		{
+			case MCC_AST_STATEMENT_RETURN:
+				return 1;
+				break;
+		
+			case MCC_AST_STATEMENT_COMPOUND:
+				if(check_compound_return(symbol_table, stmt->compound)) ret++;
+				break;
+
+			case MCC_AST_STATEMENT_IF:
+				if(check_compound_return(symbol_table, stmt->if_stat->compound)) ret++;
+				if (stmt->else_stat != NULL){
+						if(check_compound_return(symbol_table, stmt->else_stat->compound)) ret++;
+				}
+				break;
+
+			case MCC_AST_STATEMENT_WHILE:
+				if(check_compound_return(symbol_table, stmt->while_stat->compound)) ret++;
+				break;
+			default:
+				break;
+		}
+		
+		list = list->next_statement;
+	}
+	return ret;
+}
+
 static int check_return(struct mcc_symbol_table *symbol_table, struct mcc_ast_func_definition *function_def){
 	assert(symbol_table);
 	assert(function_def);
 
 	// void functions need no return statement
-	if(function_def->func_type == 'void') return 1;
+	if(function_def->func_type == MCC_AST_TYPE_VOID) return 1;
 
-	// search for return statement
-	// TODO recursive search through statments to find return statements
 	struct mcc_ast_statement_list *list = function_def->func_compound->compound;
-	while(list != NULL){
-		if (list->statement->type == MCC_AST_STATEMENT_RETURN){
-			return 1;
-		}
-		list = list->next_statement;
-	}
-	return 0;
+	return check_compound_return(symbol_table, list);
 }
 
 static void symbol_table_function_def(struct mcc_ast_func_definition *function, void *data)
@@ -364,15 +393,6 @@ static void symbol_table_assignment(struct mcc_ast_declare_assign *assignment, v
 	check_identifier(temp->symbol_table, id);
 }
 
-static void symbol_table_expression_identifier(struct mcc_ast_expression_identifier *id, void *data)
-{
-	assert(id);
-	assert(data);
-
-	struct temp_create_symbol_table *temp = data;
-	check_identifier(temp->symbol_table, id);
-}
-
 static void symbol_table_expression(struct mcc_ast_expression *expr, void *data)
 {
 	assert(expr);
@@ -402,6 +422,9 @@ static void symbol_table_expression(struct mcc_ast_expression *expr, void *data)
 		} else if (expr->expression->type == MCC_AST_EXPRESSION_TYPE_ARRAY_ACCESS) {
 			symbol_table_expression(expr->array_access_id, data);
 		}
+		break;
+	case MCC_AST_EXPRESSION_TYPE_FUNCTION_CALL:
+		//TODO
 		break;
 	}
 }
