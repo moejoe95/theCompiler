@@ -11,6 +11,7 @@
 
 %{
 #include "parser.tab.h"
+#include "mcc/error_handler.h"
 
 #define YYSTYPE MCC_PARSER_STYPE
 #define YYLTYPE MCC_PARSER_LTYPE
@@ -101,4 +102,4 @@ identifier		{alpha}{alpha_num}*
 
 <<EOF>>           { return TK_END; }
 
-.                 { fprintf(stderr, "Scanner Error: unknown character '%c'\n", yytext[0]); }
+.                 { print_scanner_error(yytext[0]); }

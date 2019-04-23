@@ -34,7 +34,7 @@ int main(int argc, char *argv[])
 
 	// parsing phase
 	{
-		struct mcc_parser_result result = mcc_parse_file(in);
+		struct mcc_parser_result result = mcc_parse_file(in, argv[1]);
 		fclose(in);
 		if (result.status != MCC_PARSER_STATUS_OK) {
 			return EXIT_FAILURE;
