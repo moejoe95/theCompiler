@@ -16,9 +16,14 @@
 
 int mcc_parser_lex();
 void mcc_parser_error();
+char *filename;
 
 #define loc(ast_node, ast_sloc) \
-	(ast_node)->node.sloc.start_col = (ast_sloc).first_column;
+	(ast_node)->node.sloc.start_col = (ast_sloc).first_column; \
+	(ast_node)->node.sloc.start_line = (ast_sloc).first_line; \
+	(ast_node)->node.sloc.end_col = (ast_sloc).last_column; \
+	(ast_node)->node.sloc.end_line = (ast_sloc).last_line; \
+	(ast_node)->node.sloc.filename = filename; \
 
 %}
 
@@ -217,7 +222,7 @@ statement_list : statement { $$ = mcc_ast_new_statement_compound_stmt($1, NULL);
 
 void mcc_parser_error(struct MCC_PARSER_LTYPE *yylloc, yyscan_t *scanner, struct mcc_ast_program** result, const char *msg)
 {
-	fprintf(stderr, "filename:%d:%d: error: %s \n", yylloc->last_line, yylloc->last_column, msg);
+	fprintf(stderr, "%s:%d:%d: error: %s \n", filename, yylloc->last_line, yylloc->last_column, msg);
 	
 	UNUSED(result);
 	UNUSED(scanner);
@@ -235,16 +240,18 @@ struct mcc_parser_result mcc_parse_string(const char *input)
 		};
 	}
 
-	struct mcc_parser_result result = mcc_parse_file(in);
+	struct mcc_parser_result result = mcc_parse_file(in, "no_filename");
 
 	fclose(in);
 
 	return result;
 }
 
-struct mcc_parser_result mcc_parse_file(FILE *input)
+struct mcc_parser_result mcc_parse_file(FILE *input, char *input_filename)
 {
 	assert(input);
+
+	filename = input_filename;
 
 	yyscan_t scanner;
 	mcc_parser_lex_init(&scanner);
