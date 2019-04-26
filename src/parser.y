@@ -10,6 +10,36 @@
 %code requires {
 #include "mcc/parser.h"
 #include "mcc/error_handler.h"
+
+char *filename; /* current filename here for the lexer */
+
+typedef struct YYLTYPE {
+	int first_line;
+	int first_column;
+	int last_line;
+	int last_column;
+	char *filename;
+} YYLTYPE;
+
+#define MCC_PARSER_LTYPE_IS_DECLARED 1
+#define YYLLOC_DEFAULT(Current, Rhs, N)                                 \
+		do                                                                  \
+		if (N)                                                            \
+			{                                                               \
+			(Current).first_line   = YYRHSLOC (Rhs, 1).first_line;        \
+			(Current).first_column = YYRHSLOC (Rhs, 1).first_column;            \
+			(Current).last_line    = YYRHSLOC (Rhs, N).last_line;           \
+			(Current).last_column  = YYRHSLOC (Rhs, N).last_column;               \
+			(Current).filename = YYRHSLOC (Rhs, 1).filename;              \
+			}                                                               \
+		else                                                              \
+			{                                                               \
+			(Current).first_line   = (Current).last_line   =               \
+				YYRHSLOC (Rhs, 0).last_line;                                 \
+			(Current).first_column = (Current).last_column =                     \
+				YYRHSLOC (Rhs, 0).last_column;                                  \
+			}                                                               \
+		while (0)
 }
 
 %{
@@ -117,11 +147,11 @@ char *filename;
 
 %%
 
-program : func_list { *result = mcc_ast_new_program($1); }
+program : func_list { *result = mcc_ast_new_program($1); loc($$, @1);}
 		;
 
-func_list  : function_def { $$ = mcc_ast_new_function_list($1, NULL); }
-           | function_def func_list { $$ = mcc_ast_new_function_list($1, $2); }
+func_list  : function_def { $$ = mcc_ast_new_function_list($1, NULL); loc($$, @1);}
+           | function_def func_list { $$ = mcc_ast_new_function_list($1, $2); loc($$, @1);}
            ;
 
 type : BOOL    { $$ = MCC_AST_TYPE_BOOL; }
@@ -157,61 +187,61 @@ expression : id
 		   | function_call
 		   ;
 
-id : IDENTIFIER  { $$ = mcc_ast_new_expression_identifier($1); }
+id : IDENTIFIER  { $$ = mcc_ast_new_expression_identifier($1); loc($$, @1);}
    ;
 
-parameters : declaration { $$ = mcc_ast_new_parameter($1, NULL); }
-           | declaration COMMA parameters { $$ = mcc_ast_new_parameter($1, $3); }
+parameters : declaration { $$ = mcc_ast_new_parameter($1, NULL); loc($$, @1);}
+           | declaration COMMA parameters { $$ = mcc_ast_new_parameter($1, $3); loc($$, @1);}
            ;
 
-declaration : type id { $$ = mcc_ast_new_declaration($1, $2, 0, 0); }
-			| type LSQUAREBRACKET INT_LITERAL RSQUAREBRACKET id  { $$ = mcc_ast_new_declaration($1, $5, $3, 1); }
+declaration : type id { $$ = mcc_ast_new_declaration($1, $2, 0, 0); loc($$, @1);}
+			| type LSQUAREBRACKET INT_LITERAL RSQUAREBRACKET id  { $$ = mcc_ast_new_declaration($1, $5, $3, 1); loc($$, @1);}
             ;
 
-assignment : id ASSIGN expression { $$ = mcc_ast_new_assignment($1, $3, NULL); }
-           | id LSQUAREBRACKET expression RSQUAREBRACKET ASSIGN expression { $$ = mcc_ast_new_assignment($1, $6, $3); }
+assignment : id ASSIGN expression { $$ = mcc_ast_new_assignment($1, $3, NULL); loc($$, @1);}
+           | id LSQUAREBRACKET expression RSQUAREBRACKET ASSIGN expression { $$ = mcc_ast_new_assignment($1, $6, $3); loc($$, @1);}
            ;
 
-statement : declaration SEMICOLON  { $$ = mcc_ast_new_statement_declaration($1); }
- 		  | assignment SEMICOLON   { $$ = mcc_ast_new_statement_assignment($1); }
-          | expression SEMICOLON   { $$ = mcc_ast_new_statement_expression($1); }
+statement : declaration SEMICOLON  { $$ = mcc_ast_new_statement_declaration($1); loc($$, @1);}
+ 		  | assignment SEMICOLON   { $$ = mcc_ast_new_statement_assignment($1); loc($$, @1);}
+          | expression SEMICOLON   { $$ = mcc_ast_new_statement_expression($1); loc($$, @1);}
 		  | if_stmt 
 		  | while_stmt 
 		  | return SEMICOLON
 		  | compound_stmt
           ;
 
-return : RETURN { $$ = mcc_ast_new_statement_return_expression(NULL); } 
-	   | RETURN expression { $$ = mcc_ast_new_statement_return_expression($2); }
+return : RETURN { $$ = mcc_ast_new_statement_return_expression(NULL); loc($$, @1);} 
+	   | RETURN expression { $$ = mcc_ast_new_statement_return_expression($2); loc($$, @1);}
        ;
 		   
-if_stmt : IF LPARENTH expression RPARENTH statement ELSE statement  { $$ = mcc_ast_new_if_stmt($3, $5, $7); }
-		| IF LPARENTH expression RPARENTH %prec THEN statement { $$ = mcc_ast_new_if_stmt($3, $5, NULL); }
+if_stmt : IF LPARENTH expression RPARENTH statement ELSE statement  { $$ = mcc_ast_new_if_stmt($3, $5, $7); loc($$, @1);}
+		| IF LPARENTH expression RPARENTH %prec THEN statement { $$ = mcc_ast_new_if_stmt($3, $5, NULL); loc($$, @1);}
         ;
 
-while_stmt : WHILE LPARENTH expression RPARENTH statement { $$ = mcc_ast_new_while_stmt($3, $5); }
+while_stmt : WHILE LPARENTH expression RPARENTH statement { $$ = mcc_ast_new_while_stmt($3, $5); loc($$, @1);}
         ;
 
-compound_stmt : LCURLYBRACKET RCURLYBRACKET {  $$ = mcc_ast_new_statement_compound(NULL); }
-              | LCURLYBRACKET statement_list RCURLYBRACKET { $$ = mcc_ast_new_statement_compound($2); }
+compound_stmt : LCURLYBRACKET RCURLYBRACKET {  $$ = mcc_ast_new_statement_compound(NULL); loc($$, @1);}
+              | LCURLYBRACKET statement_list RCURLYBRACKET { $$ = mcc_ast_new_statement_compound($2); loc($$, @1);}
               ;
 
-function_def : VOID id LPARENTH RPARENTH compound_stmt { $$ = mcc_ast_new_function(MCC_AST_TYPE_VOID, $2, $5, NULL); }
-             | type id LPARENTH RPARENTH compound_stmt { $$ = mcc_ast_new_function($1, $2, $5, NULL); }
-             | VOID id LPARENTH parameters RPARENTH compound_stmt { $$ = mcc_ast_new_function(MCC_AST_TYPE_VOID, $2, $6, $4); }
-             | type id LPARENTH parameters RPARENTH compound_stmt { $$ = mcc_ast_new_function($1, $2, $6, $4); }
+function_def : VOID id LPARENTH RPARENTH compound_stmt { $$ = mcc_ast_new_function(MCC_AST_TYPE_VOID, $2, $5, NULL); loc($$, @1);}
+             | type id LPARENTH RPARENTH compound_stmt { $$ = mcc_ast_new_function($1, $2, $5, NULL); loc($$, @1);}
+             | VOID id LPARENTH parameters RPARENTH compound_stmt { $$ = mcc_ast_new_function(MCC_AST_TYPE_VOID, $2, $6, $4); loc($$, @1);}
+             | type id LPARENTH parameters RPARENTH compound_stmt { $$ = mcc_ast_new_function($1, $2, $6, $4); loc($$, @1);}
              ;
 
-function_call : id LPARENTH RPARENTH { $$ = mcc_ast_new_expression_function_call($1, NULL); }
-              | id LPARENTH argument_list RPARENTH { $$ = mcc_ast_new_expression_function_call($1, $3); }
+function_call : id LPARENTH RPARENTH { $$ = mcc_ast_new_expression_function_call($1, NULL); loc($$, @1);}
+              | id LPARENTH argument_list RPARENTH { $$ = mcc_ast_new_expression_function_call($1, $3); loc($$, @1);}
               ;
 
-argument_list : expression { $$ = mcc_ast_new_expression_argument($1, NULL); }
-              | expression COMMA argument_list { $$ = mcc_ast_new_expression_argument($1, $3); }
+argument_list : expression { $$ = mcc_ast_new_expression_argument($1, NULL); loc($$, @1);}
+              | expression COMMA argument_list { $$ = mcc_ast_new_expression_argument($1, $3); loc($$, @1);}
               ;
 
-statement_list : statement { $$ = mcc_ast_new_statement_compound_stmt($1, NULL); }
-               | statement statement_list { $$ = mcc_ast_new_statement_compound_stmt($1, $2); }
+statement_list : statement { $$ = mcc_ast_new_statement_compound_stmt($1, NULL); loc($$, @1);}
+               | statement statement_list { $$ = mcc_ast_new_statement_compound_stmt($1, $2); loc($$, @1);}
                ;
 
 %%
@@ -224,7 +254,7 @@ statement_list : statement { $$ = mcc_ast_new_statement_compound_stmt($1, NULL);
 void mcc_parser_error(struct MCC_PARSER_LTYPE *yylloc, yyscan_t *scanner, struct mcc_ast_program** result, const char *msg)
 {
 	//fprintf(stderr, "%s:%d:%d: error: %s \n", filename, yylloc->last_line, yylloc->last_column, msg);
-	print_lexer_error(filename, yylloc, msg);
+	print_lexer_error(yylloc->filename, yylloc->last_line, yylloc->last_column, msg);
 	
 	UNUSED(result);
 	UNUSED(scanner);
@@ -241,7 +271,7 @@ struct mcc_parser_result mcc_parse_string(const char *input)
 		};
 	}
 
-	struct mcc_parser_result result = mcc_parse_file(in, "no_filename");
+	struct mcc_parser_result result = mcc_parse_file(in, "input");
 
 	fclose(in);
 

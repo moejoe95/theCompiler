@@ -14,9 +14,10 @@
 #include "mcc/error_handler.h"
 
 #define YYSTYPE MCC_PARSER_STYPE
-#define YYLTYPE MCC_PARSER_LTYPE
+//#define YYLTYPE MCC_PARSER_LTYPE
 
 #define YY_USER_ACTION \
+    yylloc->filename = filename; \
     yylloc->first_line = yylloc->last_line; \
     yylloc->first_column = yylloc->last_column; \
     for(int i = 0; yytext[i] != '\0'; i++) { \
@@ -102,4 +103,4 @@ identifier		{alpha}{alpha_num}*
 
 <<EOF>>           { return TK_END; }
 
-.                 { print_scanner_error(yytext[0]); }
+.                 { print_scanner_error(yylloc->filename, yylloc->last_line, yylloc->last_column, yytext[0]); }
