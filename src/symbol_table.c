@@ -298,8 +298,10 @@ static void symbol_table_function_def(struct mcc_ast_func_definition *function, 
 	    lookup_symbol_in_scope(tmp->symbol_table, func_id);
 
 	if (previous_declaration != NULL) {
-		// TODO Andreas, add error
-		printf("duplicate function definition with id '%s'\n", func_id);
+		struct mcc_semantic_error *error = get_mcc_semantic_error_struct(MCC_SC_ERROR_DUPLICATE_FUNCTION_DEFINITION);
+		error->sloc = &function->node.sloc;
+		error->identifier = function->func_identifier->identifier;
+		print_semantic_error(error);
 		return;
 	}
 	// set_semantic_annotation_function_duplicate(function, 0);
@@ -384,22 +386,25 @@ static void symbol_table_function_call(struct mcc_ast_expression *expression, vo
 	    lookup_symbol(tmp->symbol_table, expression->function_call_identifier->identifier->name);
 
 	if (!sym) {
-		// TODO Andreas, error, function not declared
-		printf("error, function not declared [");
-		printf(expression->function_call_identifier->identifier->name);
-		printf("]\n");
+		struct mcc_semantic_error *error = get_mcc_semantic_error_struct(MCC_SC_FUNCTION_NOT_DECLARED);
+		error->sloc = &expression->node.sloc;
+		error->identifier = expression->function_call_identifier->identifier;
+		print_semantic_error(error);
 	}
 }
 
-static void check_identifier(struct mcc_symbol_table *symbol_table, char *id)
+static void check_identifier(struct mcc_ast_source_location *sloc, struct mcc_symbol_table *symbol_table, struct mcc_ast_identifier *id)
 {
+	assert(sloc);
 	assert(symbol_table);
 	assert(id);
 
-	struct mcc_symbol *previous_declaration = lookup_symbol(symbol_table, id);
+	struct mcc_symbol *previous_declaration = lookup_symbol(symbol_table, id->name);
 	if (previous_declaration == NULL) {
-		// TODO Andreas, add error
-		printf("error, undefined identifier '%s'\n", id);
+		struct mcc_semantic_error *error = get_mcc_semantic_error_struct(MCC_SC_UNDEFINED_IDENTIFIER);
+		error->sloc = sloc;
+		error->identifier = id;
+		print_semantic_error(error);
 		return;
 	}
 }
@@ -410,9 +415,9 @@ static void symbol_table_assignment(struct mcc_ast_declare_assign *assignment, v
 	assert(data);
 
 	struct temp_create_symbol_table *temp = data;
-	char *id = assignment->assign_lhs->identifier->name;
-	check_identifier(temp->symbol_table, id);
+	check_identifier(&assignment->node.sloc, temp->symbol_table, assignment->assign_lhs->identifier);
 }
+
 
 static void symbol_table_expression(struct mcc_ast_expression *expr, void *data)
 {
@@ -422,7 +427,7 @@ static void symbol_table_expression(struct mcc_ast_expression *expr, void *data)
 
 	switch (expr->type) {
 	case MCC_AST_EXPRESSION_TYPE_IDENTIFIER:
-		check_identifier(temp->symbol_table, expr->identifier->name);
+		check_identifier(&expr->node.sloc, temp->symbol_table, expr->identifier);
 		break;
 	case MCC_AST_EXPRESSION_TYPE_UNARY_OP:
 		symbol_table_expression(expr->rhs, data);
@@ -439,7 +444,7 @@ static void symbol_table_expression(struct mcc_ast_expression *expr, void *data)
 		break;
 	case MCC_AST_EXPRESSION_TYPE_LITERAL:
 		if (expr->expression->type == MCC_AST_EXPRESSION_TYPE_IDENTIFIER) {
-			check_identifier(temp->symbol_table, expr->expression->identifier->name);
+			check_identifier(&expr->node.sloc, temp->symbol_table, expr->expression->identifier);
 		} else if (expr->expression->type == MCC_AST_EXPRESSION_TYPE_ARRAY_ACCESS) {
 			symbol_table_expression(expr->array_access_id, data);
 		}

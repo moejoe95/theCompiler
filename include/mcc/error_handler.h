@@ -10,7 +10,10 @@
 enum semantic_error_type { //todo other names?
 	MCC_SC_ERROR_NO_MAIN,
 	MCC_SC_ERROR_DUPLICATE_DECLARATION,
-	MCC_SC_ERROR_NO_RETURN
+	MCC_SC_ERROR_DUPLICATE_FUNCTION_DEFINITION,
+	MCC_SC_ERROR_NO_RETURN,
+	MCC_SC_FUNCTION_NOT_DECLARED,
+	MCC_SC_UNDEFINED_IDENTIFIER,
 };
 
 struct mcc_semantic_error { //todo extend for more information about error...for instance what variable etc...union with structs
