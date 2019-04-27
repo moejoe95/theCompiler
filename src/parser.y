@@ -154,7 +154,7 @@ func_list  : function_def { $$ = mcc_ast_new_function_list($1, NULL); loc($$, @1
            | function_def func_list { $$ = mcc_ast_new_function_list($1, $2); loc($$, @1);}
            ;
 
-type : BOOL    { $$ = MCC_AST_TYPE_BOOL; }
+type : BOOL    { $$ = MCC_AST_TYPE_BOOL; } 
      | INT     { $$ = MCC_AST_TYPE_INT; }
      | FLOAT   { $$ = MCC_AST_TYPE_FLOAT; }
      | STRING  { $$ = MCC_AST_TYPE_STRING; }
@@ -167,7 +167,7 @@ literal : BOOL_LITERAL { $$ = mcc_ast_new_literal_bool($1); loc($$, @1); }
 		;
 
 expression : id
-		   | id LSQUAREBRACKET expression RSQUAREBRACKET { $$ = mcc_ast_new_expression_array_access($1, $3); }
+		   | id LSQUAREBRACKET expression RSQUAREBRACKET { $$ = mcc_ast_new_expression_array_access($1, $3); loc($$, @1);}
 		   | literal              		  	{ $$ = mcc_ast_new_expression_literal($1);                              loc($$, @1); }
            | expression PLUS  expression  	{ $$ = mcc_ast_new_expression_binary_op(MCC_AST_BINARY_OP_ADD, $1, $3); loc($$, @1); }
            | expression MINUS expression  	{ $$ = mcc_ast_new_expression_binary_op(MCC_AST_BINARY_OP_SUB, $1, $3); loc($$, @1); }
@@ -253,7 +253,6 @@ statement_list : statement { $$ = mcc_ast_new_statement_compound_stmt($1, NULL);
 
 void mcc_parser_error(struct MCC_PARSER_LTYPE *yylloc, yyscan_t *scanner, struct mcc_ast_program** result, const char *msg)
 {
-	//fprintf(stderr, "%s:%d:%d: error: %s \n", filename, yylloc->last_line, yylloc->last_column, msg);
 	print_lexer_error(yylloc->filename, yylloc->last_line, yylloc->last_column, msg);
 	
 	UNUSED(result);

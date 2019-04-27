@@ -125,8 +125,9 @@ struct mcc_symbol_table *mcc_create_symbol_table(struct mcc_ast_program *program
 	// temp_st = visitor.userdata;
 
 	if (!temp_st->main_found) {
-		// TODO Andreas, print error
-		printf("error, no main found\n");
+		struct mcc_semantic_error *error = get_mcc_semantic_error_struct(MCC_SC_ERROR_NO_MAIN);
+		error->sloc = &program->function_list->node.sloc;
+		print_semantic_error(error);
 	}
 
 	struct mcc_symbol_table *symbol_table = temp_st->symbol_table;
@@ -145,10 +146,10 @@ static void symbol_table_declaration(struct mcc_ast_declare_assign *declaration,
 	    lookup_symbol_in_scope(temp->symbol_table, declaration->declare_id->identifier->name);
 
 	if (previous_declaration != NULL) {
-		// TODO Andreas, add error
-		printf("error, duplicate declaration of '");
-		printf(declaration->declare_id->identifier->name);
-		printf("'\n");
+		struct mcc_semantic_error *error = get_mcc_semantic_error_struct(MCC_SC_ERROR_DUPLICATE_DECLARATION);
+		error->sloc = &declaration->node.sloc;
+		error->identifier = declaration->declare_id->identifier;
+		print_semantic_error(error);
 		return;
 	}
 
@@ -310,8 +311,10 @@ static void symbol_table_function_def(struct mcc_ast_func_definition *function, 
 	// check if non-void function returns value
 	check_return(tmp, function);
 	if (!tmp->is_returned){
-		// TODO error, no return in non void function
-		printf("error, no return value in non void function '%s' \n", func_id);
+		struct mcc_semantic_error *error = get_mcc_semantic_error_struct(MCC_SC_ERROR_NO_RETURN);
+		error->sloc = &function->node.sloc;
+		error->identifier = function->func_identifier->identifier;
+		print_semantic_error(error);
 		return;
 	}
 	tmp->is_returned = 0;

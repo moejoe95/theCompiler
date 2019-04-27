@@ -7,12 +7,13 @@
 
 #include "mcc/ast.h"
 #include "mcc/ast_visit.h"
+#include "mcc/error_handler.h"
 #include <assert.h>
 #include <mcc/ast_print.h>
 #include <stdio.h>
 
 struct temp_create_symbol_table {
-	// TODO Andreas, define errors
+	// TODO Andreas, define errors...error list for collecting all errors?
 	int create_inner_scope;
 	int main_found;
 	// int index;
@@ -22,6 +23,7 @@ struct temp_create_symbol_table {
 	// struct mcc_symbol *current_function;
 	// struct mcc_sc_if_else_stmt *check_return;
 	// mcc_array *error_list;
+
 };
 
 struct mcc_symbol_table {
