@@ -64,6 +64,38 @@ enum mcc_ast_unary_op {
 	MCC_AST_UNARY_OP_NOT,
 };
 
+static char *get_bin_op_string(enum mcc_ast_binary_op op)
+{
+	switch (op) {
+	case MCC_AST_BINARY_OP_ADD:
+		return "+";
+	case MCC_AST_BINARY_OP_SUB:
+		return "-";
+	case MCC_AST_BINARY_OP_MUL:
+		return "*";
+	case MCC_AST_BINARY_OP_DIV:
+		return "/";
+	case MCC_AST_BINARY_OP_ST:
+		return "<";
+	case MCC_AST_BINARY_OP_GT:
+		return ">";
+	case MCC_AST_BINARY_OP_SE:
+		return "<=";
+	case MCC_AST_BINARY_OP_GE:
+		return ">=";
+	case MCC_AST_BINARY_OP_LAND:
+		return "&&";
+	case MCC_AST_BINARY_OP_LOR:
+		return "||";
+	case MCC_AST_BINARY_OP_EQ:
+		return "==";
+	case MCC_AST_BINARY_OP_NEQ:
+		return "!=";
+	}
+
+	return "";
+}
+
 // -------------------------------------------------------------------- Types
 
 enum mcc_ast_type { MCC_AST_TYPE_BOOL, MCC_AST_TYPE_INT, MCC_AST_TYPE_FLOAT, MCC_AST_TYPE_STRING, MCC_AST_TYPE_VOID };

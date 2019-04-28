@@ -386,7 +386,7 @@ static void symbol_table_function_call(struct mcc_ast_expression *expression, vo
 	    lookup_symbol(tmp->symbol_table, expression->function_call_identifier->identifier->name);
 
 	if (!sym) {
-		struct mcc_semantic_error *error = get_mcc_semantic_error_struct(MCC_SC_FUNCTION_NOT_DECLARED);
+		struct mcc_semantic_error *error = get_mcc_semantic_error_struct(MCC_SC_ERROR_FUNCTION_NOT_DECLARED);
 		error->sloc = &expression->node.sloc;
 		error->identifier = expression->function_call_identifier->identifier;
 		print_semantic_error(error);
@@ -401,7 +401,7 @@ static void check_identifier(struct mcc_ast_source_location *sloc, struct mcc_sy
 
 	struct mcc_symbol *previous_declaration = lookup_symbol(symbol_table, id->name);
 	if (previous_declaration == NULL) {
-		struct mcc_semantic_error *error = get_mcc_semantic_error_struct(MCC_SC_UNDEFINED_IDENTIFIER);
+		struct mcc_semantic_error *error = get_mcc_semantic_error_struct(MCC_SC_ERROR_UNDEFINED_IDENTIFIER);
 		error->sloc = sloc;
 		error->identifier = id;
 		print_semantic_error(error);
