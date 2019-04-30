@@ -348,7 +348,6 @@ struct mcc_ast_declare_assign *
 mcc_ast_new_declaration(enum mcc_ast_type type, struct mcc_ast_expression *identifier, long literal, int literal_flag)
 {
 	assert(identifier);
-	identifier->identifier->type = type;
 
 	struct mcc_ast_declare_assign *decl = mcc_ast_get_new_declaration_struct();
 

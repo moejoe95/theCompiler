@@ -397,7 +397,7 @@ static void symbol_table_function_call(struct mcc_ast_expression *expression, vo
 	}
 }
 
-static void check_identifier(struct mcc_ast_source_location *sloc,
+static struct mcc_symbol *check_identifier(struct mcc_ast_source_location *sloc,
                              struct mcc_symbol_table *symbol_table,
                              struct mcc_ast_identifier *id)
 {
@@ -411,8 +411,9 @@ static void check_identifier(struct mcc_ast_source_location *sloc,
 		error->sloc = sloc;
 		error->identifier = id;
 		print_semantic_error(error);
-		return;
+		return NULL;
 	}
+	return previous_declaration;
 }
 
 static void symbol_table_assignment(struct mcc_ast_declare_assign *assignment, void *data)
@@ -422,12 +423,7 @@ static void symbol_table_assignment(struct mcc_ast_declare_assign *assignment, v
 
 	struct temp_create_symbol_table *temp = data;
 	
-	struct mcc_symbol *previous_declaration = lookup_symbol(temp->symbol_table, assignment->assign_lhs->identifier->name);
-	if (previous_declaration == NULL) {
-		struct mcc_semantic_error *error = get_mcc_semantic_error_struct(MCC_SC_ERROR_UNDEFINED_IDENTIFIER);
-		print_semantic_error(error);
-		return;
-	}
+	struct mcc_symbol *previous_declaration = check_identifier(&assignment->node.sloc, temp->symbol_table, assignment->assign_lhs->identifier);
 
 	assignment->assign_lhs->expression_type = previous_declaration->type;
 }
@@ -437,10 +433,10 @@ static void symbol_table_expression(struct mcc_ast_expression *expr, void *data)
 	assert(expr);
 	assert(data);
 	struct temp_create_symbol_table *temp = data;
-
+	struct mcc_symbol *sym;
 	switch (expr->type) {
 	case MCC_AST_EXPRESSION_TYPE_IDENTIFIER:
-		check_identifier(&expr->node.sloc, temp->symbol_table, expr->identifier);
+		sym = check_identifier(&expr->node.sloc, temp->symbol_table, expr->identifier);
 		break;
 	case MCC_AST_EXPRESSION_TYPE_UNARY_OP:
 		symbol_table_expression(expr->rhs, data);
@@ -465,6 +461,10 @@ static void symbol_table_expression(struct mcc_ast_expression *expr, void *data)
 	case MCC_AST_EXPRESSION_TYPE_FUNCTION_CALL:
 		// TODO
 		break;
+	}
+
+	if(sym){
+			expr->expression_type = sym->type;
 	}
 }
 
