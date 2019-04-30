@@ -348,6 +348,7 @@ struct mcc_ast_declare_assign *
 mcc_ast_new_declaration(enum mcc_ast_type type, struct mcc_ast_expression *identifier, long literal, int literal_flag)
 {
 	assert(identifier);
+	identifier->identifier->type = type;
 
 	struct mcc_ast_declare_assign *decl = mcc_ast_get_new_declaration_struct();
 
@@ -577,6 +578,8 @@ struct mcc_ast_func_definition *mcc_ast_new_function(enum mcc_ast_type type,
 	assert(identifier);
 
 	struct mcc_ast_func_definition *func_def = mcc_ast_get_new_function_def_struct();
+
+	identifier->identifier->type = type;
 
 	func_def->func_type = type;
 	func_def->func_identifier = identifier;

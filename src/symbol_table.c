@@ -421,7 +421,15 @@ static void symbol_table_assignment(struct mcc_ast_declare_assign *assignment, v
 	assert(data);
 
 	struct temp_create_symbol_table *temp = data;
-	check_identifier(&assignment->node.sloc, temp->symbol_table, assignment->assign_lhs->identifier);
+	
+	struct mcc_symbol *previous_declaration = lookup_symbol(temp->symbol_table, assignment->assign_lhs->identifier->name);
+	if (previous_declaration == NULL) {
+		struct mcc_semantic_error *error = get_mcc_semantic_error_struct(MCC_SC_ERROR_UNDEFINED_IDENTIFIER);
+		print_semantic_error(error);
+		return;
+	}
+
+	assignment->assign_lhs->expression_type = previous_declaration->type;
 }
 
 static void symbol_table_expression(struct mcc_ast_expression *expr, void *data)

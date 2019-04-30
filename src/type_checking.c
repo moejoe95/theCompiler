@@ -8,14 +8,13 @@ static void check_assignment(struct mcc_ast_declare_assign *declare_assign, void
 	assert(data);
 
 	struct mcc_type_checking *type_checking = data;
-	char *id = declare_assign->assign_lhs->identifier->name;
-	struct mcc_symbol *symbol = lookup_symbol_in_scope(type_checking->symbol_table, id); // TODO: returns null
 	
+	struct mcc_ast_expression *lhs = declare_assign->assign_lhs;
 	struct mcc_ast_expression *rhs = declare_assign->assign_rhs;
 
-	if (symbol->type != rhs->expression_type) {
+	if (lhs->expression_type != rhs->expression_type) {
 		// TODO Andi -> error type invalid assignment
-		printf("error, expected type '%d', but got type '%d'\n", symbol->type, rhs->expression_type);
+		printf("error, expected type '%d', but got type '%d'\n", lhs->expression_type, rhs->expression_type);
 	}
 }
 
@@ -131,11 +130,9 @@ static struct mcc_ast_visitor type_checking_visitor(void *data)
 	    .order = MCC_AST_VISIT_POST_ORDER,
 
 	    .userdata = data,
-
 	    .assignment = check_assignment,
 	    .expression_literal = check_expression_literal,
 		.expression_binary_op = check_expression_binary,
-
 	    .statement_return = check_function_return,
 	};
 }

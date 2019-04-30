@@ -246,7 +246,7 @@ void mcc_ast_delete_expression(struct mcc_ast_expression *expression);
 struct mcc_ast_identifier {
 	struct mcc_ast_node node;
 	char *name;
-	// struct mcc_symbol_declaration *sym_declaration;
+	enum mcc_ast_type type;
 };
 
 // struct mcc_ast_symbol_declaration {
