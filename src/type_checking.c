@@ -39,14 +39,12 @@ static void check_function_return(struct mcc_ast_statement *ret_stmt, void *data
 	}
 }
 
-static void check_eval_expression(struct mcc_ast_expression *expr)
+static void check_eval_expression(struct mcc_ast_expression *expr, struct mcc_symbol_table *symbol_table)
 {
 
 	if (expr == NULL) {
 		return;
 	}
-
-	printf("%d\n", expr->type);
 
 	if (expr->type == MCC_AST_EXPRESSION_TYPE_LITERAL) {
 		if (expr->expression_type != MCC_AST_TYPE_BOOL) {
@@ -63,7 +61,7 @@ static void check_eval_expression(struct mcc_ast_expression *expr)
 	}
 
 	if (expr->type == MCC_AST_EXPRESSION_TYPE_PARENTH) {
-		return check_eval_expression(expr->expression);
+		return check_eval_expression(expr->expression, symbol_table);
 	}
 
 	if (expr->type == MCC_AST_EXPRESSION_TYPE_ARRAY_ACCESS) {
@@ -106,7 +104,20 @@ static void check_eval_expression(struct mcc_ast_expression *expr)
 	}
 
 	if (expr->type == MCC_AST_EXPRESSION_TYPE_FUNCTION_CALL) {
-		// TODO check return value
+		if (symbol_table->symbols != NULL) {
+			struct mcc_symbol *current_symbol = symbol_table->symbols->head;
+			while (current_symbol != NULL) {
+				if (strcmp(expr->function_call_identifier->identifier->name,
+				           current_symbol->identifier->name) == 0) {
+					if (current_symbol->type != MCC_AST_TYPE_BOOL) {
+						printf("error, function type '%d' not allowed in eval condition\n",
+						       current_symbol->type);
+					}
+					return;
+				}
+				current_symbol = current_symbol->next_symbol;
+			}
+		}
 		return;
 	}
 
@@ -119,7 +130,8 @@ static void check_statement_if(struct mcc_ast_statement *if_stmt, void *data)
 	assert(if_stmt->if_cond);
 	assert(data);
 
-	check_eval_expression(if_stmt->if_cond);
+	struct mcc_type_checking *type_check = data;
+	check_eval_expression(if_stmt->if_cond, type_check->symbol_table);
 }
 
 static void check_statement_while(struct mcc_ast_statement *while_stmt, void *data)
@@ -128,7 +140,8 @@ static void check_statement_while(struct mcc_ast_statement *while_stmt, void *da
 	assert(while_stmt->while_cond);
 	assert(data);
 
-	check_eval_expression(while_stmt->while_cond);
+	struct mcc_type_checking *type_check = data;
+	check_eval_expression(while_stmt->while_cond, type_check->symbol_table);
 }
 
 static void set_type(struct mcc_ast_expression *expr, enum mcc_ast_type type)
