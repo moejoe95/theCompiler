@@ -578,6 +578,8 @@ struct mcc_ast_func_definition *mcc_ast_new_function(enum mcc_ast_type type,
 
 	struct mcc_ast_func_definition *func_def = mcc_ast_get_new_function_def_struct();
 
+	identifier->identifier->type = type;
+
 	func_def->func_type = type;
 	func_def->func_identifier = identifier;
 	func_def->func_compound = compound;
