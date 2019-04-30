@@ -248,6 +248,7 @@ static void check_if_statement_return(struct temp_create_symbol_table *tmp, stru
 
 static void check_compound_return(struct temp_create_symbol_table *tmp, struct mcc_ast_statement_list *list)
 {
+	if (list == NULL) return; // for empty compounds
 	assert(list);
 
 	while (list != NULL) {
