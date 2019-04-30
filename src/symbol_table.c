@@ -513,6 +513,14 @@ struct mcc_ast_visitor generate_symbol_table_visitor(struct temp_create_symbol_t
 
 void mcc_delete_symbol_table(struct mcc_symbol_table *symbol_table)
 {
+	if (symbol_table->next != NULL) {
+		mcc_delete_symbol_table(symbol_table->next);
+	}
+
+	if (symbol_table->sub_tables != NULL && symbol_table->sub_tables->head != NULL) {
+		mcc_delete_symbol_table(symbol_table->sub_tables->head);
+	}
+	free(symbol_table->symbols);
 	free(symbol_table);
 }
 
