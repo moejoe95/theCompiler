@@ -25,7 +25,12 @@ static void check_function_return(struct mcc_ast_statement *ret_stmt, void *data
 
 	struct mcc_type_checking *type_check = data;
 
-	enum mcc_ast_type ret_type = ret_stmt->expression->expression_type;
+	enum mcc_ast_type ret_type;
+	if (ret_stmt->expression == NULL){
+		ret_type = MCC_AST_TYPE_VOID;
+	}else{
+		ret_type = ret_stmt->expression->expression_type;
+	}
 	enum mcc_ast_type func_type = type_check->current_function->func_type;
 
 	if (ret_type != func_type) {

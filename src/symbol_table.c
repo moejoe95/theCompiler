@@ -490,7 +490,8 @@ static void symbol_table_return_statement(struct mcc_ast_statement *ret, void *d
 	assert(ret);
 	assert(data);
 
-	symbol_table_expression(ret->expression, data);
+	if (ret->expression != NULL)
+		symbol_table_expression(ret->expression, data);
 }
 
 struct mcc_ast_visitor generate_symbol_table_visitor(struct temp_create_symbol_table *temp_st)
