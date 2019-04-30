@@ -1,5 +1,6 @@
 #include "mcc/symbol_table.h"
 #include "mcc/ast.h"
+#include "mcc/error_handler.h"
 
 #include <assert.h>
 #include <stdio.h>
@@ -223,60 +224,63 @@ struct mcc_symbol *lookup_symbol_in_scope(struct mcc_symbol_table *symbol_table,
 // forward declaration
 static void check_compound_return(struct temp_create_symbol_table *tmp, struct mcc_ast_statement_list *list);
 
-static void check_if_statement_return(struct temp_create_symbol_table *tmp, struct mcc_ast_statement *stmt){
+static void check_if_statement_return(struct temp_create_symbol_table *tmp, struct mcc_ast_statement *stmt)
+{
 	assert(stmt);
 
-	if (stmt->else_stat == NULL){ // if there is no else, there must be a return in the scope above
+	if (stmt->else_stat == NULL) { // if there is no else, there must be a return in the scope above
 		return;
 	}
 
-	if(stmt->if_stat->type == MCC_AST_STATEMENT_RETURN){
-		if(stmt->else_stat->type == MCC_AST_STATEMENT_RETURN)
+	if (stmt->if_stat->type == MCC_AST_STATEMENT_RETURN) {
+		if (stmt->else_stat->type == MCC_AST_STATEMENT_RETURN)
 			tmp->is_returned = 1;
-		else if(stmt->else_stat->type == MCC_AST_STATEMENT_COMPOUND)
+		else if (stmt->else_stat->type == MCC_AST_STATEMENT_COMPOUND)
 			check_compound_return(tmp, stmt->else_stat->compound);
-	} else if (stmt->if_stat->type == MCC_AST_STATEMENT_COMPOUND){	
+	} else if (stmt->if_stat->type == MCC_AST_STATEMENT_COMPOUND) {
 		check_compound_return(tmp, stmt->if_stat->compound);
-				if (tmp->is_returned){
+		if (tmp->is_returned) {
 			tmp->is_returned = 0;
 			check_compound_return(tmp, stmt->else_stat->compound);
 		}
 	}
 }
 
-static void check_compound_return(struct temp_create_symbol_table *tmp, struct mcc_ast_statement_list *list){
+static void check_compound_return(struct temp_create_symbol_table *tmp, struct mcc_ast_statement_list *list)
+{
 	assert(list);
 
-	while(list != NULL){
+	while (list != NULL) {
 		struct mcc_ast_statement *stmt = list->statement;
-		switch (stmt->type)
-		{
-			case MCC_AST_STATEMENT_RETURN:
-				tmp->is_returned = 1;
-				return;
-				break;
-		
-			case MCC_AST_STATEMENT_COMPOUND:
-				check_compound_return(tmp, stmt->compound);
-				break;
+		switch (stmt->type) {
+		case MCC_AST_STATEMENT_RETURN:
+			tmp->is_returned = 1;
+			return;
+			break;
 
-			case MCC_AST_STATEMENT_IF:
-				check_if_statement_return(tmp, stmt);
-				break;
+		case MCC_AST_STATEMENT_COMPOUND:
+			check_compound_return(tmp, stmt->compound);
+			break;
 
-			default:
-				break;
+		case MCC_AST_STATEMENT_IF:
+			check_if_statement_return(tmp, stmt);
+			break;
+
+		default:
+			break;
 		}
-		
+
 		list = list->next_statement;
 	}
 }
 
-static void check_return(struct temp_create_symbol_table *tmp, struct mcc_ast_func_definition *function_def){
+static void check_return(struct temp_create_symbol_table *tmp, struct mcc_ast_func_definition *function_def)
+{
 	assert(function_def);
 
 	// void functions need no return statement
-	if(function_def->func_type == MCC_AST_TYPE_VOID) tmp->is_returned = 1;
+	if (function_def->func_type == MCC_AST_TYPE_VOID)
+		tmp->is_returned = 1;
 
 	struct mcc_ast_statement_list *list = function_def->func_compound->compound;
 	check_compound_return(tmp, list);
@@ -294,11 +298,11 @@ static void symbol_table_function_def(struct mcc_ast_func_definition *function, 
 		}
 	}
 
-	struct mcc_ast_symbol_declaration *previous_declaration =
-	    lookup_symbol_in_scope(tmp->symbol_table, func_id);
+	struct mcc_ast_symbol_declaration *previous_declaration = lookup_symbol_in_scope(tmp->symbol_table, func_id);
 
 	if (previous_declaration != NULL) {
-		struct mcc_semantic_error *error = get_mcc_semantic_error_struct(MCC_SC_ERROR_DUPLICATE_FUNCTION_DEFINITION);
+		struct mcc_semantic_error *error =
+		    get_mcc_semantic_error_struct(MCC_SC_ERROR_DUPLICATE_FUNCTION_DEFINITION);
 		error->sloc = &function->node.sloc;
 		error->identifier = function->func_identifier->identifier;
 		print_semantic_error(error);
@@ -307,12 +311,11 @@ static void symbol_table_function_def(struct mcc_ast_func_definition *function, 
 	// set_semantic_annotation_function_duplicate(function, 0);
 	insert_symbol_function(tmp, function);
 
-	struct mcc_symbol_table *symbol_table =
-	    allocate_symbol_table(tmp->symbol_table, func_id);
+	struct mcc_symbol_table *symbol_table = allocate_symbol_table(tmp->symbol_table, func_id);
 
 	// check if non-void function returns value
 	check_return(tmp, function);
-	if (!tmp->is_returned){
+	if (!tmp->is_returned) {
 		struct mcc_semantic_error *error = get_mcc_semantic_error_struct(MCC_SC_ERROR_NO_RETURN);
 		error->sloc = &function->node.sloc;
 		error->identifier = function->func_identifier->identifier;
@@ -393,7 +396,9 @@ static void symbol_table_function_call(struct mcc_ast_expression *expression, vo
 	}
 }
 
-static void check_identifier(struct mcc_ast_source_location *sloc, struct mcc_symbol_table *symbol_table, struct mcc_ast_identifier *id)
+static void check_identifier(struct mcc_ast_source_location *sloc,
+                             struct mcc_symbol_table *symbol_table,
+                             struct mcc_ast_identifier *id)
 {
 	assert(sloc);
 	assert(symbol_table);
@@ -417,7 +422,6 @@ static void symbol_table_assignment(struct mcc_ast_declare_assign *assignment, v
 	struct temp_create_symbol_table *temp = data;
 	check_identifier(&assignment->node.sloc, temp->symbol_table, assignment->assign_lhs->identifier);
 }
-
 
 static void symbol_table_expression(struct mcc_ast_expression *expr, void *data)
 {
@@ -450,7 +454,7 @@ static void symbol_table_expression(struct mcc_ast_expression *expr, void *data)
 		}
 		break;
 	case MCC_AST_EXPRESSION_TYPE_FUNCTION_CALL:
-		//TODO
+		// TODO
 		break;
 	}
 }
