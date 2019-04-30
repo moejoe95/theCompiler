@@ -433,10 +433,15 @@ static void symbol_table_expression(struct mcc_ast_expression *expr, void *data)
 	assert(expr);
 	assert(data);
 	struct temp_create_symbol_table *temp = data;
-	struct mcc_symbol *sym;
+	
 	switch (expr->type) {
 	case MCC_AST_EXPRESSION_TYPE_IDENTIFIER:
-		sym = check_identifier(&expr->node.sloc, temp->symbol_table, expr->identifier);
+		{
+			struct mcc_symbol *sym = check_identifier(&expr->node.sloc, temp->symbol_table, expr->identifier);
+			if(sym){
+				expr->expression_type = sym->type;
+			}
+		}
 		break;
 	case MCC_AST_EXPRESSION_TYPE_UNARY_OP:
 		symbol_table_expression(expr->rhs, data);
@@ -461,10 +466,6 @@ static void symbol_table_expression(struct mcc_ast_expression *expr, void *data)
 	case MCC_AST_EXPRESSION_TYPE_FUNCTION_CALL:
 		// TODO
 		break;
-	}
-
-	if(sym){
-			expr->expression_type = sym->type;
 	}
 }
 

@@ -127,6 +127,23 @@ static void check_expression_binary(struct mcc_ast_expression *bin_expr, void *d
 
 }
 
+static void check_expression_unary(struct mcc_ast_expression *expr, void *data){
+	assert(expr);
+	assert(data);
+
+	switch (expr->u_op)
+	{
+		case MCC_AST_UNARY_OP_MINUS:
+			check_arithmetic_ops(expr->expression_type);
+			break;
+	
+		case MCC_AST_UNARY_OP_NOT:
+			check_logical_ops(expr->expression_type);
+			break;
+	}
+
+}
+
 static struct mcc_ast_visitor type_checking_visitor(void *data)
 {
 
@@ -138,6 +155,7 @@ static struct mcc_ast_visitor type_checking_visitor(void *data)
 	    .assignment = check_assignment,
 	    .expression_literal = check_expression_literal,
 		.expression_binary_op = check_expression_binary,
+		.expression_unary_op = check_expression_unary,
 	    .statement_return = check_function_return,
 	};
 }
