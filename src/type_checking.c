@@ -14,7 +14,7 @@ static void check_assignment(struct mcc_ast_declare_assign *declare_assign, void
 	struct mcc_ast_expression *rhs = declare_assign->assign_rhs;
 
 	if (symbol->type != rhs->expression_type) {
-		// TODO Andi -> error type invalid assignment...type is there, only check print and implement
+		// TODO Andi -> error type invalid assignment
 		printf("error, expected type '%d', but got type '%d'\n", symbol->type, rhs->expression_type);
 	}
 }
@@ -30,11 +30,8 @@ static void check_function_return(struct mcc_ast_statement *ret_stmt, void *data
 	enum mcc_ast_type func_type = type_check->current_function->func_type;
 
 	if (ret_type != func_type) {
-		struct mcc_semantic_error *error = get_mcc_semantic_error_struct(MCC_SC_ERROR_INVALID_RETURN_TYPE);
-		error->sloc = &ret_stmt->node.sloc;
-		error->ret_type = ret_type;
-		error->func_type = func_type;
-		print_semantic_error(error);
+		// TODO Andi -> error type invalid return type
+		printf("error, expected type '%d', but got type '%d'\n", func_type, ret_type);
 	}
 }
 
@@ -68,31 +65,23 @@ static void check_expression_literal(struct mcc_ast_expression *expr, void *data
 		set_type(expr, MCC_AST_TYPE_STRING);
 		break;
 
-	default: {
-			//todo test
-			struct mcc_semantic_error *error = get_mcc_semantic_error_struct(MCC_SC_ERROR_LITERAL_VOID);
-			error->sloc = &expr->node.sloc;
-			error->identifier = expr->identifier;
-			break;
-		}
+	default:
+		printf("error, literal cant be type void");
+		break;
 	}
 }
 
-static void check_arithmetic_ops(struct mcc_ast_expression *bin_expr){
-	if (bin_expr->expression_type != MCC_AST_TYPE_INT && bin_expr->expression_type != MCC_AST_TYPE_FLOAT){
-		struct mcc_semantic_error *error = get_mcc_semantic_error_struct(MCC_SC_ERROR_INVALID_AR_OPERATION);
-		error->sloc = &bin_expr->node.sloc;
-		error->expr_type = bin_expr->expression_type;
-		print_semantic_error(error);
+static void check_arithmetic_ops(enum mcc_ast_type type){
+	if (type != MCC_AST_TYPE_INT && type != MCC_AST_TYPE_FLOAT){
+		// TODO Andi -> error arithmetic ops only allowed on ints and floats
+		printf("arithmetic operations not allowed on type '%d'\n", type);
 	}
 }
 
-static void check_logical_ops(struct mcc_ast_expression *bin_expr){
-	if (bin_expr->expression_type != MCC_AST_TYPE_BOOL){
-		struct mcc_semantic_error *error = get_mcc_semantic_error_struct(MCC_SC_ERROR_INVALID_LOG_OPERATION);
-		error->sloc = &bin_expr->node.sloc;
-		error->expr_type = bin_expr->expression_type;
-		print_semantic_error(error);
+static void check_logical_ops(enum mcc_ast_type type){
+	if (type != MCC_AST_TYPE_BOOL){
+		// TODO Andi -> error logical ops only allowed on bools
+		printf("logical operations not allowed on type '%d'\n", type);
 	}
 }
 
@@ -105,10 +94,8 @@ static void check_expression_binary(struct mcc_ast_expression *bin_expr, void *d
 	enum mcc_ast_type rhs_type = bin_expr->rhs->expression_type;
 
 	if (lhs_type != rhs_type){
-		struct mcc_semantic_error *error = get_mcc_semantic_error_struct(MCC_SC_ERROR_INVALID_BIN_OPERATION);
-		error->sloc = &bin_expr->node.sloc;
-		error->bin_expr = bin_expr;
-		print_semantic_error(error);
+		// TODO Andi binary operation between two different types
+		printf("operation '%d' not allowed on type '%d' and '%d'\n", bin_expr->op, lhs_type, rhs_type);
 	}
 
 	bin_expr->expression_type = lhs_type;
@@ -123,11 +110,11 @@ static void check_expression_binary(struct mcc_ast_expression *bin_expr, void *d
 		case MCC_AST_BINARY_OP_SE:
 		case MCC_AST_BINARY_OP_GT:
 		case MCC_AST_BINARY_OP_ST:
-			check_arithmetic_ops(bin_expr);
+			check_arithmetic_ops(bin_expr->expression_type);
 			break;
 		case MCC_AST_BINARY_OP_LAND:
 		case MCC_AST_BINARY_OP_LOR:
-			check_logical_ops(bin_expr);
+			check_logical_ops(bin_expr->expression_type);
 			break;
 		default:
 			// eq and neq allowed on all types
@@ -177,7 +164,7 @@ void mcc_check_types(struct mcc_ast_program *program, struct mcc_symbol_table *s
 			while(list != NULL){
 				type_checking->current_function = program->function_list->function;
 				struct mcc_ast_visitor visitor = type_checking_visitor(type_checking);
-				mcc_ast_visit_function(program->function, &visitor);
+				mcc_ast_visit_function(type_checking->current_function, &visitor);
 				list = list->next_function;
 			}
 		}
