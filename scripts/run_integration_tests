@@ -53,7 +53,8 @@ run_compiler()
 		"$MCC" \
 			-o "$output" \
 			"$input" \
-			&> "$mcc_output"
+			&> "$mcc_output" \
+	|| return 1
 
 	tail -n1 "$stats"
 }
@@ -74,7 +75,8 @@ run_integration_test()
 		--output "$stats" \
 		"$OUTPUT_DIR/$test" \
 			< "$stdin" \
-			> "$ac_stdout"
+			> "$ac_stdout" \
+	|| return 1
 
 	if ! diff -u "$ex_stdout" "$ac_stdout" > "$diff_stdout"; then
 		return 1
