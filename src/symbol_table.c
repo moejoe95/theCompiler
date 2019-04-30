@@ -34,6 +34,40 @@ static struct mcc_symbol_table *allocate_symbol_table(struct mcc_symbol_table *s
 	return symbol_table;
 }
 
+struct mcc_symbol *lookup_symbol_in_scope(struct mcc_symbol_table *symbol_table, char *key)
+{
+	if (symbol_table == NULL || symbol_table->symbols == NULL || symbol_table->symbols->head == NULL) {
+		return NULL;
+	}
+
+	printf(symbol_table->label);
+
+	struct mcc_symbol *tmp = symbol_table->symbols->head;
+
+	while (tmp != NULL) {
+		if (strcmp(tmp->identifier->name, key) == 0) {
+			return tmp;
+		}
+		if (tmp->next_symbol == NULL) {
+			break;
+		}
+		tmp = tmp->next_symbol;
+	}
+
+	return NULL;
+}
+
+struct mcc_symbol *lookup_symbol(struct mcc_symbol_table *symbol_table, char *symbol)
+{
+	struct mcc_symbol *sym = NULL;
+	do {
+		sym = lookup_symbol_in_scope(symbol_table, symbol);
+		symbol_table = symbol_table->parent;
+	} while (!sym && symbol_table);
+
+	return sym;
+}
+
 void add_built_ins(struct temp_create_symbol_table *temp_st)
 {
 	assert(temp_st);
@@ -200,27 +234,6 @@ static void symbol_table_compound_post(struct mcc_ast_statement *statement, void
 	symbol_table_compound(statement, data, MCC_AST_VISIT_POST_ORDER);
 }
 
-struct mcc_symbol *lookup_symbol_in_scope(struct mcc_symbol_table *symbol_table, char *key)
-{
-	struct mcc_symbol *tmp = symbol_table->symbols->head;
-
-	if (tmp == NULL) {
-		return NULL;
-	}
-
-	while (tmp != NULL) {
-		if (strcmp(tmp->identifier->name, key) == 0) {
-			return tmp;
-		}
-		if (tmp->next_symbol == NULL) {
-			break;
-		}
-		tmp = tmp->next_symbol;
-	}
-
-	return NULL;
-}
-
 // forward declaration
 static void check_compound_return(struct temp_create_symbol_table *tmp, struct mcc_ast_statement_list *list);
 
@@ -248,7 +261,8 @@ static void check_if_statement_return(struct temp_create_symbol_table *tmp, stru
 
 static void check_compound_return(struct temp_create_symbol_table *tmp, struct mcc_ast_statement_list *list)
 {
-	if (list == NULL) return; // for empty compounds
+	if (list == NULL)
+		return; // for empty compounds
 	assert(list);
 
 	while (list != NULL) {
@@ -368,17 +382,6 @@ static void post_function_def(struct mcc_ast_func_definition *function, void *da
 	// }
 }
 
-struct mcc_symbol *lookup_symbol(struct mcc_symbol_table *symbol_table, char *symbol)
-{
-	struct mcc_symbol *sym = NULL;
-	do {
-		sym = lookup_symbol_in_scope(symbol_table, symbol);
-		symbol_table = symbol_table->parent;
-	} while (!sym && symbol_table);
-
-	return sym;
-}
-
 static void symbol_table_function_call(struct mcc_ast_expression *expression, void *data)
 {
 	assert(expression);
@@ -398,8 +401,8 @@ static void symbol_table_function_call(struct mcc_ast_expression *expression, vo
 }
 
 static struct mcc_symbol *check_identifier(struct mcc_ast_source_location *sloc,
-                             struct mcc_symbol_table *symbol_table,
-                             struct mcc_ast_identifier *id)
+                                           struct mcc_symbol_table *symbol_table,
+                                           struct mcc_ast_identifier *id)
 {
 	assert(sloc);
 	assert(symbol_table);
@@ -422,8 +425,9 @@ static void symbol_table_assignment(struct mcc_ast_declare_assign *assignment, v
 	assert(data);
 
 	struct temp_create_symbol_table *temp = data;
-	
-	struct mcc_symbol *previous_declaration = check_identifier(&assignment->node.sloc, temp->symbol_table, assignment->assign_lhs->identifier);
+
+	struct mcc_symbol *previous_declaration =
+	    check_identifier(&assignment->node.sloc, temp->symbol_table, assignment->assign_lhs->identifier);
 
 	assignment->assign_lhs->expression_type = previous_declaration->type;
 }
@@ -433,16 +437,14 @@ static void symbol_table_expression(struct mcc_ast_expression *expr, void *data)
 	assert(expr);
 	assert(data);
 	struct temp_create_symbol_table *temp = data;
-	
+
 	switch (expr->type) {
-	case MCC_AST_EXPRESSION_TYPE_IDENTIFIER:
-		{
-			struct mcc_symbol *sym = check_identifier(&expr->node.sloc, temp->symbol_table, expr->identifier);
-			if(sym){
-				expr->expression_type = sym->type;
-			}
+	case MCC_AST_EXPRESSION_TYPE_IDENTIFIER: {
+		struct mcc_symbol *sym = check_identifier(&expr->node.sloc, temp->symbol_table, expr->identifier);
+		if (sym) {
+			expr->expression_type = sym->type;
 		}
-		break;
+	} break;
 	case MCC_AST_EXPRESSION_TYPE_UNARY_OP:
 		symbol_table_expression(expr->rhs, data);
 		break;
@@ -592,7 +594,7 @@ void add_child_symbol_table(struct mcc_symbol_table *parent, struct mcc_symbol_t
 	if (parent->sub_tables == NULL) {
 		struct mcc_symbol_table_list *symbol_table_list = malloc(sizeof(*symbol_table_list));
 		if (!symbol_table_list) {
-			return NULL;
+			return;
 		}
 		symbol_table_list->head = table;
 		parent->sub_tables = symbol_table_list;

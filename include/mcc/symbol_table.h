@@ -23,7 +23,6 @@ struct temp_create_symbol_table {
 	// struct mcc_symbol *current_function;
 	// struct mcc_sc_if_else_stmt *check_return;
 	// mcc_array *error_list;
-
 };
 
 struct mcc_symbol_table {
@@ -57,13 +56,6 @@ struct mcc_symbol_table *mcc_create_symbol_table(struct mcc_ast_program *program
 
 struct mcc_ast_visitor generate_symbol_table_visitor(struct temp_create_symbol_table *temp_st);
 
-// struct mcc_ast_symbol_declaration *mcc_ast_lookup_function_symbol(struct mcc_ast_symbol_table *symbol_table,
-//                                                                   char *symbol);
-
-// struct mcc_ast_symbol_declaration *mcc_ast_lookup_symbol(struct mcc_ast_symbol_table *symbol_table, char *symbol);
-
-struct mcc_symbol *lookup_symbol_in_scope(struct mcc_symbol_table *symbol_table, char *key);
-
 void insert_built_in_symbol(struct temp_create_symbol_table *temp_st,
                             char *identifier,
                             enum mcc_ast_type return_type,
@@ -80,5 +72,8 @@ void exit_scope(struct temp_create_symbol_table *tmp);
 void mcc_delete_symbol_table(struct mcc_symbol_table *symbol_table);
 
 void mcc_print_symbol_table(FILE *out, struct mcc_symbol_table *symbol_table);
+
+struct mcc_symbol *lookup_symbol_in_scope(struct mcc_symbol_table *symbol_table, char *key);
+struct mcc_symbol *lookup_symbol(struct mcc_symbol_table *symbol_table, char *symbol);
 
 #endif // MCC_AST_SYMBOL_TABLE_H
