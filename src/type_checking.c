@@ -60,12 +60,7 @@ static void check_eval_expression(struct mcc_ast_expression *expr, struct mcc_sy
 	}
 
 	if (expr->type == MCC_AST_EXPRESSION_TYPE_ARRAY_ACCESS) {
-		struct mcc_symbol *symbol = lookup_symbol(symbol_table, expr->array_access_id->identifier->name);
-		printf("debug %d\n", symbol);
-		printf("debug %d\n", symbol->type);
-		if (symbol != NULL && symbol->type != MCC_AST_TYPE_BOOL) {
-			printf("error, function type '%d' not allowed in eval condition\n", symbol->type);
-		}
+		// TODO check array type
 		return;
 	}
 
