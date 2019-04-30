@@ -41,7 +41,37 @@ static void check_function_return(struct mcc_ast_statement *ret_stmt, void *data
 
 static void check_eval_expression(struct mcc_ast_expression *expr)
 {
-	if (expr->op != NULL || expr->op == 0) {
+
+	if (expr == NULL) {
+		return;
+	}
+
+	printf("%d\n", expr->type);
+
+	if (expr->type == MCC_AST_EXPRESSION_TYPE_LITERAL) {
+		if (expr->expression_type != MCC_AST_TYPE_BOOL) {
+			printf("error, literal type '%d' not allowed in eval condition\n", expr->expression_type);
+		}
+		return;
+	}
+
+	if (expr->type == MCC_AST_EXPRESSION_TYPE_IDENTIFIER) {
+		if (expr->expression_type != MCC_AST_TYPE_BOOL) {
+			printf("error, variable type '%d' not allowed in eval condition\n", expr->identifier->type);
+		}
+		return;
+	}
+
+	if (expr->type == MCC_AST_EXPRESSION_TYPE_PARENTH) {
+		return check_eval_expression(expr->expression);
+	}
+
+	if (expr->type == MCC_AST_EXPRESSION_TYPE_ARRAY_ACCESS) {
+		// TODO check array type
+		return;
+	}
+
+	if (expr->type == MCC_AST_EXPRESSION_TYPE_BINARY_OP) {
 		enum mcc_ast_binary_op op_type = expr->op;
 		switch (expr->op) {
 		case MCC_AST_BINARY_OP_ST:
@@ -67,11 +97,16 @@ static void check_eval_expression(struct mcc_ast_expression *expr)
 		return;
 	}
 
-	if (expr->u_op != NULL) {
+	if (expr->type == MCC_AST_EXPRESSION_TYPE_UNARY_OP) {
 		enum mcc_ast_unary_op u_op_type = expr->u_op;
 		if (u_op_type != MCC_AST_UNARY_OP_NOT) {
 			printf("error, expression type '%d' not allowed in eval condition\n", u_op_type);
 		}
+		return;
+	}
+
+	if (expr->type == MCC_AST_EXPRESSION_TYPE_FUNCTION_CALL) {
+		// TODO check return value
 		return;
 	}
 
