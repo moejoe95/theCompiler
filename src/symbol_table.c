@@ -429,7 +429,8 @@ static void symbol_table_assignment(struct mcc_ast_declare_assign *assignment, v
 	struct mcc_symbol *previous_declaration =
 	    check_identifier(&assignment->node.sloc, temp->symbol_table, assignment->assign_lhs->identifier);
 
-	assignment->assign_lhs->expression_type = previous_declaration->type;
+	if (previous_declaration != NULL)
+		assignment->assign_lhs->expression_type = previous_declaration->type;
 }
 
 static void symbol_table_expression(struct mcc_ast_expression *expr, void *data)
