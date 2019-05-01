@@ -40,8 +40,6 @@ struct mcc_symbol *lookup_symbol_in_scope(struct mcc_symbol_table *symbol_table,
 		return NULL;
 	}
 
-	// printf(symbol_table->label);
-
 	struct mcc_symbol *tmp = symbol_table->symbols->head;
 
 	while (tmp != NULL) {
