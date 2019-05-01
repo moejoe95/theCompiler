@@ -62,8 +62,7 @@ void print_semantic_error(struct mcc_semantic_error *semantic_error, FILE *out)
 		        semantic_error->identifier->name);
 		break;
 	case MCC_SC_ERROR_INVALID_ASSIGNMENT:
-		assert(semantic_error->lhs_type);
-		assert(semantic_error->rhs_type);
+		assert(semantic_error);
 		fprintf(out, "%s:%d:%d: error: %s (expected type '%s', but got type '%s')\n",
 		        semantic_error->sloc->filename, semantic_error->sloc->end_line + 1,
 		        semantic_error->sloc->end_col + 1, "invalid assignment",
