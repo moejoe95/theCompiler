@@ -102,7 +102,7 @@ int main(int argc, char **argv)
 		}
 
 		struct mcc_symbol_table *st = NULL;
-		st = mcc_create_symbol_table(pro);
+		st = mcc_create_symbol_table(pro, out);
 		mcc_print_symbol_table(out, st);
 
 		// cleanup

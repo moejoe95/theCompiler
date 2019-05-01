@@ -10,10 +10,12 @@
 struct mcc_type_checking {
 	struct mcc_symbol_table *symbol_table;
 	struct mcc_ast_func_definition *current_function;
+	FILE* out;
 };
 
 
 void mcc_check_types(struct mcc_ast_program *program,
-                        struct mcc_symbol_table *symbol_table);
+                        struct mcc_symbol_table *symbol_table,
+						FILE *out);
 
 #endif
