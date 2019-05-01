@@ -455,14 +455,16 @@ static void symbol_table_assignment(struct mcc_ast_declare_assign *assignment, v
 	assert(data);
 
 	struct temp_create_symbol_table *temp = data;
-
-	if (assignment->assign_lhs->type != MCC_AST_EXPRESSION_TYPE_ARRAY_ACCESS){
-		struct mcc_symbol *previous_declaration =
-	    	check_identifier(&assignment->node.sloc, temp->symbol_table, assignment->assign_lhs->identifier);
-		if (previous_declaration != NULL)
-			assignment->assign_lhs->expression_type = previous_declaration->type;
+	struct mcc_ast_identifier *id;
+	if (assignment->assign_lhs->type != MCC_AST_EXPRESSION_TYPE_ARRAY_ACCESS) {
+		id = assignment->assign_lhs->identifier;
+	} else {
+		id = assignment->assign_lhs->array_access_id->identifier;
 	}
 
+	struct mcc_symbol *previous_declaration = check_identifier(&assignment->node.sloc, temp->symbol_table, id);
+	if (previous_declaration != NULL)
+		assignment->assign_lhs->expression_type = previous_declaration->type;
 }
 
 static void symbol_table_expression(struct mcc_ast_expression *expr, void *data)
