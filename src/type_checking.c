@@ -13,8 +13,11 @@ static void check_assignment(struct mcc_ast_declare_assign *declare_assign, void
 	struct mcc_ast_expression *rhs = declare_assign->assign_rhs;
 
 	if (lhs->expression_type != rhs->expression_type) {
-		// TODO Andi -> error type invalid assignment
-		printf("error, expected type '%d', but got type '%d'\n", lhs->expression_type, rhs->expression_type);
+		struct mcc_semantic_error *error = get_mcc_semantic_error_struct(MCC_SC_ERROR_INVALID_ASSIGNMENT);
+		error->sloc = &declare_assign->node.sloc;
+		error->lhs_type = lhs->expression_type;
+		error->rhs_type = rhs->expression_type;	
+		print_semantic_error(error);
 	}
 }
 
@@ -34,8 +37,11 @@ static void check_function_return(struct mcc_ast_statement *ret_stmt, void *data
 	enum mcc_ast_type func_type = type_check->current_function->func_type;
 
 	if (ret_type != func_type) {
-		// TODO Andi -> error type invalid return type
-		printf("error, expected type '%d', but got type '%d'\n", func_type, ret_type);
+		struct mcc_semantic_error *error = get_mcc_semantic_error_struct(MCC_SC_ERROR_INVALID_RETURN_TYPE);
+		error->sloc = &ret_stmt->node.sloc;
+		error->ret_type = ret_type;
+		error->func_type = func_type;
+		print_semantic_error(error);
 	}
 }
 
@@ -43,14 +49,20 @@ static void check_eval_expression(struct mcc_ast_expression *expr, struct mcc_sy
 {
 	if (expr->type == MCC_AST_EXPRESSION_TYPE_LITERAL) {
 		if (expr->expression_type != MCC_AST_TYPE_BOOL) {
-			printf("error, literal type '%d' not allowed in eval condition\n", expr->expression_type);
+			struct mcc_semantic_error *error = get_mcc_semantic_error_struct(MCC_SC_ERROR_INVALID_CONDITION_TYPE);
+			error->sloc = &expr->node.sloc;
+			error->expr_type = expr->expression_type;
+			print_semantic_error(error);
 		}
 		return;
 	}
 
 	if (expr->type == MCC_AST_EXPRESSION_TYPE_IDENTIFIER) {
 		if (expr->expression_type != MCC_AST_TYPE_BOOL) {
-			printf("error, variable type '%d' not allowed in eval condition\n", expr->identifier->type);
+			struct mcc_semantic_error *error = get_mcc_semantic_error_struct(MCC_SC_ERROR_INVALID_CONDITION_TYPE);
+			error->sloc = &expr->node.sloc;
+			error->expr_type = expr->expression_type;
+			print_semantic_error(error);
 		}
 		return;
 	}
@@ -83,8 +95,13 @@ static void check_eval_expression(struct mcc_ast_expression *expr, struct mcc_sy
 		case MCC_AST_BINARY_OP_NEQ:
 			break;
 		default:
-			printf("error, expression type '%d' not allowed in eval condition\n", expr->op);
-			break;
+			{
+				struct mcc_semantic_error *error = get_mcc_semantic_error_struct(MCC_SC_ERROR_INVALID_CONDITION_BIN_EXPR);
+				error->sloc = &expr->node.sloc;
+				error->bin_expr = expr;
+				print_semantic_error(error);
+				break;
+			}
 		}
 		return;
 	}
@@ -92,7 +109,10 @@ static void check_eval_expression(struct mcc_ast_expression *expr, struct mcc_sy
 	if (expr->type == MCC_AST_EXPRESSION_TYPE_UNARY_OP) {
 		enum mcc_ast_unary_op u_op_type = expr->u_op;
 		if (u_op_type != MCC_AST_UNARY_OP_NOT) {
-			printf("error, expression type '%d' not allowed in eval condition\n", u_op_type);
+			struct mcc_semantic_error *error = get_mcc_semantic_error_struct(MCC_SC_ERROR_INVALID_CONDITION_UN_EXPR);
+			error->sloc = &expr->node.sloc;
+			error->un_expr = expr;
+			print_semantic_error(error);
 		}
 		return;
 	}
@@ -101,12 +121,17 @@ static void check_eval_expression(struct mcc_ast_expression *expr, struct mcc_sy
 		struct mcc_symbol *symbol =
 		    lookup_symbol_in_scope(symbol_table, expr->function_call_identifier->identifier->name);
 		if (symbol != NULL && symbol->type != MCC_AST_TYPE_BOOL) {
-			printf("error, function type '%d' not allowed in eval condition\n", symbol->type);
+			struct mcc_semantic_error *error = get_mcc_semantic_error_struct(MCC_SC_ERROR_INVALID_CONDITION_TYPE);
+			error->sloc = &expr->node.sloc;
+			error->expr_type = symbol->type;
+			print_semantic_error(error);
 		}
 		return;
 	}
 
-	printf("error, missing eval condition\n");
+	struct mcc_semantic_error *error = get_mcc_semantic_error_struct(MCC_SC_ERROR_TYPE_NO_CONDITION);
+	error->sloc = &expr->node.sloc;
+	print_semantic_error(error);
 }
 
 static void check_statement_if(struct mcc_ast_statement *if_stmt, void *data)
@@ -160,24 +185,31 @@ static void check_expression_literal(struct mcc_ast_expression *expr, void *data
 		break;
 
 	default:
-		printf("error, literal cant be type void");
-		break;
+		{//TODO test?
+			struct mcc_semantic_error *error = get_mcc_semantic_error_struct(MCC_SC_ERROR_LITERAL_VOID);
+			error->sloc = &expr->node.sloc;
+			error->identifier = expr->identifier;
+			print_semantic_error(error);
+			break;
+		}
 	}
 }
 
-static void check_arithmetic_ops(enum mcc_ast_type type)
-{
-	if (type != MCC_AST_TYPE_INT && type != MCC_AST_TYPE_FLOAT) {
-		// TODO Andi -> error arithmetic ops only allowed on ints and floats
-		printf("arithmetic operations not allowed on type '%d'\n", type);
+static void check_arithmetic_ops(struct mcc_ast_expression *bin_expr){
+	if (bin_expr->expression_type != MCC_AST_TYPE_INT && bin_expr->expression_type != MCC_AST_TYPE_FLOAT){
+		struct mcc_semantic_error *error = get_mcc_semantic_error_struct(MCC_SC_ERROR_INVALID_AR_OPERATION);
+		error->sloc = &bin_expr->node.sloc;
+		error->expr_type = bin_expr->expression_type;
+		print_semantic_error(error);
 	}
 }
-
-static void check_logical_ops(enum mcc_ast_type type)
-{
-	if (type != MCC_AST_TYPE_BOOL) {
-		// TODO Andi -> error logical ops only allowed on bools
-		printf("logical operations not allowed on type '%d'\n", type);
+		
+static void check_logical_ops(struct mcc_ast_expression *bin_expr){
+	if (bin_expr->expression_type != MCC_AST_TYPE_BOOL){
+		struct mcc_semantic_error *error = get_mcc_semantic_error_struct(MCC_SC_ERROR_INVALID_LOG_OPERATION);
+		error->sloc = &bin_expr->node.sloc;
+		error->expr_type = bin_expr->expression_type;
+		print_semantic_error(error);
 	}
 }
 
@@ -191,8 +223,10 @@ static void check_expression_binary(struct mcc_ast_expression *bin_expr, void *d
 	enum mcc_ast_type rhs_type = bin_expr->rhs->expression_type;
 
 	if (lhs_type != rhs_type) {
-		// TODO Andi binary operation between two different types
-		printf("operation '%d' not allowed on type '%d' and '%d'\n", bin_expr->op, lhs_type, rhs_type);
+		struct mcc_semantic_error *error = get_mcc_semantic_error_struct(MCC_SC_ERROR_INVALID_BIN_OPERATION);
+		error->sloc = &bin_expr->node.sloc;
+		error->bin_expr = bin_expr;
+		print_semantic_error(error);
 	}
 
 	bin_expr->expression_type = lhs_type;
@@ -206,11 +240,11 @@ static void check_expression_binary(struct mcc_ast_expression *bin_expr, void *d
 	case MCC_AST_BINARY_OP_SE:
 	case MCC_AST_BINARY_OP_GT:
 	case MCC_AST_BINARY_OP_ST:
-		check_arithmetic_ops(bin_expr->expression_type);
+		check_arithmetic_ops(bin_expr);
 		break;
 	case MCC_AST_BINARY_OP_LAND:
 	case MCC_AST_BINARY_OP_LOR:
-		check_logical_ops(bin_expr->expression_type);
+		check_logical_ops(bin_expr);
 		break;
 	default:
 		// eq and neq allowed on all types
@@ -227,11 +261,11 @@ static void check_expression_unary(struct mcc_ast_expression *expr, void *data)
 
 	switch (expr->u_op) {
 	case MCC_AST_UNARY_OP_MINUS:
-		check_arithmetic_ops(expr->expression_type);
+		check_arithmetic_ops(expr);
 		break;
 
 	case MCC_AST_UNARY_OP_NOT:
-		check_logical_ops(expr->expression_type);
+		check_logical_ops(expr);
 		break;
 	}
 }

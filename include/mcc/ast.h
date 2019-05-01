@@ -96,6 +96,18 @@ static char *get_bin_op_string(enum mcc_ast_binary_op op)
 	return "";
 }
 
+static char *get_un_op_string(enum mcc_ast_unary_op op)
+{
+	switch (op) {
+	case MCC_AST_UNARY_OP_MINUS:
+		return "-";
+	case MCC_AST_UNARY_OP_NOT:
+		return "!";
+	}
+
+	return "";
+}
+
 // -------------------------------------------------------------------- Types
 
 enum mcc_ast_type { MCC_AST_TYPE_BOOL, MCC_AST_TYPE_INT, MCC_AST_TYPE_FLOAT, MCC_AST_TYPE_STRING, MCC_AST_TYPE_VOID };

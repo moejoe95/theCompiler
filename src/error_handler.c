@@ -51,11 +51,13 @@ void print_semantic_error(struct mcc_semantic_error *semantic_error){
 			semantic_error->sloc->filename, semantic_error->sloc->end_line+1,
 			semantic_error->sloc->end_col+1, "undefined identifier", semantic_error->identifier->name);
 			break;
-		case MCC_SC_ERROR_INVALID_ASSIGNMENT: //todo
-			assert(semantic_error->identifier->name);
-			fprintf(stderr, "%s:%d:%d: error: %s (expected type '%d', but got type '%d')\n", 
+		case MCC_SC_ERROR_INVALID_ASSIGNMENT:
+			assert(semantic_error->lhs_type);
+			assert(semantic_error->rhs_type);
+			fprintf(stderr, "%s:%d:%d: error: %s (expected type '%s', but got type '%s')\n", 
 			semantic_error->sloc->filename, semantic_error->sloc->end_line+1,
-			semantic_error->sloc->end_col+1, "invalid assignment", semantic_error->symbol->type, semantic_error->rhs->expression_type);
+			semantic_error->sloc->end_col+1, "invalid assignment", get_type_string(semantic_error->lhs_type), 
+			get_type_string(semantic_error->rhs_type));
 			break;
 		case MCC_SC_ERROR_INVALID_RETURN_TYPE:
 			fprintf(stderr, "%s:%d:%d: error: %s (expected type '%s', but got type '%s')\n", 
@@ -95,6 +97,35 @@ void print_semantic_error(struct mcc_semantic_error *semantic_error){
 			semantic_error->sloc->filename, semantic_error->sloc->end_line+1,
 			semantic_error->sloc->end_col+1, "wrong number of arguments for function call", semantic_error->identifier->name,
 			semantic_error->expArgs, semantic_error->gotArgs);
+			break;
+		case MCC_SC_ERROR_INVALID_CONDITION_TYPE:
+			assert(semantic_error->sloc);
+			assert(semantic_error->expr_type);
+			fprintf(stderr, "%s:%d:%d: error: %s (type '%s')\n", 
+			semantic_error->sloc->filename, semantic_error->sloc->end_line+1,
+			semantic_error->sloc->end_col+1, "type not allowed in evaluation condition", get_type_string(semantic_error->expr_type));
+			break;
+		case MCC_SC_ERROR_INVALID_CONDITION_BIN_EXPR:
+			assert(semantic_error->sloc);
+			assert(semantic_error->bin_expr);
+			fprintf(stderr, "%s:%d:%d: error: %s (operation '%s')\n", 
+			semantic_error->sloc->filename, semantic_error->sloc->end_line+1,
+			semantic_error->sloc->end_col+1, "binary operation not allowed in evaluation condition", 
+			get_bin_op_string(semantic_error->bin_expr->op));
+			break;
+		case MCC_SC_ERROR_INVALID_CONDITION_UN_EXPR:
+			assert(semantic_error->sloc);
+			assert(semantic_error->un_expr);
+			fprintf(stderr, "%s:%d:%d: error: %s (operation '%s')\n", 
+			semantic_error->sloc->filename, semantic_error->sloc->end_line+1,
+			semantic_error->sloc->end_col+1, "unary operation not allowed in evaluation condition", 
+			get_un_op_string(semantic_error->un_expr->op));
+			break;
+		case MCC_SC_ERROR_TYPE_NO_CONDITION:
+			assert(semantic_error->sloc);
+			fprintf(stderr, "%s:%d:%d: error: %s (operation '%s')\n", 
+			semantic_error->sloc->filename, semantic_error->sloc->end_line+1,
+			semantic_error->sloc->end_col+1, "missing evaluation condition");
 			break;
 	}
 }
