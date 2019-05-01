@@ -33,7 +33,11 @@ static void check_function_return(struct mcc_ast_statement *ret_stmt, void *data
 	if (ret_stmt->expression == NULL) {
 		ret_type = MCC_AST_TYPE_VOID;
 	} else {
-		ret_type = ret_stmt->expression->expression_type;
+		if (ret_stmt->expression->type == MCC_AST_EXPRESSION_TYPE_ARRAY_ACCESS){
+			ret_type = ret_stmt->expression->array_access_id->expression_type;
+		}else{
+			ret_type = ret_stmt->expression->expression_type;
+		}
 	}
 	enum mcc_ast_type func_type = type_check->current_function->func_type;
 
