@@ -60,7 +60,8 @@ struct mcc_symbol *lookup_symbol(struct mcc_symbol_table *symbol_table, char *sy
 	struct mcc_symbol *sym = NULL;
 	do {
 		sym = lookup_symbol_in_scope(symbol_table, symbol);
-		symbol_table = symbol_table->parent;
+		if (symbol_table != NULL)
+			symbol_table = symbol_table->parent;
 	} while (!sym && symbol_table);
 
 	return sym;
