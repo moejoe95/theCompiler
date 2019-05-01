@@ -108,14 +108,10 @@ void insert_built_in_symbol(struct temp_create_symbol_table *temp_st,
 	id->name = identifier;
 	struct mcc_symbol *symbol = create_symbol_built_in(return_type, id, NULL, NULL);
 
-	// if (parameter_type != MCC_AST_TYPE_VOID) {
-	// 	ARRAY_INIT(parameter_declaration);
-
-	// 	struct mcc_ast_symbol_declaration *sym_parameter =
-	// 	    create_sym_declaration_built_in(parameter_type, NULL, NULL);
-	// 	ARRAY_ADD(parameter_declaration, sym_parameter);
-	// 	sym_declaration->parameter_declaration = parameter_declaration;
-	// }
+	if (parameter_type != MCC_AST_TYPE_VOID) {
+		symbol->numArgs = 1;
+		// TODO Andreas add argument types for check
+	}
 
 	add_symbol_to_list(temp_st->symbol_table->symbols, symbol);
 }
