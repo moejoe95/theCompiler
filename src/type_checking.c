@@ -273,7 +273,7 @@ void mcc_check_types(struct mcc_ast_program *program, struct mcc_symbol_table *s
 	case MCC_AST_PROGRAM_TYPE_FUNCTION_LIST: {
 		struct mcc_ast_func_list *list = program->function_list;
 		while (list != NULL) {
-			type_checking->current_function = program->function_list->function;
+			type_checking->current_function = list->function;
 			struct mcc_ast_visitor visitor = type_checking_visitor(type_checking);
 			mcc_ast_visit_function(type_checking->current_function, &visitor);
 			list = list->next_function;
