@@ -12,7 +12,7 @@ static void check_assignment(struct mcc_ast_declare_assign *declare_assign, void
 	struct mcc_ast_expression *lhs = declare_assign->assign_lhs;
 	struct mcc_ast_expression *rhs = declare_assign->assign_rhs;
 
-	if ((lhs->expression_type || lhs->expression_type == 0) && lhs->expression_type != rhs->expression_type) {
+	if (lhs->expression_type != rhs->expression_type) {
 		struct mcc_semantic_error *error = get_mcc_semantic_error_struct(MCC_SC_ERROR_INVALID_ASSIGNMENT);
 		error->sloc = &declare_assign->node.sloc;
 		error->lhs_type = lhs->expression_type;
