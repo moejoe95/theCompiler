@@ -12,7 +12,7 @@
 void print_help(const char *prg_name)
 {
 	printf("usage: %s [OPTIONS] file...\n", prg_name);
-	printf("\nUtility for printing printing the symbol tables. \n");
+	printf("\nUtility for semantic type checking with the symbol tables. \n");
 	printf("\nUse '-' as input file to read from stdin.\n");
 	printf("OPTIONS:\n");
 	printf("\t-h,--help \tdisplays this help message\n");
@@ -103,7 +103,9 @@ int main(int argc, char **argv)
 
 		struct mcc_symbol_table *st = NULL;
 		st = mcc_create_symbol_table(pro);
-		mcc_print_symbol_table(out, st);
+
+		// type checking
+		mcc_check_types(pro, st);
 
 		// cleanup
 		mcc_delete_symbol_table(st);

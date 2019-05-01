@@ -40,7 +40,7 @@ struct mcc_symbol *lookup_symbol_in_scope(struct mcc_symbol_table *symbol_table,
 		return NULL;
 	}
 
-	//printf(symbol_table->label);
+	// printf(symbol_table->label);
 
 	struct mcc_symbol *tmp = symbol_table->symbols->head;
 
@@ -121,7 +121,8 @@ void insert_built_in_symbol(struct temp_create_symbol_table *temp_st,
 	add_symbol_to_list(temp_st->symbol_table->symbols, symbol);
 }
 
-struct mcc_symbol *create_symbol_built_in(enum mcc_ast_type type, struct mcc_ast_identifier *identifier, long *arr_size, int numArgs)
+struct mcc_symbol *
+create_symbol_built_in(enum mcc_ast_type type, struct mcc_ast_identifier *identifier, long *arr_size, int numArgs)
 {
 	struct mcc_symbol *sym = malloc(sizeof(*sym));
 	if (!sym) {
@@ -333,7 +334,7 @@ static void symbol_table_function_def(struct mcc_ast_func_definition *function, 
 			param = param->next_parameter;
 		} while (param);
 	}
-	// set_semantic_annotation_function_duplicate(function, 0);	
+	// set_semantic_annotation_function_duplicate(function, 0);
 	insert_symbol_function(tmp, function, numArgs);
 
 	struct mcc_symbol_table *symbol_table = allocate_symbol_table(tmp->symbol_table, func_id);
@@ -362,7 +363,9 @@ static void symbol_table_function_def(struct mcc_ast_func_definition *function, 
 	}
 }
 
-void insert_symbol_function(struct temp_create_symbol_table *tmp, struct mcc_ast_func_definition *function_def, int numArgs)
+void insert_symbol_function(struct temp_create_symbol_table *tmp,
+                            struct mcc_ast_func_definition *function_def,
+                            int numArgs)
 {
 	assert(function_def);
 	struct mcc_symbol *sym =
@@ -397,8 +400,6 @@ static void symbol_table_function_call(struct mcc_ast_expression *expression, vo
 	assert(expression);
 	assert(data);
 
-	printf("function call\n");
-
 	struct temp_create_symbol_table *tmp = data;
 
 	struct mcc_symbol *sym =
@@ -411,18 +412,17 @@ static void symbol_table_function_call(struct mcc_ast_expression *expression, vo
 		error->identifier = expression->function_call_identifier->identifier;
 		print_semantic_error(error);
 	}
-	
+
 	int numArgs = 0;
-	if(expression->function_call_arguments){
+	if (expression->function_call_arguments) {
 		numArgs++;
 		struct mcc_ast_function_arguments *tmp = expression->function_call_arguments;
-		while(tmp->next_argument){
+		while (tmp->next_argument) {
 			numArgs++;
 			tmp = tmp->next_argument;
 		}
-		
 	}
-	if(numArgs != sym->numArgs){
+	if (numArgs != sym->numArgs) {
 		error = get_mcc_semantic_error_struct(MCC_SC_ERROR_NUMBER_ARGUMENTS);
 		error->sloc = &expression->node.sloc;
 		error->func_identifier = expression->function_call_identifier->identifier;
@@ -430,7 +430,6 @@ static void symbol_table_function_call(struct mcc_ast_expression *expression, vo
 		error->gotArgs = numArgs;
 		print_semantic_error(error);
 	}
-	
 }
 
 static struct mcc_symbol *check_identifier(struct mcc_ast_source_location *sloc,
@@ -492,7 +491,7 @@ static void symbol_table_expression(struct mcc_ast_expression *expr, void *data)
 	case MCC_AST_EXPRESSION_TYPE_ARRAY_ACCESS:
 		symbol_table_expression(expr->array_access_id, data);
 		break;
-	case MCC_AST_EXPRESSION_TYPE_LITERAL:	
+	case MCC_AST_EXPRESSION_TYPE_LITERAL:
 
 		break;
 	case MCC_AST_EXPRESSION_TYPE_FUNCTION_CALL:
