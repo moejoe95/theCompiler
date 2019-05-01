@@ -410,6 +410,7 @@ static void symbol_table_function_call(struct mcc_ast_expression *expression, vo
 		error->sloc = &expression->node.sloc;
 		error->identifier = expression->function_call_identifier->identifier;
 		print_semantic_error(error, tmp->out);
+		return;
 	}
 
 	int numArgs = 0;
