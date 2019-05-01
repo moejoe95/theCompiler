@@ -14,71 +14,71 @@ void print_semantic_error(struct mcc_semantic_error *semantic_error){
 		case MCC_SC_ERROR_NO_MAIN:
 			fprintf(stderr, "%s:%d:%d: error: %s \n", 
 			semantic_error->sloc->filename, semantic_error->sloc->end_line+1,
-			semantic_error->sloc->end_col, "no 'main' function found");
+			semantic_error->sloc->end_col+1, "no 'main' function found");
 			break;
 
 		case MCC_SC_ERROR_DUPLICATE_DECLARATION:
 			assert(semantic_error->identifier->name);
 			fprintf(stderr, "%s:%d:%d: error: %s (variable '%s')\n", 
 			semantic_error->sloc->filename, semantic_error->sloc->end_line+1,
-			semantic_error->sloc->end_col, "duplicate declaration", semantic_error->identifier->name);
+			semantic_error->sloc->end_col+1, "duplicate declaration", semantic_error->identifier->name);
 			break;
 
 		case MCC_SC_ERROR_DUPLICATE_FUNCTION_DEFINITION:
 			assert(semantic_error->identifier->name);
 			fprintf(stderr, "%s:%d:%d: error: %s (id '%s')\n", 
 			semantic_error->sloc->filename, semantic_error->sloc->end_line+1,
-			semantic_error->sloc->end_col, "duplicate function definition", semantic_error->identifier->name);
+			semantic_error->sloc->end_col+1, "duplicate function definition", semantic_error->identifier->name);
 			break;
 
 		case MCC_SC_ERROR_NO_RETURN:
 			assert(semantic_error->identifier->name);
 			fprintf(stderr, "%s:%d:%d: error: %s (func '%s')\n", 
 			semantic_error->sloc->filename, semantic_error->sloc->end_line+1,
-			semantic_error->sloc->end_col, "no return value in non void function", semantic_error->identifier->name);
+			semantic_error->sloc->end_col+1, "no return value in non void function", semantic_error->identifier->name);
 			break;
 
 		case MCC_SC_ERROR_FUNCTION_NOT_DECLARED:
 			assert(semantic_error->identifier->name);
 			fprintf(stderr, "%s:%d:%d: error: %s (func '%s')\n", 
 			semantic_error->sloc->filename, semantic_error->sloc->end_line+1,
-			semantic_error->sloc->end_col, "function not declared", semantic_error->identifier->name);
+			semantic_error->sloc->end_col+1, "function not declared", semantic_error->identifier->name);
 			break;
 
 		case MCC_SC_ERROR_UNDEFINED_IDENTIFIER:
 			assert(semantic_error->identifier->name);
 			fprintf(stderr, "%s:%d:%d: error: %s (id '%s')\n", 
 			semantic_error->sloc->filename, semantic_error->sloc->end_line+1,
-			semantic_error->sloc->end_col, "undefined identifier", semantic_error->identifier->name);
+			semantic_error->sloc->end_col+1, "undefined identifier", semantic_error->identifier->name);
 			break;
 		case MCC_SC_ERROR_INVALID_ASSIGNMENT: //todo
 			assert(semantic_error->identifier->name);
 			fprintf(stderr, "%s:%d:%d: error: %s (expected type '%d', but got type '%d')\n", 
 			semantic_error->sloc->filename, semantic_error->sloc->end_line+1,
-			semantic_error->sloc->end_col, "invalid assignment", semantic_error->symbol->type, semantic_error->rhs->expression_type);
+			semantic_error->sloc->end_col+1, "invalid assignment", semantic_error->symbol->type, semantic_error->rhs->expression_type);
 			break;
 		case MCC_SC_ERROR_INVALID_RETURN_TYPE:
 			fprintf(stderr, "%s:%d:%d: error: %s (expected type '%s', but got type '%s')\n", 
 			semantic_error->sloc->filename, semantic_error->sloc->end_line+1,
-			semantic_error->sloc->end_col, "invalid return type", 
+			semantic_error->sloc->end_col+1, "invalid return type", 
 			get_type_string(semantic_error->func_type), get_type_string(semantic_error->ret_type));
 			break;
 		case MCC_SC_ERROR_INVALID_AR_OPERATION:
 			fprintf(stderr, "%s:%d:%d: error: %s (type '%s')\n", 
 			semantic_error->sloc->filename, semantic_error->sloc->end_line+1,
-			semantic_error->sloc->end_col, "arithmetic operations not allowed on type", 
+			semantic_error->sloc->end_col+1, "arithmetic operations not allowed on type", 
 			get_type_string(semantic_error->ret_type));
 			break;
 		case MCC_SC_ERROR_INVALID_LOG_OPERATION:
 			fprintf(stderr, "%s:%d:%d: error: %s (type '%s')\n", 
 			semantic_error->sloc->filename, semantic_error->sloc->end_line+1,
-			semantic_error->sloc->end_col, "logical operations not allowed on type", 
+			semantic_error->sloc->end_col+1, "logical operations not allowed on type", 
 			get_type_string(semantic_error->ret_type));
 			break;
 		case MCC_SC_ERROR_INVALID_BIN_OPERATION:
 			fprintf(stderr, "%s:%d:%d: error: operation '%s' not allowed on types ('%s' and '%s')\n", 
 			semantic_error->sloc->filename, semantic_error->sloc->end_line+1,
-			semantic_error->sloc->end_col, get_bin_op_string(semantic_error->bin_expr->op),
+			semantic_error->sloc->end_col+1, get_bin_op_string(semantic_error->bin_expr->op),
 			get_type_string(semantic_error->bin_expr->lhs->expression_type), 
 			get_type_string(semantic_error->bin_expr->rhs->expression_type));
 			break;
@@ -86,7 +86,15 @@ void print_semantic_error(struct mcc_semantic_error *semantic_error){
 			assert(semantic_error->identifier->name);
 			fprintf(stderr, "%s:%d:%d: error: %s (id '%s')\n", 
 			semantic_error->sloc->filename, semantic_error->sloc->end_line+1,
-			semantic_error->sloc->end_col, "literal cannot be type void", semantic_error->identifier->name);
+			semantic_error->sloc->end_col+1, "literal cannot be type void", semantic_error->identifier->name);
+			break;
+		case MCC_SC_ERROR_NUMBER_ARGUMENTS:
+			assert(semantic_error->sloc);
+			assert(semantic_error->identifier->name);
+			fprintf(stderr, "%s:%d:%d: error: %s (function '%s' expected '%d' got '%d')\n", 
+			semantic_error->sloc->filename, semantic_error->sloc->end_line+1,
+			semantic_error->sloc->end_col+1, "wrong number of arguments for function call", semantic_error->identifier->name,
+			semantic_error->expArgs, semantic_error->gotArgs);
 			break;
 	}
 }

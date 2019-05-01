@@ -20,7 +20,8 @@ enum semantic_error_type {
 	MCC_SC_ERROR_INVALID_AR_OPERATION,
 	MCC_SC_ERROR_INVALID_LOG_OPERATION,
 	MCC_SC_ERROR_INVALID_BIN_OPERATION,
-	MCC_SC_ERROR_LITERAL_VOID
+	MCC_SC_ERROR_LITERAL_VOID,
+	MCC_SC_ERROR_NUMBER_ARGUMENTS
 };
 
 struct mcc_semantic_error {
@@ -43,6 +44,12 @@ struct mcc_semantic_error {
 		enum mcc_ast_type expr_type;
 
 		struct mcc_ast_expression *bin_expr;
+
+		struct{
+			struct mcc_ast_identifier *func_identifier;
+			int expArgs;
+			int gotArgs;
+		};
 	};
 };
 
