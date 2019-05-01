@@ -136,7 +136,7 @@ create_symbol_built_in(enum mcc_ast_type type, struct mcc_ast_identifier *identi
 	return sym;
 }
 
-struct mcc_symbol_table *mcc_create_symbol_table(struct mcc_ast_program *program, FILE* out)
+struct mcc_symbol_table *mcc_create_symbol_table(struct mcc_ast_program *program, FILE *out)
 {
 	if (program == NULL) {
 		return NULL;
