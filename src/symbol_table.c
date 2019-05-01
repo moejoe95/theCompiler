@@ -459,12 +459,8 @@ static void symbol_table_expression(struct mcc_ast_expression *expr, void *data)
 	case MCC_AST_EXPRESSION_TYPE_ARRAY_ACCESS:
 		symbol_table_expression(expr->array_access_id, data);
 		break;
-	case MCC_AST_EXPRESSION_TYPE_LITERAL:
-		if (expr->expression->type == MCC_AST_EXPRESSION_TYPE_IDENTIFIER) {
-			check_identifier(&expr->node.sloc, temp->symbol_table, expr->expression->identifier);
-		} else if (expr->expression->type == MCC_AST_EXPRESSION_TYPE_ARRAY_ACCESS) {
-			symbol_table_expression(expr->array_access_id, data);
-		}
+	case MCC_AST_EXPRESSION_TYPE_LITERAL:	
+
 		break;
 	case MCC_AST_EXPRESSION_TYPE_FUNCTION_CALL:
 		// TODO

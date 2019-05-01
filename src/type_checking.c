@@ -223,6 +223,8 @@ static void check_expression_unary(struct mcc_ast_expression *expr, void *data)
 	assert(expr);
 	assert(data);
 
+	expr->expression_type = expr->rhs->expression_type;
+
 	switch (expr->u_op) {
 	case MCC_AST_UNARY_OP_MINUS:
 		check_arithmetic_ops(expr->expression_type);
