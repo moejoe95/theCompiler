@@ -92,6 +92,40 @@ echo 'int main() {int i; i = 1 + 1}' | ./mc_ast_to_dot
 ```
 
 
-## Milestone 2
+## Milestone 2 Semantic Checks
+
+__Main goals__
+
+- The compiler rejects semantically wrong inputs.
+- Invalid inputs trigger a meaningful error message including source location information.
+- Type checking can be traced (see mc_type_check_trace).
+- Symbol tables can be viewed (see mc_symbol_table).
+
+__Testing the objective__
+
+To verify the correct behavious, please follow the [Build Instructions](#build-instructions) from above.
+Afterwards the `mc_symbol_table` binary can produce the symbol table output and the `mc_type_check_trace` will perform semantic type checking.
+
+```
+./mc_symbol_table ../test/integration/euclid/euclid.mc
+```
+
+```
+./mc_type_check_trace ../test/integration/euclid/euclid.mc
+```
+
+__Example output__
 
 TODO
+
+__Examples for rejected code__
+
+Code with semantic errors is rejected with an error that includes the line, column and a message.
+
+Examples are the usage of an undeclared variable, missing return statement or a wrong type in assignment.
+
+```
+int main() { i = 1; return 0; } -> ./test.mc:1:15: error: undefined identifier (id 'i')
+int main() { } -> ./test.mc:1:4: error: no return value in non void function (func 'main')
+int main() { int i; i = "foobar"; return 0; } -> ./test.mc:1:22: error: invalid assignment (expected type 'INT', but got type 'STRING')
+```
