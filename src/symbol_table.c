@@ -432,20 +432,20 @@ static void symbol_table_function_call(struct mcc_ast_expression *expression, vo
 }
 
 static struct mcc_symbol *check_identifier(struct mcc_ast_source_location *sloc,
-                                           struct mcc_symbol_table *symbol_table,
+                                           struct temp_create_symbol_table *temp,
                                            struct mcc_ast_identifier *id)
 {
 	assert(sloc);
-	assert(symbol_table);
+	assert(temp);
 	assert(id);
 
-	struct temp_create_symbol_table *tmp = symbol_table;
+	struct mcc_symbol_table *symbol_table = temp->symbol_table;
 	struct mcc_symbol *previous_declaration = lookup_symbol(symbol_table, id->name);
 	if (previous_declaration == NULL) {
 		struct mcc_semantic_error *error = get_mcc_semantic_error_struct(MCC_SC_ERROR_UNDEFINED_IDENTIFIER);
 		error->sloc = sloc;
 		error->identifier = id;
-		print_semantic_error(error, tmp->out);
+		print_semantic_error(error, temp->out);
 		return NULL;
 	}
 	return previous_declaration;
@@ -464,7 +464,7 @@ static void symbol_table_assignment(struct mcc_ast_declare_assign *assignment, v
 		id = assignment->assign_lhs->array_access_id->identifier;
 	}
 
-	struct mcc_symbol *previous_declaration = check_identifier(&assignment->node.sloc, temp->symbol_table, id);
+	struct mcc_symbol *previous_declaration = check_identifier(&assignment->node.sloc, temp, id);
 	if (previous_declaration != NULL)
 		assignment->assign_lhs->expression_type = previous_declaration->type;
 }
