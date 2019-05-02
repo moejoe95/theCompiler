@@ -107,8 +107,18 @@ static void print_dot_expression_binary_op(struct mcc_ast_expression *expression
 
 	FILE *out = data;
 	print_dot_node(out, expression, label);
-	print_dot_edge(out, expression, expression->lhs, "lhs");
-	print_dot_edge(out, expression, expression->rhs, "rhs");
+	if (expression->lhs->type == MCC_AST_EXPRESSION_TYPE_ARRAY_ACCESS){
+		print_dot_edge(out, expression, expression->lhs->array_access_id, "lhs");
+		print_dot_edge(out, expression, expression->lhs->array_access_exp, "access expr.");
+	}else{
+		print_dot_edge(out, expression, expression->lhs, "lhs");
+	}
+	if (expression->rhs->type == MCC_AST_EXPRESSION_TYPE_ARRAY_ACCESS){
+		print_dot_edge(out, expression, expression->rhs->array_access_id, "rhs");
+		print_dot_edge(out, expression, expression->rhs->array_access_exp, "access expr.");
+	}else{
+		print_dot_edge(out, expression, expression->rhs, "rhs");
+	}
 }
 
 static void print_dot_expression_unary_op(struct mcc_ast_expression *expression, void *data)
