@@ -102,10 +102,11 @@ int main(int argc, char **argv)
 		}
 
 		struct mcc_symbol_table *st = NULL;
-		st = mcc_create_symbol_table(pro);
+		st = mcc_create_symbol_table(pro, out);
 
 		// type checking
-		mcc_check_types(pro, st, out);
+		int tracing = 1;
+		mcc_check_types(pro, st, out, tracing);
 
 		// cleanup
 		mcc_delete_symbol_table(st);
