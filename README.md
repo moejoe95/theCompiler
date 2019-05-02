@@ -162,6 +162,30 @@ name            |       type
 
 type-checking trace
 
+```
+Location        |       Expression      |       Type-LHS - Type-RHS     |       Status
+--------------------------------------------------------------------------------------
+3:7             |       bin op          |       INT ~ INT               |       VALID
+4:9             |       return          |       INT ~ INT               |       VALID
+7:7             |       bin op          |       INT ~ INT               |       VALID
+8:9             |       return          |       INT ~ INT               |       VALID
+11:7            |       bin op          |       INT ~ INT               |       VALID
+11:7            |       bin op          |       INT op INT              |       VALID
+12:18           |       bin op          |       BOOL ~ BOOL             |       VALID
+12:18           |       bin op          |       BOOL op BOOL            |       VALID
+12:9            |       return          |       INT ~ INT               |       VALID
+14:21           |       bin op          |       BOOL ~ BOOL             |       VALID
+14:21           |       bin op          |       BOOL op BOOL            |       VALID
+14:9            |       return          |       INT ~ INT               |       VALID
+23:5            |       declare n       |       BOOL                    |       VALID
+24:3            |       assign n        |       INT <- INT              |       VALID
+29:5            |       declare k       |       BOOL                    |       VALID
+30:3            |       assign k        |       INT <- INT              |       VALID
+33:5            |       declare result  |       BOOL                    |       VALID
+34:8            |       assign result   |       INT <- INT              |       VALID
+44:8            |       return          |       INT ~ INT               |       VALID
+```
+
 __Examples for rejected code__
 
 Code with semantic errors is rejected with an error that includes the line, column and a message.
