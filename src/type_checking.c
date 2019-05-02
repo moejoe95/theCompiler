@@ -293,8 +293,8 @@ static void check_arithmetic_ops(struct mcc_ast_expression *bin_expr, void *data
 
 	struct mcc_type_log *log = get_mcc_type_log_struct(MCC_TYPE_VALID);
 
-	if (bin_expr->lhs->expression_type != MCC_AST_TYPE_INT &&
-	    bin_expr->lhs->expression_type != MCC_AST_TYPE_FLOAT) {
+	if (bin_expr->expression_type != MCC_AST_TYPE_INT &&
+	    bin_expr->expression_type != MCC_AST_TYPE_FLOAT) {
 		struct mcc_semantic_error *error = get_mcc_semantic_error_struct(MCC_SC_ERROR_INVALID_AR_OPERATION);
 		error->sloc = &bin_expr->node.sloc;
 		error->expr_type = bin_expr->expression_type;
