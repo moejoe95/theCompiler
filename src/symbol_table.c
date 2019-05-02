@@ -449,24 +449,6 @@ static struct mcc_symbol *check_identifier(struct mcc_ast_source_location *sloc,
 	return previous_declaration;
 }
 
-static void symbol_table_assignment(struct mcc_ast_declare_assign *assignment, void *data)
-{
-	assert(assignment);
-	assert(data);
-
-	struct temp_create_symbol_table *temp = data;
-	struct mcc_ast_identifier *id;
-	if (assignment->assign_lhs->type != MCC_AST_EXPRESSION_TYPE_ARRAY_ACCESS) {
-		id = assignment->assign_lhs->identifier;
-	} else {
-		id = assignment->assign_lhs->array_access_id->identifier;
-	}
-
-	struct mcc_symbol *previous_declaration = check_identifier(&assignment->node.sloc, temp, id);
-	if (previous_declaration != NULL)
-		assignment->assign_lhs->expression_type = previous_declaration->type;
-}
-
 static void symbol_table_expression(struct mcc_ast_expression *expr, void *data)
 {
 	assert(expr);
@@ -500,6 +482,26 @@ static void symbol_table_expression(struct mcc_ast_expression *expr, void *data)
 		// TODO ??
 		break;
 	}
+}
+
+static void symbol_table_assignment(struct mcc_ast_declare_assign *assignment, void *data)
+{
+	assert(assignment);
+	assert(data);
+
+	struct temp_create_symbol_table *temp = data;
+	struct mcc_ast_identifier *id;
+	if (assignment->assign_lhs->type != MCC_AST_EXPRESSION_TYPE_ARRAY_ACCESS) {
+		id = assignment->assign_lhs->identifier;
+	} else {
+		id = assignment->assign_lhs->array_access_id->identifier;
+	}
+
+	struct mcc_symbol *previous_declaration = check_identifier(&assignment->node.sloc, temp, id);
+	if (previous_declaration != NULL)
+		assignment->assign_lhs->expression_type = previous_declaration->type;
+
+	symbol_table_expression(assignment->assign_rhs, data);
 }
 
 static void symbol_table_if_statement(struct mcc_ast_statement *if_stmt, void *data)
