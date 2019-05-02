@@ -160,7 +160,6 @@ struct mcc_ast_expression *mcc_ast_new_expression_binary_op(enum mcc_ast_binary_
 		return NULL;
 	}
 
-	printf("new binary\n");
 	expr->type = MCC_AST_EXPRESSION_TYPE_BINARY_OP;
 	expr->op = op;
 	expr->lhs = lhs;
