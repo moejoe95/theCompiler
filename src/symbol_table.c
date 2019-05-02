@@ -462,9 +462,6 @@ static void symbol_table_expression(struct mcc_ast_expression *expr, void *data)
 	struct temp_create_symbol_table *temp = data;
 
 	struct mcc_symbol *sym;
-	if (expr->type == NULL && expr->expression != NULL) {
-		expr = expr->expression;
-	}
 
 	switch (expr->type) {
 	case MCC_AST_EXPRESSION_TYPE_IDENTIFIER: {
@@ -496,6 +493,14 @@ static void symbol_table_expression(struct mcc_ast_expression *expr, void *data)
 		}
 		break;
 	}
+}
+
+static void symbol_table_statement_expression(struct mcc_ast_expression *expr, void *data)
+{
+	assert(expr);
+	assert(data);
+
+	symbol_table_expression(expr->expression, data);
 }
 
 static void symbol_table_assignment(struct mcc_ast_declare_assign *assignment, void *data)
@@ -567,7 +572,7 @@ struct mcc_ast_visitor generate_symbol_table_visitor(struct temp_create_symbol_t
 	    .statement_if = symbol_table_if_statement,
 	    .statement_while = symbol_table_while_statement,
 	    .statement_return = symbol_table_return_statement,
-	    .statement_expression = symbol_table_expression,
+	    .statement_expression = symbol_table_statement_expression,
 	};
 }
 
