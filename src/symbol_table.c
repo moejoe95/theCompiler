@@ -142,12 +142,8 @@ struct mcc_symbol_table *mcc_create_symbol_table(struct mcc_ast_program *program
 	struct temp_create_symbol_table *temp_st = malloc(sizeof(*temp_st));
 	temp_st->create_inner_scope = 1;
 	temp_st->main_found = 0;
-	// temp_st->index = 0;
-	// temp_st->error_list = error_list;
 	temp_st->symbol_table = allocate_symbol_table(NULL, "global");
 	temp_st->is_returned = 0;
-	// temp_st->is_duplicate = 0;
-	// temp_st->check_return = NULL;
 	temp_st->out = out;
 	temp_st->error_found = false;
 
@@ -155,8 +151,6 @@ struct mcc_symbol_table *mcc_create_symbol_table(struct mcc_ast_program *program
 
 	struct mcc_ast_visitor visitor = generate_symbol_table_visitor(temp_st);
 	mcc_ast_visit(program, &visitor);
-
-	// temp_st = visitor.userdata;
 
 	if (!temp_st->main_found) {
 		temp_st->error_found = true;
