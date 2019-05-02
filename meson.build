@@ -33,6 +33,7 @@ mcc_src = [ 'src/ast.c',
             'src/symbol_table.c',
             'src/error_handler.c',
             'src/type_checking.c',
+            'src/print_type_log.c',
             lgen.process('src/scanner.l'),
             pgen.process('src/parser.y') ]
 

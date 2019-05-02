@@ -1,4 +1,5 @@
 #include "mcc/type_checking.h"
+#include "mcc/print_type_log.h"
 #include "mcc/symbol_table.h"
 #include <stdlib.h>
 
@@ -18,6 +19,7 @@ static void check_assignment(struct mcc_ast_declare_assign *declare_assign, void
 		error->lhs_type = lhs->expression_type;
 		error->rhs_type = rhs->expression_type;	
 		print_semantic_error(error);
+		mcc_print_type_log_line(type_checking->type_log, error->sloc, "assign", get_type_string(error->lhs_type), "INVALID");
 		return;
 	}
 }
@@ -291,7 +293,7 @@ static struct mcc_ast_visitor type_checking_visitor(void *data)
 	                                .statement_while = check_statement_while};
 }
 
-void mcc_check_types(struct mcc_ast_program *program, struct mcc_symbol_table *symbol_table)
+void mcc_check_types(struct mcc_ast_program *program, struct mcc_symbol_table *symbol_table, FILE *out)
 {
 	assert(program);
 	assert(symbol_table);
@@ -301,6 +303,9 @@ void mcc_check_types(struct mcc_ast_program *program, struct mcc_symbol_table *s
 		return;
 	}
 	type_checking->symbol_table = symbol_table;
+	type_checking->type_log = out;
+
+	mcc_print_type_log_header(out); // print logging header
 
 	switch (program->type) {
 	case MCC_AST_PROGRAM_TYPE_FUNCTION:
@@ -319,6 +324,6 @@ void mcc_check_types(struct mcc_ast_program *program, struct mcc_symbol_table *s
 		}
 	} break;
 	}
-
+	mcc_print_type_log_footer(out);
 	free(type_checking);
 }

@@ -105,7 +105,7 @@ int main(int argc, char **argv)
 		st = mcc_create_symbol_table(pro);
 
 		// type checking
-		mcc_check_types(pro, st);
+		mcc_check_types(pro, st, out);
 
 		// cleanup
 		mcc_delete_symbol_table(st);
