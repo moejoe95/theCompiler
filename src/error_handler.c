@@ -87,9 +87,9 @@ void print_semantic_error(struct mcc_semantic_error *semantic_error, FILE *out)
 	case MCC_SC_ERROR_INVALID_BIN_OPERATION:
 		lhs_type = semantic_error->bin_expr->lhs->expression_type;
 		rhs_type = semantic_error->bin_expr->rhs->expression_type;
-		if (semantic_error->bin_expr->lhs->array_access_exp)
+		if (semantic_error->bin_expr->lhs->type == MCC_AST_EXPRESSION_TYPE_ARRAY_ACCESS)
 			lhs_type = semantic_error->bin_expr->lhs->array_access_id->expression_type;
-		if (semantic_error->bin_expr->rhs->array_access_exp)
+		if (semantic_error->bin_expr->rhs->type == MCC_AST_EXPRESSION_TYPE_ARRAY_ACCESS)
 			rhs_type = semantic_error->bin_expr->rhs->array_access_id->expression_type;
 
 		fprintf(out, "%s:%d:%d: error: operation '%s' not allowed on types ('%s' and '%s')\n",
