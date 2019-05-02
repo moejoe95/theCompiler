@@ -462,6 +462,10 @@ static void symbol_table_expression(struct mcc_ast_expression *expr, void *data)
 	struct temp_create_symbol_table *temp = data;
 
 	struct mcc_symbol *sym;
+	if (expr->type == NULL && expr->expression != NULL) {
+		expr = expr->expression;
+	}
+
 	switch (expr->type) {
 	case MCC_AST_EXPRESSION_TYPE_IDENTIFIER: {
 		sym = check_identifier(&expr->node.sloc, temp, expr->identifier);
