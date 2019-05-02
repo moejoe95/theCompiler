@@ -58,7 +58,6 @@ struct mcc_symbol *lookup_symbol_in_scope(struct mcc_symbol_table *symbol_table,
 struct mcc_symbol *lookup_symbol(struct mcc_symbol_table *symbol_table, char *symbol)
 {
 	struct mcc_symbol *sym = NULL;
-
 	do {
 		sym = lookup_symbol_in_scope(symbol_table, symbol);
 		if (symbol_table != NULL)
@@ -440,7 +439,6 @@ static struct mcc_symbol *check_identifier(struct mcc_ast_source_location *sloc,
 
 	struct mcc_symbol_table *symbol_table = temp->symbol_table;
 	struct mcc_symbol *previous_declaration = lookup_symbol(symbol_table, id->name);
-	printf("debug----- %d\n", previous_declaration);
 	if (previous_declaration == NULL) {
 		struct mcc_semantic_error *error = get_mcc_semantic_error_struct(MCC_SC_ERROR_UNDEFINED_IDENTIFIER);
 		error->sloc = sloc;
