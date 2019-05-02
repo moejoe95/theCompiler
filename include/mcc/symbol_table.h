@@ -10,20 +10,17 @@
 #include "mcc/error_handler.h"
 #include <assert.h>
 #include <mcc/ast_print.h>
+#include <stdbool.h>
 #include <stdio.h>
 
 struct temp_create_symbol_table {
-	// TODO Andreas, define errors...error list for collecting all errors?
-	FILE* out;
+	FILE *out;
 	int create_inner_scope;
 	int main_found;
-	// int index;
 	int is_duplicate;
 	int is_returned;
 	struct mcc_symbol_table *symbol_table;
-	// struct mcc_symbol *current_function;
-	// struct mcc_sc_if_else_stmt *check_return;
-	// mcc_array *error_list;
+	bool error_found;
 };
 
 struct mcc_symbol_table {
@@ -54,7 +51,7 @@ struct mcc_symbol_list {
 void add_symbol_to_list(struct mcc_symbol_list *list, struct mcc_symbol *symbol);
 void add_symbol_table_to_list(struct mcc_symbol_table_list *list, struct mcc_symbol_table *table);
 
-struct mcc_symbol_table *mcc_create_symbol_table(struct mcc_ast_program *program, FILE* out);
+struct mcc_symbol_table *mcc_create_symbol_table(struct mcc_ast_program *program, FILE *out);
 
 struct mcc_ast_visitor generate_symbol_table_visitor(struct temp_create_symbol_table *temp_st);
 
@@ -66,7 +63,9 @@ void insert_built_in_symbol(struct temp_create_symbol_table *temp_st,
 struct mcc_symbol *
 create_symbol_built_in(enum mcc_ast_type type, struct mcc_ast_identifier *identifier, long *arr_size, int numArgs);
 
-void insert_symbol_function(struct temp_create_symbol_table *tmp, struct mcc_ast_func_definition *function_def, int numArgs);
+void insert_symbol_function(struct temp_create_symbol_table *tmp,
+                            struct mcc_ast_func_definition *function_def,
+                            int numArgs);
 
 void enter_scope(struct temp_create_symbol_table *tmp, struct mcc_symbol_table *symbol_table);
 void exit_scope(struct temp_create_symbol_table *tmp);
