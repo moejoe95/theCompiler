@@ -43,8 +43,14 @@ struct mcc_symbol {
 	int index;
 	long *array_size;
 	int numArgs;
+	struct argument_type_list *argument_type_list;
 	struct mcc_ast_identifier *identifier;
 	struct mcc_symbol *next_symbol;
+};
+
+struct argument_type_list {
+	enum mcc_ast_literal_type type;
+	struct argument_type_list *next_type;
 };
 
 struct mcc_symbol_list {
@@ -64,9 +70,9 @@ void insert_built_in_symbol(struct temp_create_symbol_table *temp_st,
                             enum mcc_ast_type parameter_type);
 
 struct mcc_symbol *
-create_symbol_built_in(enum mcc_ast_type type, struct mcc_ast_identifier *identifier, long *arr_size, int numArgs);
+create_symbol_built_in(enum mcc_ast_type type, struct mcc_ast_identifier *identifier, long *arr_size, int numArgs, struct argument_type_list *argument_type_list);
 
-void insert_symbol_function(struct temp_create_symbol_table *tmp, struct mcc_ast_func_definition *function_def, int numArgs);
+void insert_symbol_function(struct temp_create_symbol_table *tmp, struct mcc_ast_func_definition *function_def, int numArgs,  struct argument_type_list *argument_type_list);
 
 void enter_scope(struct temp_create_symbol_table *tmp, struct mcc_symbol_table *symbol_table);
 void exit_scope(struct temp_create_symbol_table *tmp);

@@ -7,6 +7,14 @@
 #include <stdlib.h>
 #include <string.h>
 
+static struct argument_type_list* create_argument_type_list(){
+	struct argument_type_list *argument_type_list = malloc(sizeof(*argument_type_list));
+	if (!argument_type_list) {
+		return NULL;
+	}
+	return argument_type_list;
+}
+
 static struct mcc_symbol_table *allocate_symbol_table(struct mcc_symbol_table *symbol_table_parent, char *label)
 {
 	struct mcc_symbol_table *symbol_table = malloc(sizeof(*symbol_table));
@@ -106,18 +114,21 @@ void insert_built_in_symbol(struct temp_create_symbol_table *temp_st,
 	id->node.sloc.end_col = 0;
 	id->node.sloc.filename = NULL;
 	id->name = identifier;
-	struct mcc_symbol *symbol = create_symbol_built_in(return_type, id, NULL, NULL);
+	struct mcc_symbol *symbol = create_symbol_built_in(return_type, id, NULL, NULL, NULL);
 
 	if (parameter_type != MCC_AST_TYPE_VOID) {
 		symbol->numArgs = 1;
 		// TODO Andreas add argument types for check
+		struct argument_type_list *argument_type_list = create_argument_type_list();
+		argument_type_list->type = parameter_type;
+		symbol->argument_type_list;
 	}
 
 	add_symbol_to_list(temp_st->symbol_table->symbols, symbol);
 }
 
 struct mcc_symbol *
-create_symbol_built_in(enum mcc_ast_type type, struct mcc_ast_identifier *identifier, long *arr_size, int numArgs)
+create_symbol_built_in(enum mcc_ast_type type, struct mcc_ast_identifier *identifier, long *arr_size, int numArgs, struct argument_type_list *argument_type_list)
 {
 	struct mcc_symbol *sym = malloc(sizeof(*sym));
 	if (!sym) {
@@ -129,6 +140,7 @@ create_symbol_built_in(enum mcc_ast_type type, struct mcc_ast_identifier *identi
 	sym->numArgs = numArgs;
 	sym->index = -1;
 	sym->next_symbol = NULL;
+	sym->argument_type_list = argument_type_list;
 
 	return sym;
 }
@@ -187,7 +199,7 @@ static void symbol_table_declaration(struct mcc_ast_declare_assign *declaration,
 	}
 
 	struct mcc_symbol *symbol = create_symbol_built_in(
-	    declaration->declare_type, declaration->declare_id->identifier, declaration->declare_array_size, NULL);
+	    declaration->declare_type, declaration->declare_id->identifier, declaration->declare_array_size, NULL, NULL);
 
 	add_symbol_to_list(temp->symbol_table->symbols, symbol);
 
@@ -312,7 +324,6 @@ static void symbol_table_function_def(struct mcc_ast_func_definition *function, 
 	}
 
 	struct mcc_ast_symbol_declaration *previous_declaration = lookup_symbol_in_scope(tmp->symbol_table, func_id);
-
 	if (previous_declaration != NULL) {
 		struct mcc_semantic_error *error =
 		    get_mcc_semantic_error_struct(MCC_SC_ERROR_DUPLICATE_FUNCTION_DEFINITION);
@@ -322,16 +333,27 @@ static void symbol_table_function_def(struct mcc_ast_func_definition *function, 
 		return;
 	}
 
+	struct argument_type_list *argument_type_list = create_argument_type_list();
 	int numArgs = 0;
-	if (function->parameter_list) {
+	if (function->parameter_list) { //todo andi
 		struct mcc_ast_parameter *param = function->parameter_list;
+		struct argument_type_list *tmp = create_argument_type_list();
+		tmp = argument_type_list;
+		tmp->type = param->parameter->declare_type;
 		do {
 			numArgs++;
+			struct argument_type_list *argument_type_list_next = create_argument_type_list();
+			if(param->next_parameter){
+				argument_type_list_next->type = param->next_parameter->parameter->declare_type;
+				tmp->next_type = argument_type_list_next;
+				tmp = argument_type_list_next;
+			}		
 			param = param->next_parameter;
 		} while (param);
+		free(tmp);
 	}
 	// set_semantic_annotation_function_duplicate(function, 0);
-	insert_symbol_function(tmp, function, numArgs);
+	insert_symbol_function(tmp, function, numArgs, argument_type_list);
 
 	struct mcc_symbol_table *symbol_table = allocate_symbol_table(tmp->symbol_table, func_id);
 
@@ -361,11 +383,11 @@ static void symbol_table_function_def(struct mcc_ast_func_definition *function, 
 
 void insert_symbol_function(struct temp_create_symbol_table *tmp,
                             struct mcc_ast_func_definition *function_def,
-                            int numArgs)
+                            int numArgs, struct argument_type_list *argument_type_list)
 {
 	assert(function_def);
 	struct mcc_symbol *sym =
-	    create_symbol_built_in(function_def->func_type, function_def->func_identifier->identifier, NULL, numArgs);
+	    create_symbol_built_in(function_def->func_type, function_def->func_identifier->identifier, NULL, numArgs, argument_type_list);
 
 	// function_def->func_identifier->identifier->sym_declaration = sym;
 

@@ -139,6 +139,22 @@ enum mcc_ast_literal_type {
 	MCC_AST_LITERAL_TYPE_STRING,
 };
 
+static char *get_literal_type_string(enum mcc_ast_literal_type type)
+{
+	switch (type) {
+	case MCC_AST_LITERAL_TYPE_INT:
+		return "INT";
+	case MCC_AST_LITERAL_TYPE_FLOAT:
+		return "FLOAT";
+	case MCC_AST_LITERAL_TYPE_BOOL:
+		return "BOOL";
+	case MCC_AST_LITERAL_TYPE_STRING:
+		return "STRING";
+	}
+
+	return "";
+}
+
 struct mcc_ast_literal {
 	struct mcc_ast_node node;
 
