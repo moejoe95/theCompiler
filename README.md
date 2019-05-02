@@ -116,7 +116,51 @@ Afterwards the `mc_symbol_table` binary can produce the symbol table output and 
 
 __Example output__
 
-TODO
+symbol table
+```
+[symbol_table global]
+name            |       type
+-----------------------------
+print           |       VOID
+print_nl                |       VOID
+print_int               |       VOID
+print_float             |       VOID
+read_int                |       INT
+read_float              |       FLOAT
+euclid          |       INT
+main            |       INT
+
+[symbol_table euclid]
+name            |       type
+-----------------------------
+n               |       INT
+k               |       INT
+
+[symbol_table main]
+name            |       type
+-----------------------------
+n               |       INT
+k               |       INT
+result          |       INT
+
+[symbol_table anonymous]
+name            |       type
+-----------------------------
+
+[symbol_table anonymous]
+name            |       type
+-----------------------------
+
+[symbol_table anonymous]
+name            |       type
+-----------------------------
+
+[symbol_table anonymous]
+name            |       type
+-----------------------------
+```
+
+type-checking trace
 
 __Examples for rejected code__
 
