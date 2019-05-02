@@ -26,7 +26,8 @@ enum semantic_error_type {
 	MCC_SC_ERROR_INVALID_CONDITION_BIN_EXPR,
 	MCC_SC_ERROR_INVALID_CONDITION_UN_EXPR,
 	MCC_SC_ERROR_TYPE_NO_CONDITION,
-	MCC_SC_ERROR_TYPE_INVALID_ARRAY_ACCESS
+	MCC_SC_ERROR_TYPE_INVALID_ARRAY_ACCESS,
+	MCC_SC_ERROR_TYPE_INVALID_ARGUMENT_TYPE
 };
 
 struct mcc_semantic_error {
@@ -60,6 +61,11 @@ struct mcc_semantic_error {
 		struct{
 			enum mcc_ast_type rhs_type;
 			enum mcc_ast_type lhs_type;
+		};
+
+		struct{
+			enum mcc_ast_literal_type par_type;
+			enum mcc_ast_type arg_type;
 		};
 	};
 };
