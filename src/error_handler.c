@@ -140,7 +140,7 @@ void print_semantic_error(struct mcc_semantic_error *semantic_error, FILE *out)
 		        semantic_error->sloc->end_line + 1, semantic_error->sloc->end_col + 1,
 		        "missing evaluation condition");
 		break;
-	case ERROR_TYPE_INVALID_ARRAY_ACCESS:
+	case MCC_SC_ERROR_TYPE_INVALID_ARRAY_ACCESS:
 		assert(semantic_error->sloc);
 		fprintf(out, "%s:%d:%d: error: %s (expected type 'INT', but got type '%s')\n",
 		        semantic_error->sloc->filename, semantic_error->sloc->end_line + 1,

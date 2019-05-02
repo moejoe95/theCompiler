@@ -15,7 +15,7 @@ static void check_expression_int(struct mcc_ast_expression *expr, struct mcc_typ
 	log->lhs_type = array_access_expr->expression_type;
 
 	if (array_access_expr->expression_type != MCC_AST_TYPE_INT) {
-		struct mcc_semantic_error *error = get_mcc_semantic_error_struct(ERROR_TYPE_INVALID_ARRAY_ACCESS);
+		struct mcc_semantic_error *error = get_mcc_semantic_error_struct(MCC_SC_ERROR_TYPE_INVALID_ARRAY_ACCESS);
 		error->sloc = &expr->node.sloc;
 		error->lhs_type = array_access_expr->expression_type;
 		print_semantic_error(error, type_checking->out);
