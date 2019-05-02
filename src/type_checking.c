@@ -30,7 +30,11 @@ static void check_assignment(struct mcc_ast_declare_assign *declare_assign, void
 		log->lhs_type = lhs->expression_type;
 		log->rhs_type = rhs->expression_type;
 		char label[64] = {0};
-		snprintf(label, sizeof(label), "assign %s", declare_assign->assign_lhs->identifier->name);
+		if (lhs->type == MCC_AST_EXPRESSION_TYPE_ARRAY_ACCESS){
+			snprintf(label, sizeof(label), "assign %s[i]", lhs->expression->identifier->name);
+		}else{
+			snprintf(label, sizeof(label), "assign %s", declare_assign->assign_lhs->identifier->name);
+		}
 		mcc_print_type_log_assign(type_checking->out, log, label);
 	}
 }
@@ -46,8 +50,12 @@ static void check_declaration(struct mcc_ast_declare_assign *declare_assign, voi
 		struct mcc_type_log *log = get_mcc_type_log_struct(MCC_TYPE_VALID);
 		log->sloc = &declare_assign->node.sloc;
 		log->lhs_type = declare_assign->declare_id->expression_type;
+		char array_len[4] ={0};
+		if(declare_assign->declare_array_size){
+			snprintf(array_len, sizeof(array_len), "[%ld]", *declare_assign->declare_array_size);
+		}
 		char label[64] = {0};
-		snprintf(label, sizeof(label), "declare %s", declare_assign->declare_id->identifier->name);
+		snprintf(label, sizeof(label), "declare %s%s", declare_assign->declare_id->identifier->name, array_len);
 		mcc_print_type_log_decl(type_checking->out, log, label);
 	}
 }
