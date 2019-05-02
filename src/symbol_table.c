@@ -475,7 +475,7 @@ static void symbol_table_expression(struct mcc_ast_expression *expr, void *data)
 
 	switch (expr->type) {
 	case MCC_AST_EXPRESSION_TYPE_IDENTIFIER: {
-		struct mcc_symbol *sym = check_identifier(&expr->node.sloc, temp->symbol_table, expr->identifier);
+		struct mcc_symbol *sym = check_identifier(&expr->node.sloc, temp, expr->identifier);
 		if (sym) {
 			expr->expression_type = sym->type;
 		}
