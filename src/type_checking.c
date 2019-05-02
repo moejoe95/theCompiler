@@ -9,11 +9,21 @@ static void check_expression_int(struct mcc_ast_expression *expr, struct mcc_typ
 	assert(type_checking);
 
 	struct mcc_ast_expression *array_access_expr = expr->array_access_exp;
+
+	struct mcc_type_log *log = get_mcc_type_log_struct(MCC_TYPE_VALID);
+	log->sloc = &expr->node.sloc;
+	log->lhs_type = array_access_expr->expression_type;
+
 	if (array_access_expr->expression_type != MCC_AST_TYPE_INT) {
 		struct mcc_semantic_error *error = get_mcc_semantic_error_struct(ERROR_TYPE_INVALID_ARRAY_ACCESS);
 		error->sloc = &expr->node.sloc;
 		error->lhs_type = array_access_expr->expression_type;
 		print_semantic_error(error, type_checking->out);
+		log->status = MCC_TYPE_INVALID;
+	}
+
+	if (type_checking->tracing) {
+		mcc_print_type_log_decl(type_checking->out, log, "array access");
 	}
 }
 
@@ -46,7 +56,7 @@ static void check_assignment(struct mcc_ast_declare_assign *declare_assign, void
 		char label[64] = {0};
 		if (lhs->type == MCC_AST_EXPRESSION_TYPE_ARRAY_ACCESS) {
 			check_expression_int(lhs, type_checking);
-			snprintf(label, sizeof(label), "assign %s[i]", lhs->expression->identifier->name);
+			snprintf(label, sizeof(label), "assign %s[]", lhs->expression->identifier->name);
 		} else {
 			snprintf(label, sizeof(label), "assign %s", declare_assign->assign_lhs->identifier->name);
 		}
