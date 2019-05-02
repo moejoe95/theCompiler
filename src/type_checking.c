@@ -327,9 +327,9 @@ static void check_expression_binary(struct mcc_ast_expression *bin_expr, void *d
 	enum mcc_ast_type lhs_type = bin_expr->lhs->expression_type;
 	enum mcc_ast_type rhs_type = bin_expr->rhs->expression_type;
 
-	if (bin_expr->lhs->array_access_exp)
+	if (bin_expr->lhs->type == MCC_AST_EXPRESSION_TYPE_ARRAY_ACCESS)
 		lhs_type = bin_expr->lhs->array_access_id->expression_type;
-	if (bin_expr->rhs->array_access_exp)
+	if (bin_expr->rhs->type == MCC_AST_EXPRESSION_TYPE_ARRAY_ACCESS)
 		rhs_type = bin_expr->rhs->array_access_id->expression_type;
 
 	struct mcc_semantic_error *error = get_mcc_semantic_error_struct(MCC_SC_ERROR_INVALID_BIN_OPERATION);
