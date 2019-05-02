@@ -105,10 +105,12 @@ int main(int argc, char **argv)
 		st = mcc_create_symbol_table(pro, out);
 
 		// type checking
-		mcc_check_types(pro, st, out, 1);
+		if (st != NULL) {
+			mcc_check_types(pro, st, out, 1);
+			mcc_delete_symbol_table(st);
+		}
 
 		// cleanup
-		mcc_delete_symbol_table(st);
 		mcc_ast_delete_program(pro);
 
 		if (fclose(in) != 0) {

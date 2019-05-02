@@ -3,6 +3,30 @@
 #include "mcc/symbol_table.h"
 #include <stdlib.h>
 
+static void check_expression_int(struct mcc_ast_expression *expr, struct mcc_type_checking *type_checking)
+{
+	assert(expr);
+	assert(type_checking);
+
+	struct mcc_ast_expression *array_access_expr = expr->array_access_exp;
+
+	struct mcc_type_log *log = get_mcc_type_log_struct(MCC_TYPE_VALID);
+	log->sloc = &expr->node.sloc;
+	log->lhs_type = array_access_expr->expression_type;
+
+	if (array_access_expr->expression_type != MCC_AST_TYPE_INT) {
+		struct mcc_semantic_error *error = get_mcc_semantic_error_struct(ERROR_TYPE_INVALID_ARRAY_ACCESS);
+		error->sloc = &expr->node.sloc;
+		error->lhs_type = array_access_expr->expression_type;
+		print_semantic_error(error, type_checking->out);
+		log->status = MCC_TYPE_INVALID;
+	}
+
+	if (type_checking->tracing) {
+		mcc_print_type_log_decl(type_checking->out, log, "array access");
+	}
+}
+
 static void check_assignment(struct mcc_ast_declare_assign *declare_assign, void *data)
 {
 	assert(declare_assign);
@@ -30,9 +54,10 @@ static void check_assignment(struct mcc_ast_declare_assign *declare_assign, void
 		log->lhs_type = lhs->expression_type;
 		log->rhs_type = rhs->expression_type;
 		char label[64] = {0};
-		if (lhs->type == MCC_AST_EXPRESSION_TYPE_ARRAY_ACCESS){
-			snprintf(label, sizeof(label), "assign %s[i]", lhs->expression->identifier->name);
-		}else{
+		if (lhs->type == MCC_AST_EXPRESSION_TYPE_ARRAY_ACCESS) {
+			check_expression_int(lhs, type_checking);
+			snprintf(label, sizeof(label), "assign %s[]", lhs->expression->identifier->name);
+		} else {
 			snprintf(label, sizeof(label), "assign %s", declare_assign->assign_lhs->identifier->name);
 		}
 		mcc_print_type_log_assign(type_checking->out, log, label);
@@ -49,9 +74,9 @@ static void check_declaration(struct mcc_ast_declare_assign *declare_assign, voi
 	if (type_checking->tracing) {
 		struct mcc_type_log *log = get_mcc_type_log_struct(MCC_TYPE_VALID);
 		log->sloc = &declare_assign->node.sloc;
-		log->lhs_type = declare_assign->declare_id->expression_type;
-		char array_len[4] ={0};
-		if(declare_assign->declare_array_size){
+		log->lhs_type = declare_assign->declare_type;
+		char array_len[4] = {0};
+		if (declare_assign->declare_array_size) {
 			snprintf(array_len, sizeof(array_len), "[%ld]", *declare_assign->declare_array_size);
 		}
 		char label[64] = {0};
@@ -300,17 +325,17 @@ static void check_arithmetic_ops(struct mcc_ast_expression *bin_expr, void *data
 
 	struct mcc_type_log *log = get_mcc_type_log_struct(MCC_TYPE_VALID);
 
-	struct mcc_semantic_error *error = get_mcc_semantic_error_struct(MCC_SC_ERROR_INVALID_AR_OPERATION);
-	error->sloc = &bin_expr->node.sloc;
-	error->expr_type = bin_expr->expression_type;
-
-	if (bin_expr->expression_type != MCC_AST_TYPE_INT && bin_expr->expression_type != MCC_AST_TYPE_FLOAT) {
+	if (bin_expr->expression_type != MCC_AST_TYPE_INT &&
+	    bin_expr->expression_type != MCC_AST_TYPE_FLOAT) {
+		struct mcc_semantic_error *error = get_mcc_semantic_error_struct(MCC_SC_ERROR_INVALID_AR_OPERATION);
+		error->sloc = &bin_expr->node.sloc;
+		error->expr_type = bin_expr->expression_type;
 		print_semantic_error(error, type_check->out);
 		log->status = MCC_TYPE_INVALID;
 	}
 
 	if (type_check->tracing) {
-		log->sloc = error->sloc;
+		log->sloc = &bin_expr->node.sloc;
 		log->lhs_type = bin_expr->expression_type;
 		if (bin_expr->type == MCC_AST_EXPRESSION_TYPE_BINARY_OP) {
 			log->rhs_type = bin_expr->expression_type;
@@ -359,9 +384,9 @@ static void check_expression_binary(struct mcc_ast_expression *bin_expr, void *d
 	enum mcc_ast_type lhs_type = bin_expr->lhs->expression_type;
 	enum mcc_ast_type rhs_type = bin_expr->rhs->expression_type;
 
-	if (bin_expr->lhs->array_access_exp)
+	if (bin_expr->lhs->type == MCC_AST_EXPRESSION_TYPE_ARRAY_ACCESS)
 		lhs_type = bin_expr->lhs->array_access_id->expression_type;
-	if (bin_expr->rhs->array_access_exp)
+	if (bin_expr->rhs->type == MCC_AST_EXPRESSION_TYPE_ARRAY_ACCESS)
 		rhs_type = bin_expr->rhs->array_access_id->expression_type;
 
 	struct mcc_semantic_error *error = get_mcc_semantic_error_struct(MCC_SC_ERROR_INVALID_BIN_OPERATION);
@@ -430,7 +455,7 @@ static struct mcc_ast_visitor type_checking_visitor(void *data)
 	                                .order = MCC_AST_VISIT_POST_ORDER,
 
 	                                .userdata = data,
-									.declaration = check_declaration,
+	                                .declaration = check_declaration,
 	                                .assignment = check_assignment,
 									.expression = check_function_call,
 	                                .expression_literal = check_expression_literal,
