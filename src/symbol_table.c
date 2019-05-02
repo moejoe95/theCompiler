@@ -479,7 +479,11 @@ static void symbol_table_expression(struct mcc_ast_expression *expr, void *data)
 
 		break;
 	case MCC_AST_EXPRESSION_TYPE_FUNCTION_CALL:
-		// TODO ??
+		struct mcc_symbol *sym =
+		    check_identifier(&expr->node.sloc, temp, expr->function_call_identifier->identifier);
+		if (sym) {
+			expr->expression_type = sym->type;
+		}
 		break;
 	}
 }
