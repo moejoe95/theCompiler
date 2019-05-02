@@ -149,6 +149,7 @@ struct mcc_symbol_table *mcc_create_symbol_table(struct mcc_ast_program *program
 	// temp_st->is_duplicate = 0;
 	// temp_st->check_return = NULL;
 	temp_st->out = out;
+	temp_st->error_found = false;
 
 	add_built_ins(temp_st);
 
