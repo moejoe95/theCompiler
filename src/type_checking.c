@@ -29,7 +29,26 @@ static void check_assignment(struct mcc_ast_declare_assign *declare_assign, void
 	if (type_checking->tracing) {
 		log->lhs_type = lhs->expression_type;
 		log->rhs_type = rhs->expression_type;
-		mcc_print_type_log(type_checking->out, log, "assign");
+		char label[64] = {0};
+		snprintf(label, sizeof(label), "assign %s", declare_assign->assign_lhs->identifier->name);
+		mcc_print_type_log_assign(type_checking->out, log, label);
+	}
+}
+
+static void check_declaration(struct mcc_ast_declare_assign *declare_assign, void *data)
+{
+	assert(declare_assign);
+	assert(data);
+
+	struct mcc_type_checking *type_checking = data;
+
+	if (type_checking->tracing) {
+		struct mcc_type_log *log = get_mcc_type_log_struct(MCC_TYPE_VALID);
+		log->sloc = &declare_assign->node.sloc;
+		log->lhs_type = declare_assign->declare_id->expression_type;
+		char label[64] = {0};
+		snprintf(label, sizeof(label), "declare %s", declare_assign->declare_id->identifier->name);
+		mcc_print_type_log_decl(type_checking->out, log, label);
 	}
 }
 
@@ -68,7 +87,7 @@ static void check_function_return(struct mcc_ast_statement *ret_stmt, void *data
 		log->sloc = error->sloc;
 		log->lhs_type = func_type;
 		log->rhs_type = ret_type;
-		mcc_print_type_log(type_check->out, log, "return");
+		mcc_print_type_log_return(type_check->out, log, "return");
 	}
 }
 
@@ -257,7 +276,7 @@ static void check_arithmetic_ops(struct mcc_ast_expression *bin_expr, void *data
 			log->rhs_type = bin_expr->expression_type;
 			mcc_print_type_log_op(type_check->out, log, "bin op");
 		} else {
-			mcc_print_type_log_u_op(type_check->out, log, "u op");
+			mcc_print_type_log_u_op(type_check->out, log, "un op");
 		}
 	}
 }
@@ -318,8 +337,8 @@ static void check_expression_binary(struct mcc_ast_expression *bin_expr, void *d
 
 	if (type_check->tracing) {
 		log->sloc = error->sloc;
-		error->lhs_type = lhs_type;
-		error->rhs_type = rhs_type;
+		log->lhs_type = lhs_type;
+		log->rhs_type = rhs_type;
 		mcc_print_type_log_op(type_check->out, log, "bin op");
 	}
 
@@ -375,6 +394,7 @@ static struct mcc_ast_visitor type_checking_visitor(void *data)
 	                                .order = MCC_AST_VISIT_POST_ORDER,
 
 	                                .userdata = data,
+									.declaration = check_declaration,
 	                                .assignment = check_assignment,
 	                                .expression_literal = check_expression_literal,
 	                                .expression_binary_op = check_expression_binary,
