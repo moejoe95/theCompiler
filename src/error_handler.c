@@ -13,7 +13,7 @@ void print_scanner_error(char *filename, int last_line, int last_column, char er
 void print_semantic_error(struct mcc_semantic_error *semantic_error, FILE *out)
 {
 	if (out == stdout) {
-		out == stderr;
+		out = stderr;
 	}
 
 	enum mcc_ast_type lhs_type;
@@ -139,6 +139,13 @@ void print_semantic_error(struct mcc_semantic_error *semantic_error, FILE *out)
 		fprintf(out, "%s:%d:%d: error: %s (operation '%s')\n", semantic_error->sloc->filename,
 		        semantic_error->sloc->end_line + 1, semantic_error->sloc->end_col + 1,
 		        "missing evaluation condition");
+		break;
+	case ERROR_TYPE_INVALID_ARRAY_ACCESS:
+		assert(semantic_error->sloc);
+		fprintf(out, "%s:%d:%d: error: %s (expected type 'INT', but got type '%s')\n",
+		        semantic_error->sloc->filename, semantic_error->sloc->end_line + 1,
+		        semantic_error->sloc->end_col + 1, "invalid array access",
+		        get_type_string(semantic_error->lhs_type));
 		break;
 	}
 }

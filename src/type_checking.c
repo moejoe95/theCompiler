@@ -10,8 +10,10 @@ static void check_expression_int(struct mcc_ast_expression *expr, struct mcc_typ
 
 	struct mcc_ast_expression *array_access_expr = expr->array_access_exp;
 	if (array_access_expr->expression_type != MCC_AST_TYPE_INT) {
-		// TODO andi array access error
-		printf("error: invalid array access\n");
+		struct mcc_semantic_error *error = get_mcc_semantic_error_struct(ERROR_TYPE_INVALID_ARRAY_ACCESS);
+		error->sloc = &expr->node.sloc;
+		error->lhs_type = array_access_expr->expression_type;
+		print_semantic_error(error, type_checking->out);
 	}
 }
 
