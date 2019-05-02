@@ -3,6 +3,17 @@
 #include "mcc/symbol_table.h"
 #include <stdlib.h>
 
+static void check_expression_int(struct mcc_ast_expression *expr, struct mcc_type_checking *type_checking){
+	assert(expr);
+	assert(type_checking);
+
+	struct mcc_ast_expression *array_access_expr = expr->array_access_exp;
+	if (array_access_expr->expression_type != MCC_AST_TYPE_INT){
+		// TODO andi array access error
+		printf("error: invalid array access\n");
+	}
+}
+
 static void check_assignment(struct mcc_ast_declare_assign *declare_assign, void *data)
 {
 	assert(declare_assign);
@@ -31,6 +42,7 @@ static void check_assignment(struct mcc_ast_declare_assign *declare_assign, void
 		log->rhs_type = rhs->expression_type;
 		char label[64] = {0};
 		if (lhs->type == MCC_AST_EXPRESSION_TYPE_ARRAY_ACCESS){
+			check_expression_int(lhs, type_checking);
 			snprintf(label, sizeof(label), "assign %s[i]", lhs->expression->identifier->name);
 		}else{
 			snprintf(label, sizeof(label), "assign %s", declare_assign->assign_lhs->identifier->name);
