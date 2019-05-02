@@ -22,7 +22,18 @@ void mcc_print_type_log_assign(FILE *out, struct mcc_type_log *log, char *expr){
 }
 
 void mcc_print_type_log_return(FILE *out, struct mcc_type_log *log, char *expr){
-    fprintf(out, "%d:%d\t\t|\t%s\t\t|\t%s <- %s\t\t|\t%s\n", 
+    fprintf(out, "%d:%d\t\t|\t%s\t\t|\t%s ~ %s\t\t|\t%s\n", 
+        log->sloc->end_line+1, 
+        log->sloc->end_col+1,
+        expr, 
+        get_type_string(log->lhs_type), 
+        get_type_string(log->rhs_type), 
+        get_status_string(log->status)
+        );
+}
+
+void mcc_print_type_log_bin(FILE *out, struct mcc_type_log *log, char *expr){
+    fprintf(out, "%d:%d\t\t|\t%s\t\t|\t%s ~ %s\t\t|\t%s\n", 
         log->sloc->end_line+1, 
         log->sloc->end_col+1,
         expr, 

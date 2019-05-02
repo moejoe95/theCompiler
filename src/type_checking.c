@@ -339,11 +339,7 @@ static void check_expression_binary(struct mcc_ast_expression *bin_expr, void *d
 		log->sloc = error->sloc;
 		log->lhs_type = lhs_type;
 		log->rhs_type = rhs_type;
-		mcc_print_type_log_op(type_check->out, log, "bin op");
-	}
-
-	if (log->status == MCC_TYPE_INVALID) {
-		return;
+		mcc_print_type_log_bin(type_check->out, log, "bin op");
 	}
 
 	bin_expr->expression_type = lhs_type;
