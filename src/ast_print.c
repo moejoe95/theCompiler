@@ -259,7 +259,12 @@ static void print_dot_assignment(struct mcc_ast_declare_assign *assignment, void
 	snprintf(label, sizeof(label), "%s %d", "assign:", assignment->type);
 	print_dot_node(out, assignment, label);
 
-	print_dot_edge(out, assignment, assignment->assign_lhs, "lhs");
+	if (assignment->assign_lhs->type == MCC_AST_EXPRESSION_TYPE_ARRAY_ACCESS){
+		print_dot_edge(out, assignment, assignment->assign_lhs->array_access_id, "lhs");
+		print_dot_edge(out, assignment, assignment->assign_lhs->array_access_exp, "access expr.");
+	} else {
+		print_dot_edge(out, assignment, assignment->assign_lhs, "lhs");
+	}
 	print_dot_edge(out, assignment, assignment->assign_rhs, "rhs");
 }
 
