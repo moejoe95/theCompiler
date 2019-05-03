@@ -119,7 +119,6 @@ void insert_built_in_symbol(struct temp_create_symbol_table *temp_st,
 
 	if (parameter_type != MCC_AST_TYPE_VOID) {
 		symbol->numArgs = 1;
-		// TODO Andreas add argument types for check
 		struct argument_type_list *argument_type_list = create_argument_type_list();
 		argument_type_list->type = parameter_type;
 		symbol->argument_type_list;
@@ -340,8 +339,6 @@ static void symbol_table_function_def(struct mcc_ast_func_definition *function, 
 		return;
 	}
 
-	struct argument_type_list *argument_type_list = create_argument_type_list();
-
 	// check if non-void function returns value
 	check_return(tmp, function);
 	if (!tmp->is_returned) {
@@ -369,18 +366,22 @@ static void symbol_table_function_def(struct mcc_ast_func_definition *function, 
 		} while (param);
 	}
 
+	struct argument_type_list *argument_type_list = create_argument_type_list();
 	int numArgs = 0;
-	if (function->parameter_list) { // todo andi
+	if (function->parameter_list) {
 		struct mcc_ast_parameter *param = function->parameter_list;
-
+		struct argument_type_list *tmp = create_argument_type_list();
+		tmp = argument_type_list;
+		tmp->type = lookup_symbol_in_scope(symbol_table, param->parameter->declare_id->identifier->name)->type;
 		do {
 			numArgs++;
-
-			printf("type %s\n",
-			       get_type_string(
-			           lookup_symbol_in_scope(symbol_table, param->parameter->declare_id->identifier->name)
-			               ->type));
-
+			struct argument_type_list *argument_type_list_next = create_argument_type_list();
+			if(param->next_parameter){
+				argument_type_list_next->type = lookup_symbol_in_scope(symbol_table, 
+					param->next_parameter->parameter->declare_id->identifier->name)->type;
+				tmp->next_type = argument_type_list_next;
+				tmp = argument_type_list_next;
+			}		
 			param = param->next_parameter;
 		} while (param);
 	}

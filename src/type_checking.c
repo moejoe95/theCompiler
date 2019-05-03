@@ -130,28 +130,27 @@ static void check_function_call(struct mcc_ast_expression *expr, void *data){
 
 	struct mcc_type_checking *type_check = data;
 
-	if(expr->function_call_arguments){
+	if(expr->type == MCC_AST_EXPRESSION_TYPE_FUNCTION_CALL && expr->function_call_arguments){
 		struct mcc_symbol *symbol = lookup_symbol_in_scope(type_check->symbol_table, expr->function_call_identifier->identifier->name);
 		if (symbol != NULL) {
 			struct mcc_ast_function_arguments *tmp1 = expr->function_call_arguments;
 			struct argument_type_list *tmp2 = symbol->argument_type_list;
-			//printf("%s\n", get_type_string(tmp1->expression->expression_type));
-			//printf("%s\n", get_literal_type_string(tmp2->type));
+			printf("exp %s\n", get_type_string(tmp1->expression->expression_type));
+			printf("exp %s\n", get_type_string(tmp2->type));
 			do {
-				if(strcmp(get_type_string(tmp1->expression->type), get_literal_type_string(tmp2->type)) != 0){
-					//printf("would be error\n");
-					//todo andi
+				if(tmp1->expression->expression_type != tmp2->type){
+					struct mcc_semantic_error *error = get_mcc_semantic_error_struct(MCC_SC_ERROR_TYPE_INVALID_ARGUMENT_TYPE);
+					error->sloc = &expr->node.sloc;
+					error->par_type = tmp2->type;
+					error->arg_type = tmp1->expression->expression_type;
+					print_semantic_error(error, type_check->out);
+					break;
 				}
 				else{
 					tmp1 = tmp1->next_argument;
 					tmp2 = tmp2->next_type;
 				}		
-			} while (tmp1->expression->type);
-			/*struct mcc_semantic_error *error = get_mcc_semantic_error_struct(MCC_SC_ERROR_INVALID_CONDITION_TYPE);
-			error->sloc = &expr->node.sloc;
-			error->expr_type = symbol->type;
-			print_semantic_error(error, type_check->out);*/
-			
+			} while (tmp1 && tmp2);
 		}
 	}	
 	return;
@@ -451,7 +450,6 @@ static void check_expression_unary(struct mcc_ast_expression *expr, void *data)
 
 static struct mcc_ast_visitor type_checking_visitor(void *data)
 {
-
 	return (struct mcc_ast_visitor){.traversal = MCC_AST_VISIT_DEPTH_FIRST,
 	                                .order = MCC_AST_VISIT_POST_ORDER,
 

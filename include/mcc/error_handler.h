@@ -64,7 +64,7 @@ struct mcc_semantic_error {
 		};
 
 		struct{
-			enum mcc_ast_literal_type par_type;
+			enum mcc_ast_type par_type;
 			enum mcc_ast_type arg_type;
 		};
 	};
