@@ -342,8 +342,6 @@ static void symbol_table_function_def(struct mcc_ast_func_definition *function, 
 
 	struct argument_type_list *argument_type_list = create_argument_type_list();
 
-	struct mcc_symbol_table *symbol_table = allocate_symbol_table(tmp->symbol_table, func_id);
-
 	// check if non-void function returns value
 	check_return(tmp, function);
 	if (!tmp->is_returned) {
@@ -356,8 +354,11 @@ static void symbol_table_function_def(struct mcc_ast_func_definition *function, 
 	}
 	tmp->is_returned = 0;
 
+	struct mcc_symbol_table *outer_symbol_table = tmp->symbol_table;
+	struct mcc_symbol_table *symbol_table = allocate_symbol_table(tmp->symbol_table, func_id);
 	add_child_symbol_table(tmp->symbol_table, symbol_table);
 	enter_scope(tmp, symbol_table);
+
 	tmp->create_inner_scope = 0;
 	// tmp->current_function = lookup_function_symbol(symbol_table, function->func_identifier->identifier->name);
 	if (function->parameter_list) {
@@ -383,11 +384,12 @@ static void symbol_table_function_def(struct mcc_ast_func_definition *function, 
 			param = param->next_parameter;
 		} while (param);
 	}
+
 	// set_semantic_annotation_function_duplicate(function, 0);
-	insert_symbol_function(tmp, function, numArgs, argument_type_list);
+	insert_symbol_function(outer_symbol_table, function, numArgs, argument_type_list);
 }
 
-void insert_symbol_function(struct temp_create_symbol_table *tmp,
+void insert_symbol_function(struct mcc_symbol_table *st,
                             struct mcc_ast_func_definition *function_def,
                             int numArgs,
                             struct argument_type_list *argument_type_list)
@@ -398,7 +400,7 @@ void insert_symbol_function(struct temp_create_symbol_table *tmp,
 
 	// function_def->func_identifier->identifier->sym_declaration = sym;
 
-	add_symbol_to_list(tmp->symbol_table->symbols, sym);
+	add_symbol_to_list(st->symbols, sym);
 }
 
 static void post_function_def(struct mcc_ast_func_definition *function, void *data)
