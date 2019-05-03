@@ -328,6 +328,7 @@ static void check_arithmetic_ops(struct mcc_ast_expression *bin_expr, void *data
 
 	struct mcc_type_log *log = get_mcc_type_log_struct(MCC_TYPE_VALID);
 
+	bin_expr->lhs->expression_type;
 	if (bin_expr->expression_type != MCC_AST_TYPE_INT && bin_expr->expression_type != MCC_AST_TYPE_FLOAT) {
 		struct mcc_semantic_error *error = get_mcc_semantic_error_struct(MCC_SC_ERROR_INVALID_AR_OPERATION);
 		error->sloc = &bin_expr->node.sloc;
@@ -350,8 +351,6 @@ static void check_arithmetic_ops(struct mcc_ast_expression *bin_expr, void *data
 
 static void check_logical_ops(struct mcc_ast_expression *bin_expr, void *data)
 {
-	// printf("check logical op\n");
-
 	assert(data);
 	struct mcc_type_checking *type_check = data;
 
@@ -380,7 +379,6 @@ static void check_logical_ops(struct mcc_ast_expression *bin_expr, void *data)
 
 static void check_expression_binary(struct mcc_ast_expression *bin_expr, void *data)
 {
-	// printf("check binary %d\n", bin_expr->op);
 	assert(bin_expr);
 	assert(data);
 
@@ -411,25 +409,41 @@ static void check_expression_binary(struct mcc_ast_expression *bin_expr, void *d
 		mcc_print_type_log_bin(type_check->out, log, "bin op");
 	}
 
-	bin_expr->expression_type = lhs_type;
-
 	switch (bin_expr->op) {
 	case MCC_AST_BINARY_OP_ADD:
+		bin_expr->expression_type = lhs_type;
+		break;
 	case MCC_AST_BINARY_OP_SUB:
+		bin_expr->expression_type = lhs_type;
+		break;
 	case MCC_AST_BINARY_OP_MUL:
+		bin_expr->expression_type = lhs_type;
+		break;
 	case MCC_AST_BINARY_OP_DIV:
+		bin_expr->expression_type = lhs_type;
+		break;
 	case MCC_AST_BINARY_OP_GE:
+		bin_expr->expression_type = MCC_AST_TYPE_BOOL;
+		break;
 	case MCC_AST_BINARY_OP_SE:
+		bin_expr->expression_type = MCC_AST_TYPE_BOOL;
+		break;
 	case MCC_AST_BINARY_OP_GT:
+		bin_expr->expression_type = MCC_AST_TYPE_BOOL;
+		break;
 	case MCC_AST_BINARY_OP_ST:
-		check_arithmetic_ops(bin_expr, data);
+		bin_expr->expression_type = MCC_AST_TYPE_BOOL;
 		break;
 	case MCC_AST_BINARY_OP_LAND:
+		bin_expr->expression_type = MCC_AST_TYPE_BOOL;
+		break;
 	case MCC_AST_BINARY_OP_LOR:
+		bin_expr->expression_type = MCC_AST_TYPE_BOOL;
 		check_logical_ops(bin_expr, data);
 		break;
 	default:
 		// eq and neq allowed on all types
+		bin_expr->expression_type = MCC_AST_TYPE_BOOL;
 		break;
 	}
 }
