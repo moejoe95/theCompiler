@@ -125,40 +125,6 @@ static void check_function_return(struct mcc_ast_statement *ret_stmt, void *data
 	}
 }
 
-static void check_function_call(struct mcc_ast_expression *expr, void *data)
-{
-	assert(data);
-	assert(expr);
-
-	struct mcc_type_checking *type_check = data;
-
-	if (expr->type == MCC_AST_EXPRESSION_TYPE_FUNCTION_CALL && expr->function_call_arguments) {
-		struct mcc_symbol *symbol =
-		    lookup_symbol_in_scope(type_check->symbol_table, expr->function_call_identifier->identifier->name);
-		if (symbol != NULL) {
-			struct mcc_ast_function_arguments *tmp1 = expr->function_call_arguments;
-			struct argument_type_list *tmp2 = symbol->argument_type_list;
-			// printf("%s\n", get_type_string(tmp1->expression->expression_type));
-			// printf("%s\n", get_literal_type_string(tmp2->type));
-			do {
-				if (strcmp(get_type_string(tmp1->expression->type),
-				           get_literal_type_string(tmp2->type)) != 0) {
-					// printf("would be error\n");
-					// todo andi
-				} else {
-					tmp1 = tmp1->next_argument;
-					tmp2 = tmp2->next_type;
-				}
-			} while (tmp1->expression->type);
-			/*struct mcc_semantic_error *error =
-			get_mcc_semantic_error_struct(MCC_SC_ERROR_INVALID_CONDITION_TYPE); error->sloc =
-			&expr->node.sloc; error->expr_type = symbol->type; print_semantic_error(error,
-			type_check->out);*/
-		}
-	}
-	return;
-}
-
 static void check_eval_expression(struct mcc_ast_expression *expr, struct mcc_symbol_table *symbol_table, void *data)
 {
 	assert(data);
@@ -466,6 +432,47 @@ static void check_expression_unary(struct mcc_ast_expression *expr, void *data)
 	}
 }
 
+static void check_expression_call(struct mcc_ast_expression *expr, void *data)
+{
+	assert(data);
+	assert(expr);
+	struct mcc_type_checking *type_check = data;
+
+	if (expr->function_call_arguments) {
+		struct mcc_symbol *symbol =
+		    lookup_symbol_in_scope(type_check->symbol_table, expr->function_call_identifier->identifier->name);
+		if (symbol != NULL) {
+			struct mcc_ast_function_arguments *tmp1 = expr->function_call_arguments;
+			struct argument_type_list *tmp2 = symbol->argument_type_list;
+			// printf("%s\n", get_type_string(tmp1->expression->expression_type));
+			// printf("%s\n", get_literal_type_string(tmp2->type));
+			do {
+				if (strcmp(get_type_string(tmp1->expression->type),
+				           get_literal_type_string(tmp2->type)) != 0) {
+					// printf("would be error\n");
+					// todo andi
+				} else {
+					tmp1 = tmp1->next_argument;
+					tmp2 = tmp2->next_type;
+				}
+			} while (tmp1->expression->type);
+			/*struct mcc_semantic_error *error =
+			get_mcc_semantic_error_struct(MCC_SC_ERROR_INVALID_CONDITION_TYPE); error->sloc =
+			&expr->node.sloc; error->expr_type = symbol->type; print_semantic_error(error,
+			type_check->out);*/
+		}
+	}
+}
+
+static void check_expression_parenth(struct mcc_ast_expression *expr, void *data)
+{
+	assert(data);
+	assert(expr);
+	struct mcc_type_checking *type_check = data;
+
+	expr->expression_type = expr->expression->expression_type;
+}
+
 static struct mcc_ast_visitor type_checking_visitor(void *data)
 {
 
@@ -475,7 +482,8 @@ static struct mcc_ast_visitor type_checking_visitor(void *data)
 	                                .userdata = data,
 	                                .declaration = check_declaration,
 	                                .assignment = check_assignment,
-	                                .expression = check_function_call,
+	                                .expression_call = check_expression_call,
+	                                .expression_parenth = check_expression_parenth,
 	                                .expression_literal = check_expression_literal,
 	                                .expression_binary_op = check_expression_binary,
 	                                .expression_unary_op = check_expression_unary,
