@@ -350,7 +350,6 @@ static void symbol_table_function_def(struct mcc_ast_func_definition *function, 
 		error->sloc = &function->node.sloc;
 		error->identifier = function->func_identifier->identifier;
 		print_semantic_error(error, tmp->out);
-		return;
 	}
 	tmp->is_returned = 0;
 
