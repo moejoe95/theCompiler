@@ -7,7 +7,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-static struct argument_type_list* create_argument_type_list(){
+static struct argument_type_list *create_argument_type_list()
+{
 	struct argument_type_list *argument_type_list = malloc(sizeof(*argument_type_list));
 	if (!argument_type_list) {
 		return NULL;
@@ -127,8 +128,11 @@ void insert_built_in_symbol(struct temp_create_symbol_table *temp_st,
 	add_symbol_to_list(temp_st->symbol_table->symbols, symbol);
 }
 
-struct mcc_symbol *
-create_symbol_built_in(enum mcc_ast_type type, struct mcc_ast_identifier *identifier, long *arr_size, int numArgs, struct argument_type_list *argument_type_list)
+struct mcc_symbol *create_symbol_built_in(enum mcc_ast_type type,
+                                          struct mcc_ast_identifier *identifier,
+                                          long *arr_size,
+                                          int numArgs,
+                                          struct argument_type_list *argument_type_list)
 {
 	struct mcc_symbol *sym = malloc(sizeof(*sym));
 	if (!sym) {
@@ -199,8 +203,9 @@ static void symbol_table_declaration(struct mcc_ast_declare_assign *declaration,
 		return;
 	}
 
-	struct mcc_symbol *symbol = create_symbol_built_in(
-	    declaration->declare_type, declaration->declare_id->identifier, declaration->declare_array_size, NULL, NULL);
+	struct mcc_symbol *symbol =
+	    create_symbol_built_in(declaration->declare_type, declaration->declare_id->identifier,
+	                           declaration->declare_array_size, NULL, NULL);
 
 	add_symbol_to_list(temp->symbol_table->symbols, symbol);
 
@@ -336,26 +341,6 @@ static void symbol_table_function_def(struct mcc_ast_func_definition *function, 
 	}
 
 	struct argument_type_list *argument_type_list = create_argument_type_list();
-	int numArgs = 0;
-	if (function->parameter_list) { //todo andi
-		struct mcc_ast_parameter *param = function->parameter_list;
-		struct argument_type_list *tmp = create_argument_type_list();
-		tmp = argument_type_list;
-		tmp->type = param->parameter->declare_type;
-		do {
-			numArgs++;
-			struct argument_type_list *argument_type_list_next = create_argument_type_list();
-			if(param->next_parameter){
-				argument_type_list_next->type = param->next_parameter->parameter->declare_type;
-				tmp->next_type = argument_type_list_next;
-				tmp = argument_type_list_next;
-			}		
-			param = param->next_parameter;
-		} while (param);
-		free(tmp);
-	}
-	// set_semantic_annotation_function_duplicate(function, 0);
-	insert_symbol_function(tmp, function, numArgs, argument_type_list);
 
 	struct mcc_symbol_table *symbol_table = allocate_symbol_table(tmp->symbol_table, func_id);
 
@@ -382,15 +367,34 @@ static void symbol_table_function_def(struct mcc_ast_func_definition *function, 
 			param = param->next_parameter;
 		} while (param);
 	}
+
+	int numArgs = 0;
+	if (function->parameter_list) { // todo andi
+		struct mcc_ast_parameter *param = function->parameter_list;
+
+		do {
+			numArgs++;
+
+			printf("type %s\n",
+			       get_type_string(
+			           lookup_symbol_in_scope(symbol_table, param->parameter->declare_id->identifier->name)
+			               ->type));
+
+			param = param->next_parameter;
+		} while (param);
+	}
+	// set_semantic_annotation_function_duplicate(function, 0);
+	insert_symbol_function(tmp, function, numArgs, argument_type_list);
 }
 
 void insert_symbol_function(struct temp_create_symbol_table *tmp,
                             struct mcc_ast_func_definition *function_def,
-                            int numArgs, struct argument_type_list *argument_type_list)
+                            int numArgs,
+                            struct argument_type_list *argument_type_list)
 {
 	assert(function_def);
-	struct mcc_symbol *sym =
-	    create_symbol_built_in(function_def->func_type, function_def->func_identifier->identifier, NULL, numArgs, argument_type_list);
+	struct mcc_symbol *sym = create_symbol_built_in(
+	    function_def->func_type, function_def->func_identifier->identifier, NULL, numArgs, argument_type_list);
 
 	// function_def->func_identifier->identifier->sym_declaration = sym;
 
