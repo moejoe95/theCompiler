@@ -15,7 +15,8 @@ static void check_expression_int(struct mcc_ast_expression *expr, struct mcc_typ
 	log->lhs_type = array_access_expr->expression_type;
 
 	if (array_access_expr->expression_type != MCC_AST_TYPE_INT) {
-		struct mcc_semantic_error *error = get_mcc_semantic_error_struct(MCC_SC_ERROR_TYPE_INVALID_ARRAY_ACCESS);
+		struct mcc_semantic_error *error =
+		    get_mcc_semantic_error_struct(MCC_SC_ERROR_TYPE_INVALID_ARRAY_ACCESS);
 		error->sloc = &expr->node.sloc;
 		error->lhs_type = array_access_expr->expression_type;
 		print_semantic_error(error, type_checking->out);
@@ -325,8 +326,8 @@ static void check_arithmetic_ops(struct mcc_ast_expression *bin_expr, void *data
 
 	struct mcc_type_log *log = get_mcc_type_log_struct(MCC_TYPE_VALID);
 
-	if (bin_expr->expression_type != MCC_AST_TYPE_INT &&
-	    bin_expr->expression_type != MCC_AST_TYPE_FLOAT) {
+	bin_expr->lhs->expression_type;
+	if (bin_expr->expression_type != MCC_AST_TYPE_INT && bin_expr->expression_type != MCC_AST_TYPE_FLOAT) {
 		struct mcc_semantic_error *error = get_mcc_semantic_error_struct(MCC_SC_ERROR_INVALID_AR_OPERATION);
 		error->sloc = &bin_expr->node.sloc;
 		error->expr_type = bin_expr->expression_type;
@@ -348,7 +349,6 @@ static void check_arithmetic_ops(struct mcc_ast_expression *bin_expr, void *data
 
 static void check_logical_ops(struct mcc_ast_expression *bin_expr, void *data)
 {
-
 	assert(data);
 	struct mcc_type_checking *type_check = data;
 
@@ -407,25 +407,41 @@ static void check_expression_binary(struct mcc_ast_expression *bin_expr, void *d
 		mcc_print_type_log_bin(type_check->out, log, "bin op");
 	}
 
-	bin_expr->expression_type = lhs_type;
-
 	switch (bin_expr->op) {
 	case MCC_AST_BINARY_OP_ADD:
+		bin_expr->expression_type = lhs_type;
+		break;
 	case MCC_AST_BINARY_OP_SUB:
+		bin_expr->expression_type = lhs_type;
+		break;
 	case MCC_AST_BINARY_OP_MUL:
+		bin_expr->expression_type = lhs_type;
+		break;
 	case MCC_AST_BINARY_OP_DIV:
+		bin_expr->expression_type = lhs_type;
+		break;
 	case MCC_AST_BINARY_OP_GE:
+		bin_expr->expression_type = MCC_AST_TYPE_BOOL;
+		break;
 	case MCC_AST_BINARY_OP_SE:
+		bin_expr->expression_type = MCC_AST_TYPE_BOOL;
+		break;
 	case MCC_AST_BINARY_OP_GT:
+		bin_expr->expression_type = MCC_AST_TYPE_BOOL;
+		break;
 	case MCC_AST_BINARY_OP_ST:
-		check_arithmetic_ops(bin_expr, data);
+		bin_expr->expression_type = MCC_AST_TYPE_BOOL;
 		break;
 	case MCC_AST_BINARY_OP_LAND:
+		bin_expr->expression_type = MCC_AST_TYPE_BOOL;
+		break;
 	case MCC_AST_BINARY_OP_LOR:
+		bin_expr->expression_type = MCC_AST_TYPE_BOOL;
 		check_logical_ops(bin_expr, data);
 		break;
 	default:
 		// eq and neq allowed on all types
+		bin_expr->expression_type = MCC_AST_TYPE_BOOL;
 		break;
 	}
 }
@@ -448,6 +464,47 @@ static void check_expression_unary(struct mcc_ast_expression *expr, void *data)
 	}
 }
 
+static void check_expression_call(struct mcc_ast_expression *expr, void *data)
+{
+	assert(data);
+	assert(expr);
+	struct mcc_type_checking *type_check = data;
+
+	if (expr->function_call_arguments) {
+		struct mcc_symbol *symbol =
+		    lookup_symbol_in_scope(type_check->symbol_table, expr->function_call_identifier->identifier->name);
+		if (symbol != NULL) {
+			struct mcc_ast_function_arguments *tmp1 = expr->function_call_arguments;
+			struct argument_type_list *tmp2 = symbol->argument_type_list;
+			// printf("%s\n", get_type_string(tmp1->expression->expression_type));
+			// printf("%s\n", get_literal_type_string(tmp2->type));
+			do {
+				if (strcmp(get_type_string(tmp1->expression->type),
+				           get_literal_type_string(tmp2->type)) != 0) {
+					// printf("would be error\n");
+					// todo andi
+				} else {
+					tmp1 = tmp1->next_argument;
+					tmp2 = tmp2->next_type;
+				}
+			} while (tmp1->expression->type);
+			/*struct mcc_semantic_error *error =
+			get_mcc_semantic_error_struct(MCC_SC_ERROR_INVALID_CONDITION_TYPE); error->sloc =
+			&expr->node.sloc; error->expr_type = symbol->type; print_semantic_error(error,
+			type_check->out);*/
+		}
+	}
+}
+
+static void check_expression_parenth(struct mcc_ast_expression *expr, void *data)
+{
+	assert(data);
+	assert(expr);
+	struct mcc_type_checking *type_check = data;
+
+	expr->expression_type = expr->expression->expression_type;
+}
+
 static struct mcc_ast_visitor type_checking_visitor(void *data)
 {
 	return (struct mcc_ast_visitor){.traversal = MCC_AST_VISIT_DEPTH_FIRST,
@@ -456,11 +513,12 @@ static struct mcc_ast_visitor type_checking_visitor(void *data)
 	                                .userdata = data,
 	                                .declaration = check_declaration,
 	                                .assignment = check_assignment,
-									.expression = check_function_call,
+	                                .expression_call = check_expression_call,
+	                                .expression_parenth = check_expression_parenth,
 	                                .expression_literal = check_expression_literal,
 	                                .expression_binary_op = check_expression_binary,
 	                                .expression_unary_op = check_expression_unary,
-									.expression_array_access = check_expression_int,
+	                                .expression_array_access = check_expression_int,
 	                                .statement_return = check_function_return,
 	                                .statement_if = check_statement_if,
 	                                .statement_while = check_statement_while};
