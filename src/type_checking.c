@@ -126,6 +126,7 @@ static void check_function_return(struct mcc_ast_statement *ret_stmt, void *data
 
 static void check_function_call(struct mcc_ast_expression *expr, void *data){
 	assert(data);
+	assert(expr);
 
 	struct mcc_type_checking *type_check = data;
 
@@ -461,6 +462,7 @@ static struct mcc_ast_visitor type_checking_visitor(void *data)
 	                                .expression_literal = check_expression_literal,
 	                                .expression_binary_op = check_expression_binary,
 	                                .expression_unary_op = check_expression_unary,
+									//.expression_array_access = check_expression_int,
 	                                .statement_return = check_function_return,
 	                                .statement_if = check_statement_if,
 	                                .statement_while = check_statement_while};
