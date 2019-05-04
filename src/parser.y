@@ -12,6 +12,7 @@
 #include "mcc/error_handler.h"
 
 char *filename; /* current filename here for the lexer */
+FILE *out;
 
 typedef struct YYLTYPE {
 	int first_line;
@@ -19,6 +20,7 @@ typedef struct YYLTYPE {
 	int last_line;
 	int last_column;
 	char *filename;
+	FILE *out;
 } YYLTYPE;
 
 #define MCC_PARSER_LTYPE_IS_DECLARED 1
@@ -31,6 +33,7 @@ typedef struct YYLTYPE {
 			(Current).last_line    = YYRHSLOC (Rhs, N).last_line;           \
 			(Current).last_column  = YYRHSLOC (Rhs, N).last_column;               \
 			(Current).filename = YYRHSLOC (Rhs, 1).filename;              \
+			(Current).out = YYRHSLOC (Rhs, 1).out;              \
 			}                                                               \
 		else                                                              \
 			{                                                               \
@@ -44,10 +47,12 @@ typedef struct YYLTYPE {
 
 %{
 #include <string.h>
+#include <stdio.h>
 
 int mcc_parser_lex();
 void mcc_parser_error();
 char *filename;
+FILE *out;
 
 #define loc(ast_node, ast_sloc) \
 	(ast_node)->node.sloc.start_col = (ast_sloc).first_column; \
@@ -253,7 +258,7 @@ statement_list : statement { $$ = mcc_ast_new_statement_compound_stmt($1, NULL);
 
 void mcc_parser_error(struct MCC_PARSER_LTYPE *yylloc, yyscan_t *scanner, struct mcc_ast_program** result, const char *msg)
 {
-	print_lexer_error(yylloc->filename, yylloc->last_line, yylloc->last_column, msg);
+	print_lexer_error(yylloc->filename, yylloc->last_line, yylloc->last_column, msg, yylloc->out);
 	
 	UNUSED(result);
 	UNUSED(scanner);
@@ -270,18 +275,19 @@ struct mcc_parser_result mcc_parse_string(const char *input)
 		};
 	}
 
-	struct mcc_parser_result result = mcc_parse_file(in, "input");
+	struct mcc_parser_result result = mcc_parse_file(in, "input", stdout);
 
 	fclose(in);
 
 	return result;
 }
 
-struct mcc_parser_result mcc_parse_file(FILE *input, char *input_filename)
+struct mcc_parser_result mcc_parse_file(FILE *input, char *input_filename, FILE *outfile)
 {
 	assert(input);
 
 	filename = input_filename;
+	out = outfile;
 
 	yyscan_t scanner;
 	mcc_parser_lex_init(&scanner);
