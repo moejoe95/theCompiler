@@ -86,6 +86,18 @@ static void check_declaration(struct mcc_ast_declare_assign *declare_assign, voi
 	}
 }
 
+static void check_function(struct mcc_ast_func_definition *func, void *data)
+{
+	assert(func);
+	assert(data);
+
+	struct mcc_ast_parameter *parameter_list = func->parameter_list;
+	while (parameter_list != NULL){
+		check_declaration(parameter_list->parameter, data);
+		parameter_list = parameter_list->next_parameter;
+	}
+}
+
 static void check_function_return(struct mcc_ast_statement *ret_stmt, void *data)
 {
 	assert(ret_stmt);
@@ -478,6 +490,7 @@ static struct mcc_ast_visitor type_checking_visitor(void *data)
 	                                .order = MCC_AST_VISIT_POST_ORDER,
 
 	                                .userdata = data,
+									.function = check_function,
 	                                .declaration = check_declaration,
 	                                .assignment = check_assignment,
 	                                .expression = check_expression_call,
