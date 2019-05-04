@@ -136,8 +136,7 @@ static void check_expression_call(struct mcc_ast_expression *expr, void *data){
 		if (symbol != NULL) {
 			struct mcc_ast_function_arguments *tmp1 = expr->function_call_arguments;
 			struct argument_type_list *tmp2 = symbol->argument_type_list;
-			printf("exp %s\n", get_type_string(tmp1->expression->expression_type));
-			printf("exp %s\n", get_type_string(tmp2->type));
+			if (!tmp2) return;
 			do {
 				if(tmp1->expression->expression_type != tmp2->type){
 					struct mcc_semantic_error *error = get_mcc_semantic_error_struct(MCC_SC_ERROR_TYPE_INVALID_ARGUMENT_TYPE);
