@@ -211,7 +211,7 @@ static void symbol_table_declaration(struct mcc_ast_declare_assign *declaration,
 	// if (!userdata->create_inner_scope && !userdata->is_duplicate) {
 	// 	assert(userdata->current_function->parameter_declaration);
 	// 	ARRAY_ADD(userdata->current_function->parameter_declaration, tmp);
-	// }
+	// }		
 }
 
 static void symbol_table_compound(struct mcc_ast_statement __attribute__((unused)) * statement,
@@ -596,6 +596,7 @@ struct mcc_ast_visitor generate_symbol_table_visitor(struct temp_create_symbol_t
 	    .function_compound = post_function_def,
 
 	    .expression_call = symbol_table_function_call,
+		.expression_identifier = symbol_table_expression,
 
 	    .statement_if = symbol_table_if_statement,
 	    .statement_while = symbol_table_while_statement,
