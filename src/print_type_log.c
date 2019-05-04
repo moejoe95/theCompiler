@@ -1,6 +1,8 @@
 #include "mcc/print_type_log.h"
 #include "mcc/error_handler.h"
 
+
+
 void mcc_print_type_log_header(FILE *out)
 {
     assert(out);
@@ -55,7 +57,7 @@ void mcc_print_type_log_op(FILE *out, struct mcc_type_log *log, char *expr){
 }
 
 void mcc_print_type_log_u_op(FILE *out, struct mcc_type_log *log, char *expr){
-    fprintf(out, "%d:%d\t\t|\t%s\t\t|\top %s\t\t\t|\t%s\n", 
+    fprintf(out, "%d:%d\t\t|\t%s\t\t|\top %s\t\t|\t%s\n", 
         log->sloc->end_line+1, 
         log->sloc->end_col+1,
         expr, 
