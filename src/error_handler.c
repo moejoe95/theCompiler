@@ -1,15 +1,16 @@
 #include "mcc/error_handler.h"
+#include "mcc/ast.h"
 
-void print_lexer_error(char *filename, int last_line, int last_column, const char *msg, FILE* out)
+void print_lexer_error(char *filename, int last_line, int last_column, const char *msg, FILE *out)
 {
 	if (out == stdout) {
 		out = stderr;
 	}
-	fprintf(out, "%s:%d:%d: error: %s \n", filename, last_line + 1 , last_column, msg);
+	fprintf(out, "%s:%d:%d: error: %s \n", filename, last_line + 1, last_column, msg);
 }
 
-void print_scanner_error(char *filename, int last_line, int last_column, char error_char, FILE* out)
-{ 	
+void print_scanner_error(char *filename, int last_line, int last_column, char error_char, FILE *out)
+{
 	if (out == stdout) {
 		out = stderr;
 	}

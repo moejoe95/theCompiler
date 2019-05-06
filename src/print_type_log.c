@@ -1,6 +1,18 @@
 #include "mcc/print_type_log.h"
 #include "mcc/error_handler.h"
 
+char *get_status_string(enum mcc_type_status status)
+{
+	switch (status) {
+	case MCC_TYPE_VALID:
+		return "VALID";
+	case MCC_TYPE_INVALID:
+		return "INVALID";
+	}
+
+	return "";
+}
+
 void mcc_print_type_log_header(FILE *out)
 {
 	assert(out);
