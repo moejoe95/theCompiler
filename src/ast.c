@@ -466,8 +466,11 @@ struct mcc_ast_statement *mcc_ast_new_if_stmt(struct mcc_ast_expression *expr,
 	if_stmt->type = MCC_AST_STATEMENT_IF;
 	if_stmt->if_cond = expr;
 	if_stmt->if_stat = if_body;
-	if (else_body != NULL)
+	if (else_body != NULL) {
 		if_stmt->else_stat = else_body;
+	} else {
+		if_stmt->else_stat = NULL;
+	}
 
 	return if_stmt;
 }
