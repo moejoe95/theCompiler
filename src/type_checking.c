@@ -198,7 +198,8 @@ static void check_eval_expression(struct mcc_ast_expression *expr, struct mcc_sy
 	}
 
 	if (expr->type == MCC_AST_EXPRESSION_TYPE_PARENTH) {
-		return check_eval_expression(expr->expression, symbol_table, data);
+		check_eval_expression(expr->expression, symbol_table, data);
+		return;
 	}
 
 	if (expr->type == MCC_AST_EXPRESSION_TYPE_ARRAY_ACCESS) {
@@ -340,7 +341,6 @@ static void check_arithmetic_ops(struct mcc_ast_expression *bin_expr, void *data
 
 	struct mcc_type_log *log = get_mcc_type_log_struct(MCC_TYPE_VALID);
 
-	bin_expr->lhs->expression_type;
 	if (bin_expr->expression_type != MCC_AST_TYPE_INT && bin_expr->expression_type != MCC_AST_TYPE_FLOAT) {
 		struct mcc_semantic_error *error = get_mcc_semantic_error_struct(MCC_SC_ERROR_INVALID_AR_OPERATION);
 		error->sloc = &bin_expr->node.sloc;
@@ -482,8 +482,6 @@ static void check_expression_parenth(struct mcc_ast_expression *expr, void *data
 {
 	assert(data);
 	assert(expr);
-	struct mcc_type_checking *type_check = data;
-
 	expr->expression_type = expr->expression->expression_type;
 }
 

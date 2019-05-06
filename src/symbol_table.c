@@ -117,13 +117,12 @@ void insert_built_in_symbol(struct temp_create_symbol_table *temp_st,
 	id->node.sloc.end_col = 0;
 	id->node.sloc.filename = NULL;
 	id->name = identifier;
-	struct mcc_symbol *symbol = create_symbol_built_in(return_type, id, NULL, NULL, NULL);
+	struct mcc_symbol *symbol = create_symbol_built_in(return_type, id, NULL, 0, NULL);
 
 	if (parameter_type != MCC_AST_TYPE_VOID) {
 		symbol->numArgs = 1;
 		struct argument_type_list *argument_type_list = create_argument_type_list();
 		argument_type_list->type = parameter_type;
-		symbol->argument_type_list;
 	}
 
 	add_symbol_to_list(temp_st->symbol_table->symbols, symbol);
@@ -204,9 +203,8 @@ static void symbol_table_declaration(struct mcc_ast_declare_assign *declaration,
 		return;
 	}
 
-	struct mcc_symbol *symbol =
-	    create_symbol_built_in(declaration->declare_type, declaration->declare_id->identifier,
-	                           declaration->declare_array_size, NULL, NULL);
+	struct mcc_symbol *symbol = create_symbol_built_in(
+	    declaration->declare_type, declaration->declare_id->identifier, declaration->declare_array_size, 0, NULL);
 
 	add_symbol_to_list(temp->symbol_table->symbols, symbol);
 
@@ -218,7 +216,7 @@ static void symbol_table_declaration(struct mcc_ast_declare_assign *declaration,
 
 static void symbol_table_compound(struct mcc_ast_statement *statement, void *data, enum mcc_ast_visit_order order)
 {
-	struct mcc_ast_symbol_table *symbol_table;
+	struct mcc_symbol_table *symbol_table;
 	struct temp_create_symbol_table *tmp = data;
 
 	switch (order) {
