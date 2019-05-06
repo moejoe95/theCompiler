@@ -623,7 +623,15 @@ void mcc_delete_symbol_table(struct mcc_symbol_table *symbol_table)
 	free(symbol_table);
 }
 
-void mcc_print_symbol_table(FILE *out, struct mcc_symbol_table *symbol_table)
+static char *concat(const char *s1, const char *s2)
+{
+	char *result = malloc(strlen(s1) + strlen(s2) + 1);
+	strcpy(result, s1);
+	strcat(result, s2);
+	return result;
+}
+
+void mcc_print_symbol_table(FILE *out, struct mcc_symbol_table *symbol_table, int indent)
 {
 	assert(out);
 
@@ -631,7 +639,13 @@ void mcc_print_symbol_table(FILE *out, struct mcc_symbol_table *symbol_table)
 		return;
 	}
 
-	fprintf(out, "\n[symbol_table ");
+	char *indention = "";
+
+	for (int i = 0; i < indent; i++) {
+		indention = concat("", "\t");
+	}
+
+	fprintf(out, "\n%s[symbol_table ", indention);
 	if (symbol_table->sloc != NULL) {
 		fprintf(out, "%s %d:%d", symbol_table->label, symbol_table->sloc->start_line + 1,
 		        symbol_table->sloc->end_col + 1);
@@ -639,12 +653,12 @@ void mcc_print_symbol_table(FILE *out, struct mcc_symbol_table *symbol_table)
 		fprintf(out, symbol_table->label);
 	}
 
-	fprintf(out, "]\nname\t\t|\ttype\n-----------------------------\n");
+	fprintf(out, "]\n%sname\t\t|\ttype\n%s-----------------------------\n", indention, indention);
 
 	if (symbol_table->symbols != NULL) {
 		struct mcc_symbol *current_symbol = symbol_table->symbols->head;
 		while (current_symbol != NULL) {
-			fprintf(out, current_symbol->identifier->name);
+			fprintf(out, "%s%s", indention, current_symbol->identifier->name);
 			fprintf(out, "\t\t|\t");
 			fprintf(out, get_type_string(current_symbol->type));
 			fprintf(out, "\n");
@@ -654,11 +668,11 @@ void mcc_print_symbol_table(FILE *out, struct mcc_symbol_table *symbol_table)
 	}
 
 	if (symbol_table->next != NULL) {
-		mcc_print_symbol_table(out, symbol_table->next);
+		mcc_print_symbol_table(out, symbol_table->next, indent);
 	}
 
 	if (symbol_table->sub_tables != NULL && symbol_table->sub_tables->head != NULL) {
-		mcc_print_symbol_table(out, symbol_table->sub_tables->head);
+		mcc_print_symbol_table(out, symbol_table->sub_tables->head, indent + 1);
 	}
 }
 

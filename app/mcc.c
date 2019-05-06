@@ -107,7 +107,7 @@ int main(int argc, char *argv[])
 		if (st == NULL) {
 			return EXIT_FAILURE;
 		}
-		mcc_print_symbol_table(out, st);
+		mcc_print_symbol_table(out, st, 0);
 		fprintf(out, "\n");
 
 		// type checking

@@ -83,7 +83,7 @@ void exit_scope(struct temp_create_symbol_table *tmp);
 
 void mcc_delete_symbol_table(struct mcc_symbol_table *symbol_table);
 
-void mcc_print_symbol_table(FILE *out, struct mcc_symbol_table *symbol_table);
+void mcc_print_symbol_table(FILE *out, struct mcc_symbol_table *symbol_table, int indent);
 
 struct mcc_symbol *lookup_symbol_in_scope(struct mcc_symbol_table *symbol_table, char *key);
 struct mcc_symbol *lookup_symbol(struct mcc_symbol_table *symbol_table, char *symbol);
