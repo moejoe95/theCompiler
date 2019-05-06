@@ -16,7 +16,8 @@ static struct argument_type_list *create_argument_type_list()
 	return argument_type_list;
 }
 
-static struct mcc_symbol_table *allocate_symbol_table(struct mcc_symbol_table *symbol_table_parent, char *label)
+static struct mcc_symbol_table *
+allocate_symbol_table(struct mcc_symbol_table *symbol_table_parent, char *label, struct mcc_ast_source_location *sloc)
 {
 	struct mcc_symbol_table *symbol_table = malloc(sizeof(*symbol_table));
 	if (!symbol_table) {
@@ -39,6 +40,7 @@ static struct mcc_symbol_table *allocate_symbol_table(struct mcc_symbol_table *s
 	symbol_table->symbols = symbol_list;
 	symbol_table->next = NULL;
 	symbol_table->sub_tables = NULL;
+	symbol_table->sloc = sloc;
 
 	return symbol_table;
 }
@@ -157,7 +159,7 @@ struct mcc_symbol_table *mcc_create_symbol_table(struct mcc_ast_program *program
 	struct temp_create_symbol_table *temp_st = malloc(sizeof(*temp_st));
 	temp_st->create_inner_scope = 1;
 	temp_st->main_found = 0;
-	temp_st->symbol_table = allocate_symbol_table(NULL, "global");
+	temp_st->symbol_table = allocate_symbol_table(NULL, "global", NULL);
 	temp_st->is_returned = 0;
 	temp_st->out = out;
 	temp_st->error_found = false;
@@ -214,16 +216,14 @@ static void symbol_table_declaration(struct mcc_ast_declare_assign *declaration,
 	// }
 }
 
-static void symbol_table_compound(struct mcc_ast_statement __attribute__((unused)) * statement,
-                                  void *data,
-                                  enum mcc_ast_visit_order order)
+static void symbol_table_compound(struct mcc_ast_statement *statement, void *data, enum mcc_ast_visit_order order)
 {
 	struct mcc_ast_symbol_table *symbol_table;
 	struct temp_create_symbol_table *tmp = data;
 
 	switch (order) {
 	case MCC_AST_VISIT_PRE_ORDER:
-		symbol_table = allocate_symbol_table(tmp->symbol_table, NULL);
+		symbol_table = allocate_symbol_table(tmp->symbol_table, "compound", &statement->node.sloc);
 		add_child_symbol_table(tmp->symbol_table, symbol_table);
 		enter_scope(tmp, symbol_table);
 		break;
@@ -351,7 +351,7 @@ static void symbol_table_function_def(struct mcc_ast_func_definition *function, 
 	tmp->is_returned = 0;
 
 	struct mcc_symbol_table *outer_symbol_table = tmp->symbol_table;
-	struct mcc_symbol_table *symbol_table = allocate_symbol_table(tmp->symbol_table, func_id);
+	struct mcc_symbol_table *symbol_table = allocate_symbol_table(tmp->symbol_table, func_id, &function->node.sloc);
 	add_child_symbol_table(tmp->symbol_table, symbol_table);
 	enter_scope(tmp, symbol_table);
 
@@ -632,7 +632,13 @@ void mcc_print_symbol_table(FILE *out, struct mcc_symbol_table *symbol_table)
 	}
 
 	fprintf(out, "\n[symbol_table ");
-	fprintf(out, symbol_table->label);
+	if (symbol_table->sloc != NULL) {
+		fprintf(out, "%s %d:%d", symbol_table->label, symbol_table->sloc->start_line + 1,
+		        symbol_table->sloc->end_col + 1);
+	} else {
+		fprintf(out, symbol_table->label);
+	}
+
 	fprintf(out, "]\nname\t\t|\ttype\n-----------------------------\n");
 
 	if (symbol_table->symbols != NULL) {
