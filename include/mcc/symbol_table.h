@@ -55,6 +55,7 @@ struct mcc_symbol_list {
 	struct mcc_symbol *head;
 };
 
+void add_child_symbol_table(struct mcc_symbol_table *parent, struct mcc_symbol_table *table);
 void add_symbol_to_list(struct mcc_symbol_list *list, struct mcc_symbol *symbol);
 void add_symbol_table_to_list(struct mcc_symbol_table_list *list, struct mcc_symbol_table *table);
 

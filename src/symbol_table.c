@@ -648,7 +648,7 @@ void mcc_print_symbol_table(FILE *out, struct mcc_symbol_table *symbol_table, in
 		fprintf(out, "%s %d:%d", symbol_table->label, symbol_table->sloc->start_line + 1,
 		        symbol_table->sloc->end_col + 1);
 	} else {
-		fprintf(out, symbol_table->label);
+		fprintf(out, "%s", symbol_table->label);
 	}
 
 	fprintf(out, "]\n%sname\t\t|\ttype\n%s-----------------------------\n", indention, indention);
@@ -658,7 +658,7 @@ void mcc_print_symbol_table(FILE *out, struct mcc_symbol_table *symbol_table, in
 		while (current_symbol != NULL) {
 			fprintf(out, "%s%s", indention, current_symbol->identifier->name);
 			fprintf(out, "\t\t|\t");
-			fprintf(out, get_type_string(current_symbol->type));
+			fprintf(out, "%s", get_type_string(current_symbol->type));
 			fprintf(out, "\n");
 
 			current_symbol = current_symbol->next_symbol;

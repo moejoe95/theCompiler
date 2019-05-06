@@ -143,7 +143,7 @@ void print_semantic_error(struct mcc_semantic_error *semantic_error, FILE *out)
 		break;
 	case MCC_SC_ERROR_TYPE_NO_CONDITION:
 		assert(semantic_error->sloc);
-		fprintf(out, "%s:%d:%d: error: %s (operation '%s')\n", semantic_error->sloc->filename,
+		fprintf(out, "%s:%d:%d: error: %s\n", semantic_error->sloc->filename,
 		        semantic_error->sloc->end_line + 1, semantic_error->sloc->end_col + 1,
 		        "missing evaluation condition");
 		break;
