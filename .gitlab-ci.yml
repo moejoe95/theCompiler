@@ -11,4 +11,6 @@ meson_build:
   stage: build
   script:
     - meson builddir
-    - ninja -C builddir
+    - cd builddir
+    - ninja 
+    - ../scripts/run_integration_tests
