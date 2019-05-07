@@ -7,6 +7,21 @@
 #include <getopt.h>
 #include <string.h>
 
+enum log_level { LOG_DEFAULT, LOG_INFO, LOG_DEBUG };
+
+int log_level_to_int(enum log_level level)
+{
+	switch (level) {
+	case LOG_DEFAULT:
+		return 0;
+	case LOG_INFO:
+		return 1;
+	case LOG_DEBUG:
+		return 2;
+	}
+	return 0;
+}
+
 void print_help(const char *prg_name)
 {
 	printf("usage: %s [OPTIONS] file...\n", prg_name);
@@ -22,6 +37,17 @@ can be visualised using graphviz. Errors are reported on invalid inputs. \
 
 int main(int argc, char **argv)
 {
+	enum log_level LOG_LEVEL = LOG_DEFAULT;
+	if (getenv("MCC_LOG_LEVEL")) {
+		char *log_level_env = getenv("MCC_LOG_LEVEL");
+		if (strcmp(log_level_env, "1") == 0) {
+			LOG_LEVEL = LOG_INFO;
+		}
+		if (strcmp(log_level_env, "2") == 0) {
+			LOG_LEVEL = LOG_DEBUG;
+		}
+	}
+
 	static struct option long_options[] = {{"help", no_argument, NULL, 'h'},
 	                                       {"output", optional_argument, NULL, 'o'},
 	                                       {"function", optional_argument, NULL, 'f'}};
@@ -29,7 +55,12 @@ int main(int argc, char **argv)
 	char func_name_scope[64] = {0};
 	int isScoped = 0;
 	char outfile[64] = {0};
-	snprintf(outfile, sizeof(outfile), "%s", "-");
+	char *outfile_env = getenv("MCC_LOG_FILE");
+	if (outfile_env == NULL || strcmp(outfile_env, "") == 0) {
+		snprintf(outfile, sizeof(outfile), "%s", "-");
+	} else {
+		snprintf(outfile, sizeof(outfile), "%s", outfile_env);
+	}
 	int c;
 	while ((c = getopt_long(argc, argv, "ho:f:", long_options, NULL)) != -1)
 		switch (c) {
@@ -102,7 +133,9 @@ int main(int argc, char **argv)
 		}
 
 		// print
-		mcc_ast_print_dot(out, pro);
+		if (LOG_LEVEL != LOG_DEFAULT) {
+			mcc_ast_print_dot(out, pro);
+		}
 
 		// cleanup
 		mcc_ast_delete(pro);
