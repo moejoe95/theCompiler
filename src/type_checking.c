@@ -537,6 +537,8 @@ void mcc_check_types(struct mcc_ast_program *program, struct mcc_symbol_table *s
 			list = list->next_function;
 		}
 	} break;
+	default: {
+	}
 	}
 	free(type_checking);
 }
