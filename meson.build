@@ -34,6 +34,7 @@ mcc_src = [ 'src/ast.c',
             'src/error_handler.c',
             'src/type_checking.c',
             'src/print_type_log.c',
+            'src/ir.c',
             lgen.process('src/scanner.l'),
             pgen.process('src/parser.y') ]
 
@@ -43,7 +44,7 @@ mcc_lib = library('mcc', mcc_src,
 
 # ---------------------------------------------------------------- Applications
 
-mcc_apps = [ 'mcc', 'mc_ast_to_dot', 'mc_symbol_table', 'mc_type_check_trace' ]
+mcc_apps = [ 'mcc', 'mc_ast_to_dot', 'mc_symbol_table', 'mc_type_check_trace', 'mc_ir' ]
 
 foreach app : mcc_apps
     executable(app, 'app/' + app + '.c',

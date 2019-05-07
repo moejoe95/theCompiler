@@ -1,28 +1,4 @@
-int add(int i, int j)
-{   
-    n = 0;
-    m = 1;
-
-    string k;
-    {
-        int n;
-        n = 1;
-    }
-
-    return n + m;
-}
-
-int func(){
-    int x;
-}
-
 int main() {
-    func();
-    return add(1, 2);
-
-    if (x){
-        a;
-    } else b;
-
-    return u;
+    3+2;
+    return 0;
 }
