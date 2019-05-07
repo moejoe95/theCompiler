@@ -645,8 +645,8 @@ void mcc_print_symbol_table(FILE *out, struct mcc_symbol_table *symbol_table, in
 
 	fprintf(out, "\n%s[symbol_table ", indention);
 	if (symbol_table->sloc != NULL) {
-		fprintf(out, "%s %d:%d", symbol_table->label, symbol_table->sloc->start_line + 1,
-		        symbol_table->sloc->end_col + 1);
+		fprintf(out, "%s %d:%d", symbol_table->label, symbol_table->sloc->start_line,
+		        symbol_table->sloc->end_col);
 	} else {
 		fprintf(out, "%s", symbol_table->label);
 	}

@@ -55,10 +55,10 @@ char *filename;
 FILE *out;
 
 #define loc(ast_node, ast_sloc) \
-	(ast_node)->node.sloc.start_col = (ast_sloc).first_column; \
-	(ast_node)->node.sloc.start_line = (ast_sloc).first_line; \
-	(ast_node)->node.sloc.end_col = (ast_sloc).last_column; \
-	(ast_node)->node.sloc.end_line = (ast_sloc).last_line; \
+	(ast_node)->node.sloc.start_col = (ast_sloc).first_column + 1; \
+	(ast_node)->node.sloc.start_line = (ast_sloc).first_line + 1; \
+	(ast_node)->node.sloc.end_col = (ast_sloc).last_column + 1; \
+	(ast_node)->node.sloc.end_line = (ast_sloc).last_line + 1; \
 	(ast_node)->node.sloc.filename = filename; \
 
 %}
