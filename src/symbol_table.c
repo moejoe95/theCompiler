@@ -339,7 +339,7 @@ static void symbol_table_function_def(struct mcc_ast_func_definition *function, 
 
 	// check if non-void function returns value
 	check_return(tmp, function);
-	if (!tmp->is_returned) {
+	if (!tmp->is_returned && function->func_type != MCC_AST_TYPE_VOID) {
 		tmp->error_found = true;
 		struct mcc_semantic_error *error = get_mcc_semantic_error_struct(MCC_SC_ERROR_NO_RETURN);
 		error->sloc = &function->node.sloc;
