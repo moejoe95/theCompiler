@@ -610,6 +610,10 @@ struct mcc_ast_visitor generate_symbol_table_visitor(struct temp_create_symbol_t
 
 void mcc_delete_symbol_table(struct mcc_symbol_table *symbol_table)
 {
+	if (symbol_table == NULL) {
+		return;
+	}
+
 	if (symbol_table->next != NULL) {
 		mcc_delete_symbol_table(symbol_table->next);
 	}
