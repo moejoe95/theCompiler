@@ -632,6 +632,7 @@ static char *concat(const char *s1, const char *s2)
 void mcc_print_symbol_table(FILE *out, struct mcc_symbol_table *symbol_table, int indent)
 {
 	assert(out);
+	fprintf(out, "%d\n", indent);
 
 	if (!symbol_table) {
 		return;
@@ -640,7 +641,7 @@ void mcc_print_symbol_table(FILE *out, struct mcc_symbol_table *symbol_table, in
 	char *indention = "";
 
 	for (int i = 0; i < indent; i++) {
-		indention = concat("", "\t");
+		indention = concat(indention, "\t");
 	}
 
 	fprintf(out, "\n%s[symbol_table ", indention);
@@ -665,12 +666,12 @@ void mcc_print_symbol_table(FILE *out, struct mcc_symbol_table *symbol_table, in
 		}
 	}
 
-	if (symbol_table->next != NULL) {
-		mcc_print_symbol_table(out, symbol_table->next, indent);
-	}
-
 	if (symbol_table->sub_tables != NULL && symbol_table->sub_tables->head != NULL) {
 		mcc_print_symbol_table(out, symbol_table->sub_tables->head, indent + 1);
+	}
+
+	if (symbol_table->next != NULL) {
+		mcc_print_symbol_table(out, symbol_table->next, indent);
 	}
 }
 
