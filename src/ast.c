@@ -629,22 +629,37 @@ void mcc_ast_delete_func_list(struct mcc_ast_func_list *func_list)
 
 // ------------------------------------------------------------------- Program
 
-struct mcc_ast_program *mcc_ast_new_program(struct mcc_ast_func_list *func_list)
+struct mcc_ast_program *mcc_ast_new_program(void *program, enum mcc_ast_program_type type)
 {
-	assert(func_list);
+	assert(program);
 
 	struct mcc_ast_program *pro = malloc(sizeof(*pro));
 	if (!pro) {
 		return NULL;
 	}
 
-	if (func_list->next_function != NULL) {
-		pro->type = MCC_AST_PROGRAM_TYPE_FUNCTION_LIST;
-		pro->function_list = func_list;
-	} else {
-		pro->type = MCC_AST_PROGRAM_TYPE_FUNCTION;
-		pro->function = func_list->function;
+	pro->type = type;
+
+	switch (type) {
+	case MCC_AST_PROGRAM_TYPE_EXPRESSION:
+		pro->expression = program;
+		break;
+	case MCC_AST_PROGRAM_TYPE_DECLARATION:
+		pro->declaration = program;
+		break;
+	case MCC_AST_PROGRAM_TYPE_STATEMENT:
+		pro->statement = program;
+		break;
+	case MCC_AST_PROGRAM_TYPE_FUNCTION:
+		pro->function = program;
+		break;
+	case MCC_AST_PROGRAM_TYPE_FUNCTION_LIST:
+		pro->function_list = program;
+		break;
+	case MCC_AST_PROGRAM_TYPE_EMPTY:
+		break;
 	}
+
 	return pro;
 }
 

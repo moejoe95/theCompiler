@@ -372,9 +372,12 @@ void mcc_ast_delete_func_list(struct mcc_ast_func_list *func_list);
 // ------------------------------------------------------------------- Program
 
 enum mcc_ast_program_type {
+	MCC_AST_PROGRAM_TYPE_EXPRESSION,
 	MCC_AST_PROGRAM_TYPE_FUNCTION,
 	MCC_AST_PROGRAM_TYPE_FUNCTION_LIST,
-
+	MCC_AST_PROGRAM_TYPE_DECLARATION,
+	MCC_AST_PROGRAM_TYPE_EMPTY,
+	MCC_AST_PROGRAM_TYPE_STATEMENT
 };
 
 struct mcc_ast_program {
@@ -389,7 +392,7 @@ struct mcc_ast_program {
 	};
 };
 
-struct mcc_ast_program *mcc_ast_new_program(struct mcc_ast_func_list *func_list);
+struct mcc_ast_program *mcc_ast_new_program(void *program, enum mcc_ast_program_type type);
 
 void mcc_ast_delete_program(struct mcc_ast_program *program);
 

@@ -44,9 +44,19 @@ void mcc_ast_visit_program(struct mcc_ast_program *program, struct mcc_ast_visit
 	case MCC_AST_PROGRAM_TYPE_FUNCTION:
 		mcc_ast_visit_function(program->function, visitor);
 		break;
-
 	case MCC_AST_PROGRAM_TYPE_FUNCTION_LIST:
 		mcc_ast_visit_func_list(program->function_list, visitor);
+		break;
+	case MCC_AST_PROGRAM_TYPE_EXPRESSION:
+		mcc_ast_visit_expression(program->expression, visitor);
+		break;
+	case MCC_AST_PROGRAM_TYPE_DECLARATION:
+		mcc_ast_visit_declare_assign(program->declaration, visitor);
+		break;
+	case MCC_AST_PROGRAM_TYPE_STATEMENT:
+		mcc_ast_visit_statement(program->statement, visitor);
+		break;
+	case MCC_AST_PROGRAM_TYPE_EMPTY:
 		break;
 	}
 }
