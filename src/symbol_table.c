@@ -632,7 +632,6 @@ static char *concat(const char *s1, const char *s2)
 void mcc_print_symbol_table(FILE *out, struct mcc_symbol_table *symbol_table, int indent)
 {
 	assert(out);
-	fprintf(out, "%d\n", indent);
 
 	if (!symbol_table) {
 		return;
