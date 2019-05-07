@@ -671,9 +671,19 @@ void mcc_ast_delete_program(struct mcc_ast_program *program)
 	case MCC_AST_PROGRAM_TYPE_FUNCTION:
 		mcc_ast_delete_func_definition(program->function);
 		break;
-
 	case MCC_AST_PROGRAM_TYPE_FUNCTION_LIST:
 		mcc_ast_delete_func_list(program->function_list);
+		break;
+	case MCC_AST_PROGRAM_TYPE_DECLARATION:
+		mcc_ast_delete_declare_assign(program->declaration);
+		break;
+	case MCC_AST_PROGRAM_TYPE_EXPRESSION:
+		mcc_ast_delete_expression(program->expression);
+		break;
+	case MCC_AST_PROGRAM_TYPE_EMPTY:
+		break;
+	case MCC_AST_PROGRAM_TYPE_STATEMENT:
+		mcc_ast_delete_statement(program->statement);
 		break;
 	}
 
