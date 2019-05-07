@@ -2,3 +2,4 @@
 .vscode/
 *.zip
 integration_tests/*
+test/integration/simple/*
