@@ -25,6 +25,6 @@ struct mcc_parser_result {
 
 struct mcc_parser_result mcc_parse_string(const char *input);
 
-struct mcc_parser_result mcc_parse_file(FILE *input, char *input_filename);
+struct mcc_parser_result mcc_parse_file(FILE *input, char *input_filename, FILE *out);
 
 #endif // MCC_PARSER_H

@@ -1,13 +1,19 @@
 #include "mcc/error_handler.h"
 
-void print_lexer_error(char *filename, int last_line, int last_column, const char *msg)
-{ // TODO andi out
-	fprintf(stderr, "%s:%d:%d: error: %s \n", filename, last_line + 1, last_column, msg);
+void print_lexer_error(char *filename, int last_line, int last_column, const char *msg, FILE* out)
+{
+	if (out == stdout) {
+		out = stderr;
+	}
+	fprintf(out, "%s:%d:%d: error: %s \n", filename, last_line + 1 , last_column, msg);
 }
 
-void print_scanner_error(char *filename, int last_line, int last_column, char error_char)
-{ // TODO andi out
-	fprintf(stderr, "%s:%d:%d: unknown character '%c'\n", filename, last_line + 1, last_column, error_char);
+void print_scanner_error(char *filename, int last_line, int last_column, char error_char, FILE* out)
+{ 	
+	if (out == stdout) {
+		out = stderr;
+	}
+	fprintf(out, "%s:%d:%d: unknown character '%c'\n", filename, last_line + 1, last_column, error_char);
 }
 
 void print_semantic_error(struct mcc_semantic_error *semantic_error, FILE *out)

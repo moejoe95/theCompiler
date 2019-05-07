@@ -375,12 +375,14 @@ static void symbol_table_function_def(struct mcc_ast_func_definition *function, 
 		do {
 			numArgs++;
 			struct argument_type_list *argument_type_list_next = create_argument_type_list();
-			if(param->next_parameter){
-				argument_type_list_next->type = lookup_symbol_in_scope(symbol_table, 
-					param->next_parameter->parameter->declare_id->identifier->name)->type;
+			if (param->next_parameter) {
+				argument_type_list_next->type =
+				    lookup_symbol_in_scope(
+				        symbol_table, param->next_parameter->parameter->declare_id->identifier->name)
+				        ->type;
 				tmp->next_type = argument_type_list_next;
 				tmp = argument_type_list_next;
-			}		
+			}
 			param = param->next_parameter;
 		} while (param);
 	}
@@ -464,7 +466,8 @@ static void symbol_table_function_call(struct mcc_ast_expression *expression, vo
 
 static struct mcc_symbol *check_identifier(struct mcc_ast_source_location *sloc,
                                            struct temp_create_symbol_table *temp,
-                                           struct mcc_ast_identifier *id)
+                                           struct mcc_ast_identifier *id,
+                                           bool print_error)
 {
 	assert(sloc);
 	assert(temp);
@@ -477,7 +480,9 @@ static struct mcc_symbol *check_identifier(struct mcc_ast_source_location *sloc,
 		struct mcc_semantic_error *error = get_mcc_semantic_error_struct(MCC_SC_ERROR_UNDEFINED_IDENTIFIER);
 		error->sloc = sloc;
 		error->identifier = id;
-		print_semantic_error(error, temp->out);
+		if (print_error) {
+			print_semantic_error(error, temp->out);
+		}
 		return NULL;
 	}
 	return previous_declaration;
@@ -493,7 +498,7 @@ static void symbol_table_expression(struct mcc_ast_expression *expr, void *data)
 
 	switch (expr->type) {
 	case MCC_AST_EXPRESSION_TYPE_IDENTIFIER: {
-		sym = check_identifier(&expr->node.sloc, temp, expr->identifier);
+		sym = check_identifier(&expr->node.sloc, temp, expr->identifier, true);
 		if (sym) {
 			expr->expression_type = sym->type;
 		}
@@ -515,7 +520,7 @@ static void symbol_table_expression(struct mcc_ast_expression *expr, void *data)
 
 		break;
 	case MCC_AST_EXPRESSION_TYPE_FUNCTION_CALL:
-		sym = check_identifier(&expr->node.sloc, temp, expr->function_call_identifier->identifier);
+		sym = check_identifier(&expr->node.sloc, temp, expr->function_call_identifier->identifier, true);
 		if (sym) {
 			expr->expression_type = sym->type;
 		}
@@ -544,7 +549,7 @@ static void symbol_table_assignment(struct mcc_ast_declare_assign *assignment, v
 		id = assignment->assign_lhs->array_access_id->identifier;
 	}
 
-	struct mcc_symbol *previous_declaration = check_identifier(&assignment->node.sloc, temp, id);
+	struct mcc_symbol *previous_declaration = check_identifier(&assignment->node.sloc, temp, id, false);
 	if (previous_declaration != NULL)
 		assignment->assign_lhs->expression_type = previous_declaration->type;
 
@@ -596,6 +601,7 @@ struct mcc_ast_visitor generate_symbol_table_visitor(struct temp_create_symbol_t
 	    .function_compound = post_function_def,
 
 	    .expression_call = symbol_table_function_call,
+	    .expression_identifier = symbol_table_expression,
 
 	    .statement_if = symbol_table_if_statement,
 	    .statement_while = symbol_table_while_statement,
