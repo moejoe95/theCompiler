@@ -25,6 +25,10 @@ void print_table(enum ir_table_operation_type type, int index, char *arg1, char 
             operation = "bin";//get_bin_op_string(expression->op); //TODO
             break;
 
+        case MCC_IR_TABLE_DECLARATION:
+            operation = "decl";
+            break;
+
         case MCC_IR_TABLE_ASSIGNMENT:
             operation = "assign";
             break;
@@ -33,6 +37,13 @@ void print_table(enum ir_table_operation_type type, int index, char *arg1, char 
             operation = "jumpfalse";
             break;
 
+        case MCC_IR_TABLE_JUMP:
+            operation = "jump";
+            break;
+
+        case MCC_IR_TABLE_LABEL:
+            operation = "label";
+            break;
         default:
             operation = "-";
             break;

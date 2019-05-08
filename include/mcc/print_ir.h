@@ -8,8 +8,11 @@
 enum ir_table_operation_type {
     MCC_IR_TABLE_UNARY_OP,
     MCC_IR_TABLE_BINARY_OP,
+    MCC_IR_TABLE_DECLARATION,
     MCC_IR_TABLE_ASSIGNMENT,
-    MCC_IR_TABLE_JUMPFALSE
+    MCC_IR_TABLE_JUMPFALSE,
+    MCC_IR_TABLE_JUMP,
+    MCC_IR_TABLE_LABEL,
 };
 
 void print_table_legend();

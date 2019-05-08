@@ -8,7 +8,11 @@ enum mcc_ir_type {
     MCC_IR_TYPE_LITERAL_EXPRESSION, 
 };
 
-enum mcc_ir_operation{MCC_IR_OPERATION_JUMPFALSE};
+enum mcc_ir_operation{
+    MCC_IR_OPERATION_JUMPFALSE,
+    MCC_IR_OPERATION_JUMP,
+    MCC_IR_OPERATION_LABEL,
+    };
 
 struct mcc_ir_table{
     /* operation */
@@ -29,7 +33,11 @@ struct mcc_ir_table{
     struct mcc_ir_table *next_table;    
 };
 
-enum mcc_ir_entity_type {MCC_IR_ENTITY_TYPE_LITERAL, MCC_IR_ENTITY_TYPE_IDENTIFIER, MCC_IR_ENTITY_TYPE_INDEX};
+enum mcc_ir_entity_type {
+    MCC_IR_ENTITY_TYPE_LITERAL, 
+    MCC_IR_ENTITY_TYPE_IDENTIFIER, 
+    MCC_IR_ENTITY_TYPE_INDEX
+    };
 
 struct mcc_ir_entity{
     enum mcc_ir_entity_type type;
