@@ -1,26 +1,12 @@
 #include "mcc/ast.h"
 #include "mcc/print_ir.h"
 
-enum mcc_ir_type {
-    MCC_IR_TYPE_BINARY_EXPRESSION, 
-    MCC_IR_TYPE_UNARY_EXPRESSION, 
-    MCC_IR_TYPE_IDENTIFIER_EXPRESSION, 
-    MCC_IR_TYPE_LITERAL_EXPRESSION, 
-};
-
-enum mcc_ir_operation{
-    MCC_IR_OPERATION_JUMPFALSE,
-    MCC_IR_OPERATION_JUMP,
-    MCC_IR_OPERATION_LABEL,
-    MCC_IR_OPERATION_COPY,
-    };
-
 struct mcc_ir_table{
     /* operation */
     union{
         enum mcc_ast_binary_op bin_op;
         enum mcc_ast_unary_op un_op;
-        enum mcc_ir_operation ir_op;
+        enum ir_table_operation_type ir_op;
         enum mcc_ast_declare_assign_type da_op;
     } operator;
     

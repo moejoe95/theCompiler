@@ -27,7 +27,6 @@ static struct mcc_ir_entity *generate_ir_identifier_entity(struct mcc_ast_identi
 {
     assert(id_expr);
     struct mcc_ir_entity *entity = create_new_ir_entity();
-    entity->type = MCC_IR_TYPE_IDENTIFIER_EXPRESSION;
     entity->lit = strdup(id_expr->name);
     return entity;
 }
@@ -36,7 +35,6 @@ static struct mcc_ir_entity *generate_ir_literal_entity(struct mcc_ast_literal *
 {
     assert(lit);
     struct mcc_ir_entity *entity = create_new_ir_entity();
-    entity->type = MCC_IR_TYPE_LITERAL_EXPRESSION;
     char value[12] = {0};
     switch (lit->type)
     {
@@ -130,7 +128,7 @@ static void generate_ir_literal_expression(struct mcc_ast_expression *expr, stru
     struct mcc_ir_table *new_table = create_new_ir_table();
     struct mcc_ir_entity *entity = generate_ir_literal_entity(expr->literal);
     new_table->arg1 = entity;
-    new_table->operator.ir_op = MCC_IR_OPERATION_COPY;
+    new_table->operator.ir_op = MCC_IR_TABLE_COPY;
     new_table->index = head->index;
 
     head->current->next_table = new_table;
@@ -147,7 +145,7 @@ static void generate_ir_identifier_expression(struct mcc_ast_expression *expr, s
     struct mcc_ir_table *new_table = create_new_ir_table();
     struct mcc_ir_entity *entity = generate_ir_identifier_entity(expr->identifier);
     new_table->arg1 = entity;
-    new_table->operator.ir_op = MCC_IR_OPERATION_COPY;
+    new_table->operator.ir_op = MCC_IR_TABLE_COPY;
     new_table->index = head->index;
 
     head->current->next_table = new_table;
@@ -244,6 +242,9 @@ static void generate_ir_statement(struct mcc_ast_statement *stmt, struct mcc_ir_
     case MCC_AST_STATEMENT_ASSIGNMENT:
         generate_ir_assignment(stmt->declare_assign, head);
         break;
+    case MCC_AST_STATEMENT_RETURN:
+        //generate_ir_expression(stmt->expression, head);
+        break;
     default:
         printf("todo\n");
         break;
@@ -261,7 +262,7 @@ static void generate_function_definition(struct mcc_ast_func_definition *func, s
     struct mcc_ir_entity *id_entity = generate_ir_entity(func->func_identifier);
 
     new_table->arg1 = id_entity;
-    new_table->operator.da_op = MCC_IR_OPERATION_LABEL;
+    new_table->operator.da_op = MCC_IR_TABLE_LABEL;
     new_table->index = head->index;
     
     head->current->next_table = new_table;
