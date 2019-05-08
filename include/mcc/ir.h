@@ -29,19 +29,14 @@ enum mcc_ir_entity_type {MCC_IR_ENTITY_TYPE_LITERAL, MCC_IR_ENTITY_TYPE_IDENTIFI
 
 struct mcc_ir_entity{
     enum mcc_ir_entity_type type;
-    union{   
-        /* literals */
-        char *lit;
-        /* identifiers */
-        char *id;
-        
-        int index;
-    };
+    
+    char *lit;
 };
 
 struct mcc_ir_head{
     struct mcc_ir_table *root;
     struct mcc_ir_table *current;
+    int index;
 };
 
 struct mcc_ast_visitor generate_ir_visitor(struct mcc_ir_head *head);

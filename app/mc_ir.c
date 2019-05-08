@@ -79,7 +79,7 @@ int main(int argc, char **argv)
 
 		// parsing phase
 		{
-			struct mcc_parser_result result = mcc_parse_file(in, argv[i]);
+			struct mcc_parser_result result = mcc_parse_file(in, argv[i], out);
 
 			if (result.status != MCC_PARSER_STATUS_OK) {
 				fprintf(stdout, "...parsing failed...\n");
@@ -107,7 +107,7 @@ int main(int argc, char **argv)
 
 		// type checking
 		if (st != NULL) {
-			mcc_check_types(pro, st, out, 1);
+			mcc_check_types(pro, st, out, 0);
 			mcc_delete_symbol_table(st);
 		}
 
