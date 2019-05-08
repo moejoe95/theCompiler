@@ -23,34 +23,6 @@ static struct mcc_ir_entity *create_new_ir_entity(){
     return entity;
 }
 
-int nodecompare(struct mcc_ast_node node1, struct mcc_ast_node node2){
-    if (node1.sloc.start_col == node2.sloc.start_col &&
-        node1.sloc.end_col == node2.sloc.end_col &&
-        node1.sloc.start_line == node2.sloc.start_line &&
-        node1.sloc.end_line == node2.sloc.end_line)
-        return 0;
-    return 1;
-}
-
-static struct mcc_ir_entity *mcc_ir_lookup_entity(struct mcc_ir_head *head, struct mcc_ast_node node)
-{
-    assert(head);
-
-    struct mcc_ir_table *current_table = head->root->next_table;
-    struct mcc_ir_entity *entity = create_new_ir_entity();
-    while(current_table != NULL){
-        if (nodecompare(current_table->node, node) == 0){
-            char value[14] = {0};
-            sprintf(value, "(%d)", current_table->index);
-            entity->lit = strdup(value);
-            return entity;
-        }
-        current_table = current_table->next_table;
-    }
-
-    return NULL;
-}
-
 static struct mcc_ir_entity *generate_ir_identifier_entity(struct mcc_ast_identifier *id_expr)
 {
     assert(id_expr);
@@ -149,6 +121,40 @@ static void generate_ir_unary_expression(struct mcc_ast_expression *un_expr, str
     print_table(MCC_IR_TABLE_UNARY_OP, head->index, entity1->lit, NULL, un_expr);
 }
 
+static void generate_ir_literal_expression(struct mcc_ast_expression *expr, struct mcc_ir_head *head)
+{
+    assert(expr);
+    assert(head);
+
+    head->index++;
+    struct mcc_ir_table *new_table = create_new_ir_table();
+    struct mcc_ir_entity *entity = generate_ir_literal_entity(expr->literal);
+    new_table->arg1 = entity;
+    new_table->operator.ir_op = MCC_IR_OPERATION_COPY;
+    new_table->index = head->index;
+
+    head->current->next_table = new_table;
+    head->current = new_table;
+    print_table(MCC_IR_TABLE_COPY, head->index, entity->lit, NULL, NULL);
+}
+
+static void generate_ir_identifier_expression(struct mcc_ast_expression *expr, struct mcc_ir_head *head)
+{
+    assert(expr);
+    assert(head);
+
+    head->index++;
+    struct mcc_ir_table *new_table = create_new_ir_table();
+    struct mcc_ir_entity *entity = generate_ir_identifier_entity(expr->identifier);
+    new_table->arg1 = entity;
+    new_table->operator.ir_op = MCC_IR_OPERATION_COPY;
+    new_table->index = head->index;
+
+    head->current->next_table = new_table;
+    head->current = new_table;
+    print_table(MCC_IR_TABLE_COPY, head->index, entity->lit, NULL, NULL);
+}
+
 static void generate_ir_declaration(struct mcc_ast_declare_assign *decl, struct mcc_ir_head *head)
 {
     assert(decl);
@@ -170,6 +176,7 @@ static void generate_ir_declaration(struct mcc_ast_declare_assign *decl, struct 
     print_table(MCC_IR_TABLE_DECLARATION, head->index, entity1->lit, NULL, NULL);
 }
 
+
 static void generate_ir_expression(struct mcc_ast_expression *expr, struct mcc_ir_head *head)
 {
     assert(expr);
@@ -182,6 +189,12 @@ static void generate_ir_expression(struct mcc_ast_expression *expr, struct mcc_i
         break;
     case MCC_AST_EXPRESSION_TYPE_UNARY_OP:
         generate_ir_unary_expression(expr, head);
+        break;
+    case MCC_AST_EXPRESSION_TYPE_LITERAL:
+        generate_ir_literal_expression(expr, head);
+        break;
+    case MCC_AST_EXPRESSION_TYPE_IDENTIFIER:
+        generate_ir_identifier_expression(expr, head);
         break;
     default:
         printf("todo\n");

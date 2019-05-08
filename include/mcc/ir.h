@@ -12,6 +12,7 @@ enum mcc_ir_operation{
     MCC_IR_OPERATION_JUMPFALSE,
     MCC_IR_OPERATION_JUMP,
     MCC_IR_OPERATION_LABEL,
+    MCC_IR_OPERATION_COPY,
     };
 
 struct mcc_ir_table{

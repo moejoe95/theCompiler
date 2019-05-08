@@ -13,6 +13,7 @@ enum ir_table_operation_type {
     MCC_IR_TABLE_JUMPFALSE,
     MCC_IR_TABLE_JUMP,
     MCC_IR_TABLE_LABEL,
+    MCC_IR_TABLE_COPY,
 };
 
 void print_table_legend();

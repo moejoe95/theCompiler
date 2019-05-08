@@ -44,6 +44,10 @@ void print_table(enum ir_table_operation_type type, int index, char *arg1, char 
         case MCC_IR_TABLE_LABEL:
             operation = "label";
             break;
+
+        case MCC_IR_TABLE_COPY:
+            operation = "copy";
+            break;
         default:
             operation = "-";
             break;
