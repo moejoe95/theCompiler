@@ -22,6 +22,34 @@ static struct mcc_ir_entity *create_new_ir_entity(){
     return entity;
 }
 
+int nodecompare(struct mcc_ast_node node1, struct mcc_ast_node node2){
+    if (node1.sloc.start_col == node2.sloc.start_col &&
+        node1.sloc.end_col == node2.sloc.end_col &&
+        node1.sloc.start_line == node2.sloc.start_line &&
+        node1.sloc.end_line == node2.sloc.end_line)
+        return 0;
+    return 1;
+}
+
+static struct mcc_ir_entity *mcc_ir_lookup_entity(struct mcc_ir_head *head, struct mcc_ast_node node)
+{
+    assert(head);
+
+    struct mcc_ir_table *current_table = head->root->next_table;
+    struct mcc_ir_entity *entity = create_new_ir_entity();
+    while(current_table != NULL){
+        if (nodecompare(current_table->node, node) == 0){
+            char value[14] = {0};
+            sprintf(value, "(%d)", current_table->index);
+            entity->lit = strdup(value);
+            break;
+        }
+        current_table = current_table->next_table;
+    }
+
+    return entity;
+}
+
 static struct mcc_ir_entity *generate_ir_identifier_expression(struct mcc_ast_identifier *id_expr)
 {
     assert(id_expr);
@@ -81,6 +109,7 @@ static void generate_ir_binary_expression(struct mcc_ast_expression *bin_expr, v
     assert(data);
 
     struct mcc_ir_head *head = data;
+    head->index++;
     struct mcc_ir_table *new_table = create_new_ir_table();
 
     struct mcc_ir_entity *entity1 = generate_ir_expression(bin_expr->lhs);
@@ -89,10 +118,12 @@ static void generate_ir_binary_expression(struct mcc_ast_expression *bin_expr, v
     new_table->arg1 = entity1;
     new_table->arg2 = entity2;
     new_table->operator.bin_op = bin_expr->op;
-    head->current->next_table = new_table;    
+    new_table->node = bin_expr->node;
+    new_table->index = head->index;
+    
 
+    head->current->next_table = new_table;    
     head->current = new_table;
-    head->index++;
 
     //TODO print
     printf("%d\t|\t%s\t|\t%s\n", head->index, entity1->lit, entity2->lit);
@@ -105,20 +136,46 @@ static void generate_ir_unary_expression(struct mcc_ast_expression *un_expr, voi
     assert(data);
 
     struct mcc_ir_head *head = data;
+    head->index++;
     struct mcc_ir_table *new_table = create_new_ir_table();
 
     struct mcc_ir_entity *entity1 = generate_ir_expression(un_expr->rhs);
 
     new_table->arg1 = entity1;
     new_table->operator.un_op = un_expr->u_op;
+    new_table->node = un_expr->node;
+    new_table->index = head->index;
+    
     head->current->next_table = new_table;
-
     head->current = new_table;
-    head->index++;
 
     //TODO print
     printf("%d\t|\t%s\t|\t%s\n", head->index, entity1->lit, "-");
 }
+
+
+static void generate_ir_assignment(struct mcc_ast_declare_assign *assign, void *data)
+{
+    assert(assign);
+    assert(data);
+
+    struct mcc_ir_head *head = data;
+    head->index++;
+    struct mcc_ir_table *new_table = create_new_ir_table();
+
+    struct mcc_ir_entity *entity1 = mcc_ir_lookup_entity(head, assign->assign_rhs->node);
+
+    new_table->arg1 = entity1;
+    new_table->operator.un_op = assign->type;
+    new_table->index = head->index;
+    
+    head->current->next_table = new_table;
+    head->current = new_table;
+
+    //TODO print
+    printf("%d\t|\t%s\t|\t%s\n", head->index, entity1->lit, "-");
+}
+
 
 struct mcc_ast_visitor generate_ir_visitor(struct mcc_ir_head *head)
 {
@@ -130,6 +187,7 @@ struct mcc_ast_visitor generate_ir_visitor(struct mcc_ir_head *head)
 
         .expression_binary_op = generate_ir_binary_expression,
         .expression_unary_op = generate_ir_unary_expression,
+        .assignment = generate_ir_assignment,
 	};
 }
 
@@ -140,6 +198,7 @@ struct mcc_ir_table *mcc_create_ir(struct mcc_ast_program *program)
 	struct mcc_ir_table *table = create_new_ir_table();
     struct mcc_ir_head *head = malloc(sizeof(*head));
     if(!head) return NULL;
+    table->index = 0;
     head->root = table;
     head->current = table;
     head->index = 0;

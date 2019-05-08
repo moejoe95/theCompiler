@@ -15,12 +15,15 @@ struct mcc_ir_table{
         enum mcc_ast_binary_op bin_op;
         enum mcc_ast_unary_op un_op;
         enum mcc_ir_operation ir_op;
+        enum mcc_ast_declare_assign_type da_op;
     } operator;
     
     struct mcc_ir_entity *arg1;
     struct mcc_ir_entity *arg2;
 
     int index; 
+
+    struct mcc_ast_node node;
 
     struct mcc_ir_table *next_table;    
 };
