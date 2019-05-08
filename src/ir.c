@@ -26,7 +26,8 @@ static struct mcc_ir_entity *generate_ir_identifier_expression(struct mcc_ast_id
 {
     assert(id_expr);
     struct mcc_ir_entity *entity = create_new_ir_entity();
-    
+    entity->type = MCC_IR_TYPE_IDENTIFIER_EXPRESSION;
+    entity->lit = strdup(id_expr->name);
     return entity;
 }
 
