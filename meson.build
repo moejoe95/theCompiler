@@ -35,6 +35,7 @@ mcc_src = [ 'src/ast.c',
             'src/type_checking.c',
             'src/print_type_log.c',
             'src/ir.c',
+            'src/print_ir.c',
             lgen.process('src/scanner.l'),
             pgen.process('src/parser.y') ]
 

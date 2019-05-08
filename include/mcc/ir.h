@@ -1,4 +1,5 @@
 #include "mcc/ast.h"
+#include "mcc/print_ir.h"
 
 enum mcc_ir_type {
     MCC_IR_TYPE_BINARY_EXPRESSION, 

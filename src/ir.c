@@ -125,9 +125,7 @@ static void generate_ir_binary_expression(struct mcc_ast_expression *bin_expr, v
     head->current->next_table = new_table;    
     head->current = new_table;
 
-    //TODO print
-    printf("%d\t|\t%s\t|\t%s\n", head->index, entity1->lit, entity2->lit);
-
+    print_table(MCC_IR_TABLE_BINARY_OP, head->index, entity1->lit, entity2->lit, bin_expr);
 }
 
 static void generate_ir_unary_expression(struct mcc_ast_expression *un_expr, void *data)
@@ -149,8 +147,7 @@ static void generate_ir_unary_expression(struct mcc_ast_expression *un_expr, voi
     head->current->next_table = new_table;
     head->current = new_table;
 
-    //TODO print
-    printf("%d\t|\t%s\t|\t%s\n", head->index, entity1->lit, "-");
+    print_table(MCC_IR_TABLE_UNARY_OP, head->index, entity1->lit, NULL, un_expr);
 }
 
 
@@ -172,8 +169,7 @@ static void generate_ir_assignment(struct mcc_ast_declare_assign *assign, void *
     head->current->next_table = new_table;
     head->current = new_table;
 
-    //TODO print
-    printf("%d\t|\t%s\t|\t%s\n", head->index, entity1->lit, "-");
+    print_table(MCC_IR_TABLE_ASSIGNMENT, head->index, entity1->lit, NULL, NULL);
 }
 
 
@@ -202,6 +198,8 @@ struct mcc_ir_table *mcc_create_ir(struct mcc_ast_program *program)
     head->root = table;
     head->current = table;
     head->index = 0;
+
+    print_table_legend();
 
 	struct mcc_ast_visitor visitor = generate_ir_visitor(head);
 	mcc_ast_visit(program, &visitor);
