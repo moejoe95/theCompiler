@@ -222,6 +222,8 @@ static void generate_ir_return(struct mcc_ast_expression *expr, struct mcc_ir_he
     generate_ir_expression(expr, head, MCC_IR_TABLE_JUMP);
 }
 
+static void generate_ir_statement(struct mcc_ast_statement *stmt, struct mcc_ir_head *head);
+
 static void generate_ir_if(struct mcc_ast_statement *stmt, struct mcc_ir_head *head)
 {
     assert(stmt);
@@ -229,7 +231,7 @@ static void generate_ir_if(struct mcc_ast_statement *stmt, struct mcc_ir_head *h
 
     // if condition
     generate_ir_expression(stmt->if_cond, head, -1);
-
+    struct mcc_ir_table *if_table = head->current;
 
     struct mcc_ir_table *new_table = create_new_ir_table();
 
@@ -248,6 +250,21 @@ static void generate_ir_if(struct mcc_ast_statement *stmt, struct mcc_ir_head *h
 
     print_table(new_table, head->index, entity1->lit, NULL);
 
+    // if body
+    generate_ir_statement(stmt->if_stat, head);
+
+    // TODO generate jump table
+
+    // set jump location
+    sprintf(value, "(%d)", if_table->index);
+    struct mcc_ir_entity *entity2 = create_new_ir_entity();
+    entity2->lit = value;
+    new_table->arg2 = entity2;
+
+    // else body
+    generate_ir_statement(stmt->else_stat, head);
+
+    // TODO insert location of jump
 }
 
 static void generate_ir_statement(struct mcc_ast_statement *stmt, struct mcc_ir_head *head)
@@ -270,6 +287,15 @@ static void generate_ir_statement(struct mcc_ast_statement *stmt, struct mcc_ir_
         break;
     case MCC_AST_STATEMENT_IF:
         generate_ir_if(stmt, head);
+        break;
+    case MCC_AST_STATEMENT_COMPOUND:
+        {
+            struct mcc_ast_statement_list *list = stmt->compound;
+            while(list != NULL){
+                generate_ir_statement(list->statement, head);
+                list = list->next_statement;
+            }
+        }
         break;
     default:
         printf("todo\n");
