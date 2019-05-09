@@ -7,7 +7,7 @@ void print_table_legend(){
     fprintf(out, "----------------------------------------------------------------\n");
 }
 
-void print_table(enum ir_table_operation_type type, int index, char *arg1, char *arg2, struct mcc_ast_expression *expression){
+void print_table(struct mcc_ir_table *table, int index, char *arg1, char *arg2){
     FILE *out = stdout;
 
     if(!arg1)
@@ -16,17 +16,13 @@ void print_table(enum ir_table_operation_type type, int index, char *arg1, char 
         arg2 = "-";
 
     char *operation;
-    switch (type) {
+    switch (table->op_type) {
         case MCC_IR_TABLE_UNARY_OP:
-            operation = "un";//get_un_op_string(expression->u_op); //TODO
+            operation = get_un_op_string(table->un_op);
             break;
 
         case MCC_IR_TABLE_BINARY_OP:
-            operation = "bin";//get_bin_op_string(expression->op); //TODO
-            break;
-
-        case MCC_IR_TABLE_DECLARATION:
-            operation = "decl";
+            operation = get_bin_op_string(table->bin_op);
             break;
 
         case MCC_IR_TABLE_ASSIGNMENT:
