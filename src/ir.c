@@ -230,6 +230,24 @@ static void generate_ir_if(struct mcc_ast_statement *stmt, struct mcc_ir_head *h
     // if condition
     generate_ir_expression(stmt->if_cond, head, -1);
 
+
+    struct mcc_ir_table *new_table = create_new_ir_table();
+
+    struct mcc_ir_entity *entity1 = create_new_ir_entity();
+    char value[12] = {0};
+    sprintf(value, "(%d)", head->current->index);
+    entity1->lit = value;
+
+    head->index++;
+    new_table->arg1 = entity1;
+    new_table->op_type = MCC_IR_TABLE_JUMPFALSE;
+    new_table->index = head->index;
+    
+    head->current->next_table = new_table;    
+    head->current = new_table;
+
+    print_table(new_table, head->index, entity1->lit, NULL);
+
 }
 
 static void generate_ir_statement(struct mcc_ast_statement *stmt, struct mcc_ir_head *head)

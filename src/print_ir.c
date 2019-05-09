@@ -1,4 +1,5 @@
 #include "mcc/print_ir.h"
+#include <string.h>
 
 void print_table_legend(){
     FILE *out = stdout;
@@ -15,37 +16,39 @@ void print_table(struct mcc_ir_table *table, int index, char *arg1, char *arg2){
     if(!arg2)
         arg2 = "-";
 
-    char *operation;
+    char operation[32] = {0};
     switch (table->op_type) {
         case MCC_IR_TABLE_UNARY_OP:
-            operation = get_un_op_string(table->un_op);
+            sprintf(operation, get_un_op_string(table->un_op));
+            strcat(operation, "\t");
             break;
 
         case MCC_IR_TABLE_BINARY_OP:
-            operation = get_bin_op_string(table->bin_op);
+            sprintf(operation, get_bin_op_string(table->bin_op));
+            strcat(operation, "\t");
             break;
 
         case MCC_IR_TABLE_ASSIGNMENT:
-            operation = "assign";
+            sprintf(operation, "assign\t");
             break;
 
         case MCC_IR_TABLE_JUMPFALSE:
-            operation = "jumpfalse";
+            sprintf(operation, "jumpfalse");
             break;
 
         case MCC_IR_TABLE_JUMP:
-            operation = "jump";
+            sprintf(operation, "jump\t");
             break;
 
         case MCC_IR_TABLE_LABEL:
-            operation = "label";
+            sprintf(operation, "label\t");
             break;
 
         case MCC_IR_TABLE_COPY:
-            operation = "copy";
+            sprintf(operation, "copy\t");
             break;
         default:
-            operation = "-";
+            sprintf(operation, "-\t");
             break;
     }
 
