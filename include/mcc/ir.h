@@ -53,4 +53,6 @@ struct mcc_ir_head{
 struct mcc_ast_visitor generate_ir_visitor(struct mcc_ir_head *head);
 struct mcc_ir_table *mcc_create_ir(struct mcc_ast_program *program);
 
+struct mcc_ir_entity *create_new_ir_entity();
+
 #endif

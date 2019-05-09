@@ -5,9 +5,6 @@
 #include "mcc/ir.h"
 #include "mcc/ast.h"
 
-
-void print_table_legend();
-
-void print_table(struct mcc_ir_table *table, int index, char *arg1, char *arg2);
+void mcc_print_ir_table(struct mcc_ir_table *table, FILE *out);
 
 #endif //THECOMPILER_PRINT_IR_H

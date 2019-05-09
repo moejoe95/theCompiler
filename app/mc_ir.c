@@ -7,6 +7,7 @@
 #include "mcc/symbol_table.h"
 #include "mcc/type_checking.h"
 #include "mcc/ir.h"
+#include "mcc/print_ir.h"
 #include <getopt.h>
 #include <string.h>
 
@@ -111,16 +112,15 @@ int main(int argc, char **argv)
 			mcc_delete_symbol_table(st);
 		}
 
-        struct mcc_ir_table *ir_expr = mcc_create_ir(pro);
-        // TODO print ir
-
-		// TODO generate CFG
-		// TODO print CFG
+		// generate IR code
+        struct mcc_ir_table *ir = mcc_create_ir(pro);
+        // print IR
+		mcc_print_ir_table(ir, out);
 
 		// cleanup
 		mcc_ast_delete_program(pro);
 
-		if (fclose(in) != 0) {
+		if (fclose(in) != 0) { // segfaults
 			perror("fclose input");
 			return EXIT_FAILURE;
 		}

@@ -5,7 +5,6 @@
 #include "stdlib.h"
 #include "stdio.h"
 #include "string.h"
-#include "mcc/print_ir.h"
 
 static struct mcc_ir_table *create_new_ir_table(){
     struct mcc_ir_table *table = malloc(sizeof(*table));
@@ -15,7 +14,7 @@ static struct mcc_ir_table *create_new_ir_table(){
     return table;
 }
 
-static struct mcc_ir_entity *create_new_ir_entity(){
+struct mcc_ir_entity *create_new_ir_entity(){
     struct mcc_ir_entity *entity = malloc(sizeof(*entity));
     if(!entity){
         return NULL;
@@ -84,12 +83,12 @@ static void generate_ir_identifier(struct mcc_ast_identifier *id, struct mcc_ir_
     struct mcc_ir_table *new_table = create_new_ir_table();
     struct mcc_ir_entity *entity = generate_ir_identifier_entity(id);
     new_table->arg1 = entity;
+    new_table->arg2 = NULL;
     new_table->op_type = type;
     new_table->index = head->index;
 
     head->current->next_table = new_table;
     head->current = new_table;
-    print_table(new_table, head->index, entity->lit, NULL);  
 }
 
 static void generate_ir_literal(struct mcc_ast_literal *lit, struct mcc_ir_head *head, enum ir_table_operation_type type)
@@ -98,12 +97,12 @@ static void generate_ir_literal(struct mcc_ast_literal *lit, struct mcc_ir_head 
     struct mcc_ir_table *new_table = create_new_ir_table();
     struct mcc_ir_entity *entity = generate_ir_literal_entity(lit);
     new_table->arg1 = entity;
+    new_table->arg2 = NULL;
     new_table->op_type = type;
     new_table->index = head->index;
 
     head->current->next_table = new_table;
     head->current = new_table;
-    print_table(new_table, head->index, entity->lit, NULL);
 }
 
 static struct mcc_ir_entity *generate_ir_entity(struct mcc_ast_expression *expr){
@@ -142,8 +141,6 @@ static void generate_ir_binary_expression(struct mcc_ast_expression *bin_expr, s
 
     head->current->next_table = new_table;    
     head->current = new_table;
-
-    print_table(new_table, head->index, entity1->lit, entity2->lit);
 }
 
 static void generate_ir_unary_expression(struct mcc_ast_expression *un_expr, struct mcc_ir_head *head, enum ir_table_operation_type type)
@@ -157,14 +154,13 @@ static void generate_ir_unary_expression(struct mcc_ast_expression *un_expr, str
     struct mcc_ir_entity *entity1 = generate_ir_entity(un_expr->rhs);
 
     new_table->arg1 = entity1;
+    new_table->arg2 = NULL;
     new_table->op_type = type;
     new_table->un_op = un_expr->type;
     new_table->index = head->index;
     
     head->current->next_table = new_table;
     head->current = new_table;
-
-    print_table(new_table, head->index, entity1->lit, NULL);
 }
 
 static void generate_ir_expression(struct mcc_ast_expression *expr, struct mcc_ir_head *head, enum ir_table_operation_type type)
@@ -210,8 +206,6 @@ static void generate_ir_assignment(struct mcc_ast_declare_assign *assign, struct
     
     head->current->next_table = new_table;    
     head->current = new_table;
-
-    print_table(new_table, head->index, entity1->lit, entity2->lit);
 }
 
 static void generate_ir_return(struct mcc_ast_expression *expr, struct mcc_ir_head *head)
@@ -242,13 +236,12 @@ static void generate_ir_if(struct mcc_ast_statement *stmt, struct mcc_ir_head *h
 
     head->index++;
     new_table->arg1 = entity1;
+    new_table->arg2 = NULL;
     new_table->op_type = MCC_IR_TABLE_JUMPFALSE;
     new_table->index = head->index;
     
     head->current->next_table = new_table;    
     head->current = new_table;
-
-    print_table(new_table, head->index, entity1->lit, NULL);
 
     // if body
     generate_ir_statement(stmt->if_stat, head);
@@ -314,13 +307,12 @@ static void generate_function_definition(struct mcc_ast_func_definition *func, s
     struct mcc_ir_entity *id_entity = generate_ir_entity(func->func_identifier);
 
     new_table->arg1 = id_entity;
+    new_table->arg2 = NULL;
     new_table->op_type = MCC_IR_TABLE_LABEL;
     new_table->index = head->index;
     
     head->current->next_table = new_table;
     head->current = new_table;
-
-    print_table(new_table, head->index, id_entity->lit, NULL);
 
     // func compound
     struct mcc_ast_statement_list *list = func->func_compound->compound;
@@ -346,8 +338,6 @@ struct mcc_ir_table *mcc_create_ir(struct mcc_ast_program *program)
     head->current = table;
     head->index = 0;
 
-    print_table_legend();
-
 	switch (program->type) {
 	case MCC_AST_PROGRAM_TYPE_FUNCTION:
         generate_function_definition(program->function, head);
@@ -362,8 +352,6 @@ struct mcc_ir_table *mcc_create_ir(struct mcc_ast_program *program)
 	} break;
 	}
 
-    free(head);
-    free(table);
 	return table;
 }
 

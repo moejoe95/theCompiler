@@ -1,20 +1,18 @@
 #include "mcc/print_ir.h"
 #include <string.h>
 
-void print_table_legend(){
-    FILE *out = stdout;
-
-    fprintf(out, "%s\t|   %s   |\t%s\t|\t%s\n", "index", "operation", "arg1", "arg2");
-    fprintf(out, "----------------------------------------------------------------\n");
+void print_table_legend(FILE *out){
+    fprintf(out, "%s\t|   %s   \t|\t%s\t|\t%s\n", "index", "operation", "arg1", "arg2");
+    fprintf(out, "------------------------------------------------------------\n");
 }
 
-void print_table(struct mcc_ir_table *table, int index, char *arg1, char *arg2){
-    FILE *out = stdout;
+void print_line(struct mcc_ir_table *table, FILE *out){
 
-    if(!arg1)
-        arg1 = "-";
-    if(!arg2)
-        arg2 = "-";
+    if(!table->arg2){
+        struct mcc_ir_entity *entity2 = create_new_ir_entity();
+        sprintf(entity2->lit,"-");
+        table->arg2 = entity2;
+    }
 
     char operation[32] = {0};
     switch (table->op_type) {
@@ -53,5 +51,16 @@ void print_table(struct mcc_ir_table *table, int index, char *arg1, char *arg2){
     }
 
 
-    fprintf(out, "%d\t|\t%s\t|\t%s\t|\t%s\n", index, operation, arg1, arg2);
+    fprintf(out, "%d\t|\t%s\t|\t%s\t|\t%s\n", table->index, operation, table->arg1->lit, table->arg2->lit);
+}
+
+void mcc_print_ir_table(struct mcc_ir_table *table, FILE *out)
+{
+    print_table_legend(out);
+    struct mcc_ir_table *current_table = table->next_table;
+    while (current_table != NULL){
+        print_line(current_table, out);
+        current_table = current_table->next_table;
+    }
+    printf("\n");
 }
