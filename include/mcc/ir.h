@@ -2,14 +2,8 @@
 #include "mcc/print_ir.h"
 
 struct mcc_ir_table{
-    /* operation */
-    union{
-        enum mcc_ast_binary_op bin_op;
-        enum mcc_ast_unary_op un_op;
-        enum ir_table_operation_type ir_op;
-        enum mcc_ast_declare_assign_type da_op;
-    } operator;
-    
+    enum ir_table_operation_type op_type;
+
     struct mcc_ir_entity *arg1;
     struct mcc_ir_entity *arg2;
 
