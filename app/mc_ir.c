@@ -119,8 +119,8 @@ int main(int argc, char **argv)
 
 		// cleanup
 		mcc_ast_delete_program(pro);
-
-		if (fclose(in) != 0) { // segfaults
+		
+		if (fclose(in) != 0) { // TODO segfaults
 			perror("fclose input");
 			return EXIT_FAILURE;
 		}

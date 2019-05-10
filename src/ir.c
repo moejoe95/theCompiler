@@ -296,6 +296,23 @@ static void generate_ir_statement(struct mcc_ast_statement *stmt, struct mcc_ir_
     }
 }
 
+static void generate_ir_param(struct mcc_ast_parameter *param, struct mcc_ir_head *head)
+{
+    assert(param);
+    assert(head);
+
+    head->index++;
+    struct mcc_ir_table *new_table = create_new_ir_table();
+    struct mcc_ir_entity *entity = generate_ir_entity(param->parameter->declare_id);
+
+    new_table->arg1 = entity;
+    new_table->op_type = MCC_IR_TABLE_PARAM_SETUP;
+    new_table->index = head->index;
+    
+    head->current->next_table = new_table;    
+    head->current = new_table;
+}
+
 static void generate_function_definition(struct mcc_ast_func_definition *func, struct mcc_ir_head *head)
 {
     assert(func);
@@ -314,14 +331,19 @@ static void generate_function_definition(struct mcc_ast_func_definition *func, s
     head->current->next_table = new_table;
     head->current = new_table;
 
+    // func parameter list
+    struct mcc_ast_parameter *param = func->parameter_list;
+    while(param != NULL){
+        generate_ir_param(param, head);
+        param = param->next_parameter;
+    }
+
     // func compound
     struct mcc_ast_statement_list *list = func->func_compound->compound;
     while(list != NULL){
         generate_ir_statement(list->statement, head);
         list = list->next_statement;
     }
-
-    // TODO parameter list
 }
 
 struct mcc_ir_table *mcc_create_ir(struct mcc_ast_program *program)

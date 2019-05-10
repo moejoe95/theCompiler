@@ -11,6 +11,7 @@ enum ir_table_operation_type {
     MCC_IR_TABLE_JUMP,
     MCC_IR_TABLE_LABEL,
     MCC_IR_TABLE_COPY,
+    MCC_IR_TABLE_PARAM_SETUP,
 };
 
 struct mcc_ir_table{

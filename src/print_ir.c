@@ -45,6 +45,11 @@ void print_line(struct mcc_ir_table *table, FILE *out){
         case MCC_IR_TABLE_COPY:
             sprintf(operation, "copy\t");
             break;
+
+        case MCC_IR_TABLE_PARAM_SETUP:
+            sprintf(operation, "param\t");
+            break;
+
         default:
             sprintf(operation, "-\t");
             break;
@@ -62,5 +67,5 @@ void mcc_print_ir_table(struct mcc_ir_table *table, FILE *out)
         print_line(current_table, out);
         current_table = current_table->next_table;
     }
-    printf("\n");
+    printf("------------------------------------------------------------\n");
 }
