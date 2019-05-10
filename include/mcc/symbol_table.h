@@ -59,7 +59,7 @@ void add_child_symbol_table(struct mcc_symbol_table *parent, struct mcc_symbol_t
 void add_symbol_to_list(struct mcc_symbol_list *list, struct mcc_symbol *symbol);
 void add_symbol_table_to_list(struct mcc_symbol_table_list *list, struct mcc_symbol_table *table);
 
-struct mcc_symbol_table *mcc_create_symbol_table(struct mcc_ast_program *program, FILE *out);
+struct mcc_symbol_table *mcc_create_symbol_table(struct mcc_ast_program *program, FILE *out, int log_level);
 
 struct mcc_ast_visitor generate_symbol_table_visitor(struct temp_create_symbol_table *temp_st);
 

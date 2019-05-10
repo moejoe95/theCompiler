@@ -269,7 +269,7 @@ void mcc_parser_error(struct MCC_PARSER_LTYPE *yylloc, yyscan_t *scanner, struct
 	UNUSED(scanner);
 }
 
-struct mcc_parser_result mcc_parse_string(const char *input)
+struct mcc_parser_result mcc_parse_string(const char *input, int log_level)
 {
 	assert(input);
 
@@ -280,14 +280,14 @@ struct mcc_parser_result mcc_parse_string(const char *input)
 		};
 	}
 
-	struct mcc_parser_result result = mcc_parse_file(in, "input", stdout);
+	struct mcc_parser_result result = mcc_parse_file(in, "input", stdout, log_level);
 
 	fclose(in);
 
 	return result;
 }
 
-struct mcc_parser_result mcc_parse_file(FILE *input, char *input_filename, FILE *outfile)
+struct mcc_parser_result mcc_parse_file(FILE *input, char *input_filename, FILE *outfile, int log_level)
 {
 	assert(input);
 
@@ -307,6 +307,10 @@ struct mcc_parser_result mcc_parse_file(FILE *input, char *input_filename, FILE 
 	}
 
 	mcc_parser_lex_destroy(scanner);
+
+	if (result.status == MCC_PARSER_STATUS_OK && log_level != 0) {
+		mcc_ast_print_dot(out, result.program);
+	}
 
 	return result;
 }

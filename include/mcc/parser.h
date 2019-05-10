@@ -23,8 +23,8 @@ struct mcc_parser_result {
 	struct mcc_ast_program *program;
 };
 
-struct mcc_parser_result mcc_parse_string(const char *input);
+struct mcc_parser_result mcc_parse_string(const char *input, int log_level);
 
-struct mcc_parser_result mcc_parse_file(FILE *input, char *input_filename, FILE *out);
+struct mcc_parser_result mcc_parse_file(FILE *input, char *input_filename, FILE *out, int log_level);
 
 #endif // MCC_PARSER_H

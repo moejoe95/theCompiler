@@ -149,7 +149,7 @@ struct mcc_symbol *create_symbol_built_in(enum mcc_ast_type type,
 	return sym;
 }
 
-struct mcc_symbol_table *mcc_create_symbol_table(struct mcc_ast_program *program, FILE *out)
+struct mcc_symbol_table *mcc_create_symbol_table(struct mcc_ast_program *program, FILE *out, int log_level)
 {
 	if (program == NULL) {
 		return NULL;
@@ -182,6 +182,11 @@ struct mcc_symbol_table *mcc_create_symbol_table(struct mcc_ast_program *program
 	}
 
 	free(temp_st);
+
+	if (log_level != 0) {
+		mcc_print_symbol_table(out, symbol_table, 0);
+		fprintf(out, "\n");
+	}
 	return symbol_table;
 }
 

@@ -106,10 +106,11 @@ int main(int argc, char *argv[])
 		}
 
 		struct mcc_ast_program *pro = NULL;
+		struct mcc_symbol_table *st = NULL;
 
 		// parsing phase
 		{
-			struct mcc_parser_result result = mcc_parse_file(in, argv[i], out);
+			struct mcc_parser_result result = mcc_parse_file(in, argv[i], out, log_level_to_int(LOG_LEVEL));
 
 			if (result.status != MCC_PARSER_STATUS_OK) {
 				fprintf(stdout, "...parsing failed...\n");
@@ -131,20 +132,12 @@ int main(int argc, char *argv[])
 			pro->function_list = scope_func_list;
 			pro->function_list->next_function = NULL;
 		}
-		if (LOG_LEVEL != LOG_DEFAULT) {
-			mcc_ast_print_dot(out, pro);
-		}
 
 		// build symbol table
-		struct mcc_symbol_table *st = NULL;
-		st = mcc_create_symbol_table(pro, out);
+		st = mcc_create_symbol_table(pro, out, log_level_to_int(LOG_LEVEL));
 		if (st == NULL) {
+			mcc_ast_delete_program(pro);
 			return EXIT_FAILURE;
-		}
-
-		if (LOG_LEVEL != LOG_DEFAULT) {
-			mcc_print_symbol_table(out, st, 0);
-			fprintf(out, "\n");
 		}
 
 		// type checking
