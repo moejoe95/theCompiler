@@ -22,6 +22,14 @@ struct mcc_ir_entity *create_new_ir_entity(){
     return entity;
 }
 
+struct mcc_ir_entity *create_new_ir_label(){
+    struct mcc_ir_label *label = malloc(sizeof(*label));
+    if(!label){
+        return NULL;
+    }
+    return label;
+}
+
 static char *lookup_table_args(struct mcc_ir_head *head, char *arg1, char *arg2)
 {
     assert(head);
@@ -223,41 +231,81 @@ static void generate_ir_if(struct mcc_ast_statement *stmt, struct mcc_ir_head *h
     assert(stmt);
     assert(head);
 
+    /*char value[12] = {0};
+
+    //create two labels
+    struct mcc_ir_label *label1 = create_new_ir_label();
+    struct mcc_ir_label *label2 = create_new_ir_label();
+    
+    sprintf(value, "L%d", head->labelIndex);
+    label1->name->lit = strdup(value);
+    label1->entity->lit = strdup(value);
+    printf("sasdfasdf%s\n", label1->entity->lit);
+    head->labelIndex++;
+
+    sprintf(value, "L%d", head->labelIndex);
+    label2->name->lit = strdup(value);
+    label2->entity->lit = strdup(value);
+    head->labelIndex++;
+
     // if condition
     generate_ir_expression(stmt->if_cond, head, -1);
-    struct mcc_ir_table *if_table = head->current;
 
-    struct mcc_ir_table *new_table = create_new_ir_table();
-
+    struct mcc_ir_table *jumpfalse_table = create_new_ir_table();
     struct mcc_ir_entity *entity1 = create_new_ir_entity();
-    char value[12] = {0};
+
     sprintf(value, "(%d)", head->current->index);
-    entity1->lit = value;
+    entity1->lit = strdup(value);
 
     head->index++;
-    new_table->arg1 = entity1;
-    new_table->arg2 = NULL;
-    new_table->op_type = MCC_IR_TABLE_JUMPFALSE;
-    new_table->index = head->index;
+    jumpfalse_table->arg1 = entity1;
+    printf("sasdfasdf%s\n", label1->entity->lit);
+    printf("sasdfasdf%s\n", label2->entity->lit);
+    jumpfalse_table->arg2 = label1->name;
+    jumpfalse_table->op_type = MCC_IR_TABLE_JUMPFALSE;
+    jumpfalse_table->index = head->index;
     
-    head->current->next_table = new_table;    
-    head->current = new_table;
+    head->current->next_table = jumpfalse_table;    
+    head->current = jumpfalse_table;
 
     // if body
     generate_ir_statement(stmt->if_stat, head);
 
-    // TODO generate jump table
+    // generate jump table
+    struct mcc_ir_table *jump_table = create_new_ir_table();
+    head->index++;
+    jump_table->arg1 = label1->entity;
+    jump_table->arg2 = NULL;
+    jump_table->op_type = MCC_IR_TABLE_JUMP;
+    jump_table->index = head->index;
+    
+    head->current->next_table = jump_table;    
+    head->current = jump_table;
 
-    // set jump location
-    sprintf(value, "(%d)", if_table->index);
-    struct mcc_ir_entity *entity2 = create_new_ir_entity();
-    entity2->lit = value;
-    new_table->arg2 = entity2;
+    // set label 1
+    struct mcc_ir_table *label_table1 = create_new_ir_table();
+    head->index++;
+    label_table1->arg1 = label1->name;
+    label_table1->arg2 = NULL;
+    label_table1->op_type = MCC_IR_TABLE_LABEL;
+    label_table1->index = head->index;
+    
+    head->current->next_table = label_table1;
+    head->current = label_table1;
 
     // else body
     generate_ir_statement(stmt->else_stat, head);
 
-    // TODO insert location of jump
+    // set label 2
+    struct mcc_ir_table *label_table2 = create_new_ir_table();
+    head->index++;
+    label_table2->arg1 = label2->name;
+    label_table2->arg2 = NULL;
+    label_table2->op_type = MCC_IR_TABLE_LABEL;
+    label_table2->index = head->index;
+    
+    head->current->next_table = label_table2;
+    head->current = label_table2;*/
 }
 
 static void generate_ir_statement(struct mcc_ast_statement *stmt, struct mcc_ir_head *head)
@@ -359,6 +407,7 @@ struct mcc_ir_table *mcc_create_ir(struct mcc_ast_program *program)
     head->root = table;
     head->current = table;
     head->index = 0;
+    head->labelIndex = 1;
 
 	switch (program->type) {
 	case MCC_AST_PROGRAM_TYPE_FUNCTION:

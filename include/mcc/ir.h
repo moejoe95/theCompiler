@@ -33,21 +33,20 @@ struct mcc_ir_table{
     struct mcc_ir_table *next_table;    
 };
 
-enum mcc_ir_entity_type {
-    MCC_IR_ENTITY_TYPE_LITERAL, 
-    MCC_IR_ENTITY_TYPE_IDENTIFIER, 
-    MCC_IR_ENTITY_TYPE_INDEX
-    };
+struct mcc_ir_label{
+    struct mcc_ir_entity *name;
 
-struct mcc_ir_entity{
-    enum mcc_ir_entity_type type;
-    
+    struct mcc_ir_entity *entity;
+};
+
+struct mcc_ir_entity{  
     char *lit;
 };
 
 struct mcc_ir_head{
     struct mcc_ir_table *root;
     struct mcc_ir_table *current;
+    int labelIndex;
     int index;
 };
 
