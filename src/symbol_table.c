@@ -171,7 +171,13 @@ struct mcc_symbol_table *mcc_create_symbol_table(struct mcc_ast_program *program
 	if (!temp_st->main_found) {
 		temp_st->error_found = true;
 		struct mcc_semantic_error *error = get_mcc_semantic_error_struct(MCC_SC_ERROR_NO_MAIN);
-		error->sloc = &program->function_list->node.sloc;
+
+		if (program->type == MCC_AST_PROGRAM_TYPE_EMPTY) {
+			error->sloc = &program->node.sloc;
+		} else {
+			error->sloc = &program->function_list->node.sloc;
+		}
+
 		print_semantic_error(error, temp_st->out);
 	}
 

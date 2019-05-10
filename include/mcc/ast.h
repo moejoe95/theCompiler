@@ -393,6 +393,7 @@ struct mcc_ast_program {
 };
 
 struct mcc_ast_program *mcc_ast_new_program(void *program, enum mcc_ast_program_type type);
+struct mcc_ast_program *mcc_ast_new_empty_program(char *filename);
 
 void mcc_ast_delete_program(struct mcc_ast_program *program);
 

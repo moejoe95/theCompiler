@@ -156,7 +156,7 @@ program : expression { *result = mcc_ast_new_program($1, MCC_AST_PROGRAM_TYPE_EX
  		| assignment { *result = mcc_ast_new_program($1, MCC_AST_PROGRAM_TYPE_DECLARATION); loc($$, @1);}
         | declaration { *result = mcc_ast_new_program($1, MCC_AST_PROGRAM_TYPE_DECLARATION); loc($$, @1);}
         | statement { *result = mcc_ast_new_program($1, MCC_AST_PROGRAM_TYPE_STATEMENT); loc($$, @1);}
-        | END { *result = mcc_ast_new_program(NULL, MCC_AST_PROGRAM_TYPE_EMPTY); loc($$, @1);}
+        | END { *result = mcc_ast_new_empty_program(filename);}
 		| func_list { *result = mcc_ast_new_program($1, MCC_AST_PROGRAM_TYPE_FUNCTION_LIST); loc($$, @1);}
 		;
 

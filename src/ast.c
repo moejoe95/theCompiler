@@ -663,6 +663,22 @@ struct mcc_ast_program *mcc_ast_new_program(void *program, enum mcc_ast_program_
 	return pro;
 }
 
+struct mcc_ast_program *mcc_ast_new_empty_program(char *filename)
+{
+	struct mcc_ast_program *pro = malloc(sizeof(*pro));
+	if (!pro) {
+		return NULL;
+	}
+
+	pro->type = MCC_AST_PROGRAM_TYPE_EMPTY;
+
+	pro->node.sloc.end_line = 1;
+	pro->node.sloc.end_col = 1;
+	pro->node.sloc.filename = filename;
+
+	return pro;
+}
+
 void mcc_ast_delete_program(struct mcc_ast_program *program)
 {
 	assert(program);
