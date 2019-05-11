@@ -46,12 +46,16 @@ void print_line(struct mcc_ir_table *table, FILE *out){
             sprintf(operation, "copy\t");
             break;
 
-        case MCC_IR_TABLE_PARAM_SETUP:
-            sprintf(operation, "param\t");
+        case MCC_IR_TABLE_POP:
+            sprintf(operation, "pop\t");
+            break;
+
+        case MCC_IR_TABLE_PUSH:
+            sprintf(operation, "push\t");
             break;
 
         default:
-            sprintf(operation, "-\t");
+            sprintf(operation, "undef op\t");
             break;
     }
 

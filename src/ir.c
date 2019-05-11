@@ -244,7 +244,7 @@ static void generate_ir_return(struct mcc_ast_expression *expr, struct mcc_ir_he
     assert(expr);
     assert(head);
 
-    //TODO push variable to return on stack
+    generate_ir_expression(expr, head, MCC_IR_TABLE_PUSH);
 
     head->index++;
     struct mcc_ir_table *new_table = create_new_ir_table();
@@ -267,21 +267,27 @@ static void generate_ir_if(struct mcc_ast_statement *stmt, struct mcc_ir_head *h
     assert(stmt);
     assert(head);
 
-    /*char value[12] = {0};
+    char value[12] = {0};
 
-    //create two labels
     struct mcc_ir_label *label1 = create_new_ir_label();
-    struct mcc_ir_label *label2 = create_new_ir_label();
-    
+    struct mcc_ir_entity *entity1_lhs = create_new_ir_entity();
+    struct mcc_ir_entity *entity1_rhs = create_new_ir_entity();
+
     sprintf(value, "L%d", head->labelIndex);
-    label1->name->lit = strdup(value);
-    label1->entity->lit = strdup(value);
-    printf("sasdfasdf%s\n", label1->entity->lit);
+    entity1_lhs->lit = strdup(value);
+    entity1_rhs->lit = strdup(value);
+    label1->name = entity1_lhs;
+    label1->entity = entity1_rhs;
     head->labelIndex++;
 
+    struct mcc_ir_label *label2 = create_new_ir_label();
     sprintf(value, "L%d", head->labelIndex);
-    label2->name->lit = strdup(value);
-    label2->entity->lit = strdup(value);
+    struct mcc_ir_entity *entity2_lhs = create_new_ir_entity();
+    struct mcc_ir_entity *entity2_rhs = create_new_ir_entity();
+    entity2_lhs->lit = strdup(value);
+    entity2_rhs->lit = strdup(value);
+    label2->name = entity2_lhs;
+    label2->entity = entity2_rhs;
     head->labelIndex++;
 
     // if condition
@@ -295,8 +301,6 @@ static void generate_ir_if(struct mcc_ast_statement *stmt, struct mcc_ir_head *h
 
     head->index++;
     jumpfalse_table->arg1 = entity1;
-    printf("sasdfasdf%s\n", label1->entity->lit);
-    printf("sasdfasdf%s\n", label2->entity->lit);
     jumpfalse_table->arg2 = label1->name;
     jumpfalse_table->op_type = MCC_IR_TABLE_JUMPFALSE;
     jumpfalse_table->index = head->index;
@@ -341,7 +345,7 @@ static void generate_ir_if(struct mcc_ast_statement *stmt, struct mcc_ir_head *h
     label_table2->index = head->index;
     
     head->current->next_table = label_table2;
-    head->current = label_table2;*/
+    head->current = label_table2;
 }
 
 static void generate_ir_statement(struct mcc_ast_statement *stmt, struct mcc_ir_head *head)
@@ -390,7 +394,7 @@ static void generate_ir_param(struct mcc_ast_parameter *param, struct mcc_ir_hea
     struct mcc_ir_entity *entity = generate_ir_entity(param->parameter->declare_id);
 
     new_table->arg1 = entity;
-    new_table->op_type = MCC_IR_TABLE_PARAM_SETUP;
+    new_table->op_type = MCC_IR_TABLE_POP;
     new_table->index = head->index;
     
     head->current->next_table = new_table;    
