@@ -6,6 +6,10 @@
 #include "stdio.h"
 #include "string.h"
 
+// forward declarations
+static void generate_function_definition(struct mcc_ast_func_definition *func, struct mcc_ir_head *head);
+static void generate_ir_statement(struct mcc_ast_statement *stmt, struct mcc_ir_head *head);
+
 static struct mcc_ir_table *create_new_ir_table(){
     struct mcc_ir_table *table = malloc(sizeof(*table));
     if(!table){
@@ -171,6 +175,22 @@ static void generate_ir_unary_expression(struct mcc_ast_expression *un_expr, str
     head->current = new_table;
 }
 
+static void generate_ir_function_call(struct mcc_ast_expression *expr_call, struct mcc_ir_head *head, enum ir_table_operation_type type)
+{
+    assert(expr_call);
+    assert(head);
+
+    struct mcc_ast_func_list *list = head->program->function_list;
+    // search for main function
+    while (list != NULL) {
+        if (strcmp(list->function->func_identifier->identifier->name, expr_call->identifier->name) == 0){
+            generate_function_definition(list->function, head);
+            break;
+        }
+        list = list->next_function;
+    }
+}
+
 static void generate_ir_expression(struct mcc_ast_expression *expr, struct mcc_ir_head *head, enum ir_table_operation_type type)
 {
     assert(expr);
@@ -190,6 +210,9 @@ static void generate_ir_expression(struct mcc_ast_expression *expr, struct mcc_i
     case MCC_AST_EXPRESSION_TYPE_IDENTIFIER:
         generate_ir_identifier(expr->identifier, head, type);
         break;
+    case MCC_AST_EXPRESSION_TYPE_FUNCTION_CALL:
+        generate_ir_function_call(expr->function_call_identifier, head, MCC_IR_TABLE_CALL);
+        break;
     default:
         printf("todo\n");
         break;
@@ -205,7 +228,7 @@ static void generate_ir_assignment(struct mcc_ast_declare_assign *assign, struct
     struct mcc_ir_table *new_table = create_new_ir_table();
 
     struct mcc_ir_entity *entity1 = generate_ir_entity(assign->assign_lhs);
-    struct mcc_ir_entity *entity2 = generate_ir_entity(assign->assign_rhs);
+    struct mcc_ir_entity *entity2 = generate_ir_entity(assign->assign_rhs); // TODO what if rhs is an expression?
 
     new_table->arg1 = entity1;
     new_table->arg2 = entity2;
@@ -223,8 +246,6 @@ static void generate_ir_return(struct mcc_ast_expression *expr, struct mcc_ir_he
 
     generate_ir_expression(expr, head, MCC_IR_TABLE_JUMP);
 }
-
-static void generate_ir_statement(struct mcc_ast_statement *stmt, struct mcc_ir_head *head);
 
 static void generate_ir_if(struct mcc_ast_statement *stmt, struct mcc_ir_head *head)
 {
@@ -408,6 +429,7 @@ struct mcc_ir_table *mcc_create_ir(struct mcc_ast_program *program)
     head->current = table;
     head->index = 0;
     head->labelIndex = 1;
+    head->program = program;
 
 	switch (program->type) {
 	case MCC_AST_PROGRAM_TYPE_FUNCTION:
@@ -420,6 +442,7 @@ struct mcc_ir_table *mcc_create_ir(struct mcc_ast_program *program)
 		while (list != NULL) {
             if (strcmp(list->function->func_identifier->identifier->name, "main") == 0){
                 generate_function_definition(list->function, head);
+                break;
             }
 			list = list->next_function;
 		}

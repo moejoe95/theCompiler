@@ -12,6 +12,7 @@ enum ir_table_operation_type {
     MCC_IR_TABLE_LABEL,
     MCC_IR_TABLE_COPY,
     MCC_IR_TABLE_PARAM_SETUP,
+    MCC_IR_TABLE_CALL,
 };
 
 struct mcc_ir_table{
@@ -46,6 +47,9 @@ struct mcc_ir_entity{
 struct mcc_ir_head{
     struct mcc_ir_table *root;
     struct mcc_ir_table *current;
+
+    struct mcc_ast_program *program;
+
     int labelIndex;
     int index;
 };
