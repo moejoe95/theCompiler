@@ -13,6 +13,8 @@ enum ir_table_operation_type {
     MCC_IR_TABLE_COPY,
     MCC_IR_TABLE_PARAM_SETUP,
     MCC_IR_TABLE_CALL,
+    MCC_IR_TABLE_POP,
+    MCC_IR_TABLE_PUSH,
 };
 
 struct mcc_ir_table{

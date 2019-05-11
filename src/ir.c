@@ -244,7 +244,22 @@ static void generate_ir_return(struct mcc_ast_expression *expr, struct mcc_ir_he
     assert(expr);
     assert(head);
 
-    generate_ir_expression(expr, head, MCC_IR_TABLE_JUMP);
+    //TODO push variable to return on stack
+
+    head->index++;
+    struct mcc_ir_table *new_table = create_new_ir_table();
+
+    struct mcc_ir_entity *entity = create_new_ir_entity();
+    char value[12] = {0};
+    sprintf(value, "(%d)", head->index + 1);
+    entity->lit = strdup(value);
+
+    new_table->arg1 = entity;
+    new_table->op_type = MCC_IR_TABLE_JUMP;
+    new_table->index = head->index;
+    
+    head->current->next_table = new_table;    
+    head->current = new_table;
 }
 
 static void generate_ir_if(struct mcc_ast_statement *stmt, struct mcc_ir_head *head)
