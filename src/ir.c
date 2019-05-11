@@ -416,8 +416,11 @@ struct mcc_ir_table *mcc_create_ir(struct mcc_ast_program *program)
 
 	case MCC_AST_PROGRAM_TYPE_FUNCTION_LIST: {
 		struct mcc_ast_func_list *list = program->function_list;
+        // search for main function
 		while (list != NULL) {
-            generate_function_definition(list->function, head);
+            if (strcmp(list->function->func_identifier->identifier->name, "main") == 0){
+                generate_function_definition(list->function, head);
+            }
 			list = list->next_function;
 		}
 	} break;
