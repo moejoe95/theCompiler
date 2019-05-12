@@ -283,15 +283,17 @@ static void generate_ir_if(struct mcc_ast_statement *stmt, struct mcc_ir_head *h
     head->current = jump_table;
 
     // set jump false
-    sprintf(value, "(%d)", head->current->index); //TODO does not update struct value
+    sprintf(value, "(%d)", head->current->index+1); //TODO does not update struct value
     jump_false_loc = strdup(value);
+    jumpfalse_table->arg2 = jump_false_loc;
 
     // else body
     generate_ir_statement(stmt->else_stat, head);
 
      // set jump loc
-    sprintf(value, "(%d)", head->current->index); //TODO does not update struct value
+    sprintf(value, "(%d)", head->current->index+1); //TODO does not update struct value
     jump_loc = strdup(value);
+    jump_table->arg1 = jump_loc;
 }
 
 static void generate_ir_statement(struct mcc_ast_statement *stmt, struct mcc_ir_head *head)
