@@ -9,8 +9,7 @@ void print_table_legend(FILE *out){
 void print_line(struct mcc_ir_table *table, FILE *out){
 
     if(!table->arg2){
-        struct mcc_ir_entity *entity2 = create_new_ir_entity();
-        sprintf(entity2->lit,"-");
+        char *entity2 = "-";
         table->arg2 = entity2;
     }
 
@@ -60,7 +59,7 @@ void print_line(struct mcc_ir_table *table, FILE *out){
     }
 
 
-    fprintf(out, "%d\t|\t%s\t|\t%s\t|\t%s\n", table->index, operation, table->arg1->lit, table->arg2->lit);
+    fprintf(out, "%d\t|\t%s\t|\t%s\t|\t%s\n", table->index, operation, table->arg1, table->arg2);
 }
 
 void mcc_print_ir_table(struct mcc_ir_table *table, FILE *out)

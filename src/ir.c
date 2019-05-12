@@ -18,21 +18,6 @@ static struct mcc_ir_table *create_new_ir_table(){
     return table;
 }
 
-struct mcc_ir_entity *create_new_ir_entity(){
-    struct mcc_ir_entity *entity = malloc(sizeof(*entity));
-    if(!entity){
-        return NULL;
-    }
-    return entity;
-}
-
-struct mcc_ir_entity *create_new_ir_label(){
-    struct mcc_ir_label *label = malloc(sizeof(*label));
-    if(!label){
-        return NULL;
-    }
-    return label;
-}
 
 static char *lookup_table_args(struct mcc_ir_head *head, char *arg1, char *arg2)
 {
@@ -42,9 +27,9 @@ static char *lookup_table_args(struct mcc_ir_head *head, char *arg1, char *arg2)
     while(table != NULL){
         int arg2eq = 1;
         if (arg2 != NULL){
-            arg2eq = strcmp(arg2, table->arg2->lit);
+            arg2eq = strcmp(arg2, table->arg2);
         }
-        if (strcmp(arg1, table->arg1->lit) == 0 && arg2eq){
+        if (strcmp(arg1, table->arg1) == 0 && arg2eq){
             char value[12] = {0};
             sprintf(value, "(%d)", table->index);
             return strdup(value);
@@ -54,35 +39,27 @@ static char *lookup_table_args(struct mcc_ir_head *head, char *arg1, char *arg2)
     return NULL;
 }
 
-static struct mcc_ir_entity *generate_ir_identifier_entity(struct mcc_ast_identifier *id_expr)
-{
-    assert(id_expr);
-    struct mcc_ir_entity *entity = create_new_ir_entity();
-    entity->lit = strdup(id_expr->name);
-    return entity;
-}
-
-static struct mcc_ir_entity *generate_ir_literal_entity(struct mcc_ast_literal *lit)
+static char *generate_ir_literal_entity(struct mcc_ast_literal *lit)
 {
     assert(lit);
-    struct mcc_ir_entity *entity = create_new_ir_entity();
+    char *entity;
     char value[12] = {0};
     switch (lit->type)
     {
     case MCC_AST_LITERAL_TYPE_BOOL:
         sprintf(value, "%d", lit->b_value);
-        entity->lit = strdup(value);
+        entity = strdup(value);
         break;
     case MCC_AST_LITERAL_TYPE_INT:
         sprintf(value, "%ld", lit->i_value);
-        entity->lit = strdup(value);
+        entity = strdup(value);
         break;
     case MCC_AST_LITERAL_TYPE_FLOAT:
         sprintf(value, "%f", lit->f_value);
-        entity->lit = value;    
+        entity = strdup(value);
         break;
     case MCC_AST_LITERAL_TYPE_STRING:
-        entity->lit = strdup(lit->str_value);
+        entity = strdup(lit->str_value);
         break;
     }
     
@@ -93,7 +70,7 @@ static void generate_ir_identifier(struct mcc_ast_identifier *id, struct mcc_ir_
 {
     head->index++;
     struct mcc_ir_table *new_table = create_new_ir_table();
-    struct mcc_ir_entity *entity = generate_ir_identifier_entity(id);
+    char *entity = strdup(id->name);
     new_table->arg1 = entity;
     new_table->arg2 = NULL;
     new_table->op_type = type;
@@ -107,7 +84,7 @@ static void generate_ir_literal(struct mcc_ast_literal *lit, struct mcc_ir_head 
 {
     head->index++;
     struct mcc_ir_table *new_table = create_new_ir_table();
-    struct mcc_ir_entity *entity = generate_ir_literal_entity(lit);
+    char *entity = generate_ir_literal_entity(lit);
     new_table->arg1 = entity;
     new_table->arg2 = NULL;
     new_table->op_type = type;
@@ -117,15 +94,15 @@ static void generate_ir_literal(struct mcc_ast_literal *lit, struct mcc_ir_head 
     head->current = new_table;
 }
 
-static struct mcc_ir_entity *generate_ir_entity(struct mcc_ast_expression *expr){
-    struct mcc_ir_entity *entity = NULL;
+static char *generate_ir_entity(struct mcc_ast_expression *expr){
+    char *entity;
     switch (expr->type)
     {
     case MCC_AST_EXPRESSION_TYPE_LITERAL:
         entity = generate_ir_literal_entity(expr->literal);
         break;
     case MCC_AST_EXPRESSION_TYPE_IDENTIFIER:
-        entity = generate_ir_identifier_entity(expr->identifier);
+        entity = strdup(expr->identifier->name);
         break;
     default:
         break;
@@ -141,8 +118,8 @@ static void generate_ir_binary_expression(struct mcc_ast_expression *bin_expr, s
     head->index++;
     struct mcc_ir_table *new_table = create_new_ir_table();
 
-    struct mcc_ir_entity *entity1 = generate_ir_entity(bin_expr->lhs);
-    struct mcc_ir_entity *entity2 = generate_ir_entity(bin_expr->rhs);
+    char *entity1 = generate_ir_entity(bin_expr->lhs);
+    char *entity2 = generate_ir_entity(bin_expr->rhs);
 
     new_table->arg1 = entity1;
     new_table->arg2 = entity2;
@@ -163,7 +140,7 @@ static void generate_ir_unary_expression(struct mcc_ast_expression *un_expr, str
     head->index++;
     struct mcc_ir_table *new_table = create_new_ir_table();
 
-    struct mcc_ir_entity *entity1 = generate_ir_entity(un_expr->rhs);
+    char *entity1 = generate_ir_entity(un_expr->rhs);
 
     new_table->arg1 = entity1;
     new_table->arg2 = NULL;
@@ -227,8 +204,8 @@ static void generate_ir_assignment(struct mcc_ast_declare_assign *assign, struct
     head->index++;
     struct mcc_ir_table *new_table = create_new_ir_table();
 
-    struct mcc_ir_entity *entity1 = generate_ir_entity(assign->assign_lhs);
-    struct mcc_ir_entity *entity2 = generate_ir_entity(assign->assign_rhs); // TODO what if rhs is an expression?
+    char *entity1 = generate_ir_entity(assign->assign_lhs);
+    char *entity2 = generate_ir_entity(assign->assign_rhs); // TODO what if rhs is an expression?
 
     new_table->arg1 = entity1;
     new_table->arg2 = entity2;
@@ -249,10 +226,10 @@ static void generate_ir_return(struct mcc_ast_expression *expr, struct mcc_ir_he
     head->index++;
     struct mcc_ir_table *new_table = create_new_ir_table();
 
-    struct mcc_ir_entity *entity = create_new_ir_entity();
+    char *entity;
     char value[12] = {0};
     sprintf(value, "(%d)", head->index + 1);
-    entity->lit = strdup(value);
+    entity = strdup(value);
 
     new_table->arg1 = entity;
     new_table->op_type = MCC_IR_TABLE_JUMP;
@@ -269,39 +246,22 @@ static void generate_ir_if(struct mcc_ast_statement *stmt, struct mcc_ir_head *h
 
     char value[12] = {0};
 
-    struct mcc_ir_label *label1 = create_new_ir_label();
-    struct mcc_ir_entity *entity1_lhs = create_new_ir_entity();
-    struct mcc_ir_entity *entity1_rhs = create_new_ir_entity();
+    char *jump_loc;
+    char *jump_false_loc;
 
-    sprintf(value, "L%d", head->labelIndex);
-    entity1_lhs->lit = strdup(value);
-    entity1_rhs->lit = strdup(value);
-    label1->name = entity1_lhs;
-    label1->entity = entity1_rhs;
-    head->labelIndex++;
-
-    struct mcc_ir_label *label2 = create_new_ir_label();
-    sprintf(value, "L%d", head->labelIndex);
-    struct mcc_ir_entity *entity2_lhs = create_new_ir_entity();
-    struct mcc_ir_entity *entity2_rhs = create_new_ir_entity();
-    entity2_lhs->lit = strdup(value);
-    entity2_rhs->lit = strdup(value);
-    label2->name = entity2_lhs;
-    label2->entity = entity2_rhs;
-    head->labelIndex++;
 
     // if condition
     generate_ir_expression(stmt->if_cond, head, -1);
 
     struct mcc_ir_table *jumpfalse_table = create_new_ir_table();
-    struct mcc_ir_entity *entity1 = create_new_ir_entity();
+    char *entity1;
 
     sprintf(value, "(%d)", head->current->index);
-    entity1->lit = strdup(value);
+    entity1 = strdup(value);
 
     head->index++;
     jumpfalse_table->arg1 = entity1;
-    jumpfalse_table->arg2 = label1->name;
+    jumpfalse_table->arg2 = jump_false_loc;
     jumpfalse_table->op_type = MCC_IR_TABLE_JUMPFALSE;
     jumpfalse_table->index = head->index;
     
@@ -314,7 +274,7 @@ static void generate_ir_if(struct mcc_ast_statement *stmt, struct mcc_ir_head *h
     // generate jump table
     struct mcc_ir_table *jump_table = create_new_ir_table();
     head->index++;
-    jump_table->arg1 = label1->entity;
+    jump_table->arg1 = jump_loc;
     jump_table->arg2 = NULL;
     jump_table->op_type = MCC_IR_TABLE_JUMP;
     jump_table->index = head->index;
@@ -322,30 +282,16 @@ static void generate_ir_if(struct mcc_ast_statement *stmt, struct mcc_ir_head *h
     head->current->next_table = jump_table;    
     head->current = jump_table;
 
-    // set label 1
-    struct mcc_ir_table *label_table1 = create_new_ir_table();
-    head->index++;
-    label_table1->arg1 = label1->name;
-    label_table1->arg2 = NULL;
-    label_table1->op_type = MCC_IR_TABLE_LABEL;
-    label_table1->index = head->index;
-    
-    head->current->next_table = label_table1;
-    head->current = label_table1;
+    // set jump false
+    sprintf(value, "(%d)", head->current->index); //TODO does not update struct value
+    jump_false_loc = strdup(value);
 
     // else body
     generate_ir_statement(stmt->else_stat, head);
 
-    // set label 2
-    struct mcc_ir_table *label_table2 = create_new_ir_table();
-    head->index++;
-    label_table2->arg1 = label2->name;
-    label_table2->arg2 = NULL;
-    label_table2->op_type = MCC_IR_TABLE_LABEL;
-    label_table2->index = head->index;
-    
-    head->current->next_table = label_table2;
-    head->current = label_table2;
+     // set jump loc
+    sprintf(value, "(%d)", head->current->index); //TODO does not update struct value
+    jump_loc = strdup(value);
 }
 
 static void generate_ir_statement(struct mcc_ast_statement *stmt, struct mcc_ir_head *head)
@@ -391,7 +337,7 @@ static void generate_ir_param(struct mcc_ast_parameter *param, struct mcc_ir_hea
 
     head->index++;
     struct mcc_ir_table *new_table = create_new_ir_table();
-    struct mcc_ir_entity *entity = generate_ir_entity(param->parameter->declare_id);
+    char *entity = generate_ir_entity(param->parameter->declare_id);
 
     new_table->arg1 = entity;
     new_table->op_type = MCC_IR_TABLE_POP;
@@ -409,7 +355,7 @@ static void generate_function_definition(struct mcc_ast_func_definition *func, s
     // func identifier
     head->index++;
     struct mcc_ir_table *new_table = create_new_ir_table();
-    struct mcc_ir_entity *id_entity = generate_ir_entity(func->func_identifier);
+    char *id_entity = generate_ir_entity(func->func_identifier);
 
     new_table->arg1 = id_entity;
     new_table->arg2 = NULL;

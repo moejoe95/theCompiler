@@ -25,8 +25,8 @@ struct mcc_ir_table{
     };
     
 
-    struct mcc_ir_entity *arg1;
-    struct mcc_ir_entity *arg2;
+    char *arg1;
+    char *arg2;
 
     int index; 
 
@@ -35,15 +35,6 @@ struct mcc_ir_table{
     struct mcc_ir_table *next_table;    
 };
 
-struct mcc_ir_label{
-    struct mcc_ir_entity *name;
-
-    struct mcc_ir_entity *entity;
-};
-
-struct mcc_ir_entity{  
-    char *lit;
-};
 
 struct mcc_ir_head{
     struct mcc_ir_table *root;
@@ -58,6 +49,5 @@ struct mcc_ir_head{
 struct mcc_ast_visitor generate_ir_visitor(struct mcc_ir_head *head);
 struct mcc_ir_table *mcc_create_ir(struct mcc_ast_program *program);
 
-struct mcc_ir_entity *create_new_ir_entity();
 
 #endif
