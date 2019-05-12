@@ -44,15 +44,7 @@ Taken from the [Meson Documentation](https://mesonbuild.com/Unit-tests.html#cove
 > These targets are `coverage-xml` and `coverage-text` which are both provided by Gcovr and `coverage-html`, which requires Lcov and GenHTML or Gcovr with html support.
 
 ## Known Issues
-* units tests not passing
-    * parser only accepts inputs that are valid mC code (only functions as top level)
-* parser leaks memory on any input
-    * strdup function in scanner.l leaks memory
-    * memory leak in delete_func_list
-* mc_symbol_table leaks memory on valid inputs
-* mc_type_check_trace leak memory on valid inputs
-* unix line endings (as in specification) might not be given
-
+currenly none
 
 ## Milestone 1 Parser
 
