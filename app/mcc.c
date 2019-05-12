@@ -114,6 +114,7 @@ int main(int argc, char *argv[])
 
 			if (result.status != MCC_PARSER_STATUS_OK) {
 				fprintf(stdout, "...parsing failed...\n");
+				fclose(in);
 				return EXIT_FAILURE;
 			}
 			pro = result.program;

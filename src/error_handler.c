@@ -165,6 +165,13 @@ void print_semantic_error(struct mcc_semantic_error *semantic_error, FILE *out)
 		        get_type_string(semantic_error->arg_type));
 		break;
 	}
+
+	delete_mcc_semantic_error_struct(semantic_error);
+}
+
+void delete_mcc_semantic_error_struct(struct mcc_semantic_error *error)
+{
+	free(error);
 }
 
 struct mcc_semantic_error *get_mcc_semantic_error_struct(enum semantic_error_type error_type)

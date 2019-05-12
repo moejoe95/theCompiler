@@ -27,6 +27,7 @@ static void check_expression_array(struct mcc_ast_expression *expr, void *data)
 	if (type_checking->tracing) {
 		mcc_print_type_log_decl(type_checking->out, log, "array access");
 	}
+	mcc_delete_log_struct(log);
 }
 
 static void check_assignment(struct mcc_ast_declare_assign *declare_assign, void *data)
@@ -70,6 +71,7 @@ static void check_assignment(struct mcc_ast_declare_assign *declare_assign, void
 		}
 		mcc_print_type_log_assign(type_checking->out, log, label);
 	}
+	mcc_delete_log_struct(log);
 }
 
 static void check_declaration(struct mcc_ast_declare_assign *declare_assign, void *data)
@@ -90,6 +92,7 @@ static void check_declaration(struct mcc_ast_declare_assign *declare_assign, voi
 		char label[64] = {0};
 		snprintf(label, sizeof(label), "declare %s%s", declare_assign->declare_id->identifier->name, array_len);
 		mcc_print_type_log_decl(type_checking->out, log, label);
+		mcc_delete_log_struct(log);
 	}
 }
 
@@ -124,24 +127,24 @@ static void check_function_return(struct mcc_ast_statement *ret_stmt, void *data
 	}
 	enum mcc_ast_type func_type = type_check->current_function->func_type;
 
-	struct mcc_semantic_error *error = get_mcc_semantic_error_struct(MCC_SC_ERROR_INVALID_RETURN_TYPE);
-	error->sloc = &ret_stmt->node.sloc;
-	error->ret_type = ret_type;
-	error->func_type = func_type;
-
 	struct mcc_type_log *log = get_mcc_type_log_struct(MCC_TYPE_VALID);
 
 	if (ret_type != func_type) {
+		struct mcc_semantic_error *error = get_mcc_semantic_error_struct(MCC_SC_ERROR_INVALID_RETURN_TYPE);
+		error->sloc = &ret_stmt->node.sloc;
+		error->ret_type = ret_type;
+		error->func_type = func_type;
 		print_semantic_error(error, type_check->out);
 		log->status = MCC_TYPE_INVALID;
 	}
 
 	if (type_check->tracing) {
-		log->sloc = error->sloc;
+		log->sloc = &ret_stmt->node.sloc;
 		log->lhs_type = func_type;
 		log->rhs_type = ret_type;
 		mcc_print_type_log_return(type_check->out, log, "return");
 	}
+	mcc_delete_log_struct(log);
 }
 
 static void check_expression_call(struct mcc_ast_expression *expr, void *data)
@@ -366,6 +369,7 @@ static void check_arithmetic_ops(struct mcc_ast_expression *bin_expr, void *data
 			mcc_print_type_log_u_op(type_check->out, log, "un op");
 		}
 	}
+	mcc_delete_log_struct(log);
 }
 
 static void check_logical_ops(struct mcc_ast_expression *bin_expr, void *data)
@@ -394,6 +398,7 @@ static void check_logical_ops(struct mcc_ast_expression *bin_expr, void *data)
 			mcc_print_type_log_u_op(type_check->out, log, "u op");
 		}
 	}
+	mcc_delete_log_struct(log);
 }
 
 static void check_expression_binary(struct mcc_ast_expression *bin_expr, void *data)
@@ -410,23 +415,23 @@ static void check_expression_binary(struct mcc_ast_expression *bin_expr, void *d
 	if (bin_expr->rhs->type == MCC_AST_EXPRESSION_TYPE_ARRAY_ACCESS)
 		rhs_type = bin_expr->rhs->array_access_id->expression_type;
 
-	struct mcc_semantic_error *error = get_mcc_semantic_error_struct(MCC_SC_ERROR_INVALID_BIN_OPERATION);
-	error->sloc = &bin_expr->node.sloc;
-	error->bin_expr = bin_expr;
-
 	struct mcc_type_log *log = get_mcc_type_log_struct(MCC_TYPE_VALID);
 
 	if (lhs_type != rhs_type || lhs_type == MCC_AST_TYPE_ARRAY) {
+		struct mcc_semantic_error *error = get_mcc_semantic_error_struct(MCC_SC_ERROR_INVALID_BIN_OPERATION);
+		error->sloc = &bin_expr->node.sloc;
+		error->bin_expr = bin_expr;
 		print_semantic_error(error, type_check->out);
 		log->status = MCC_TYPE_INVALID;
 	}
 
 	if (type_check->tracing) {
-		log->sloc = error->sloc;
+		log->sloc = &bin_expr->node.sloc;
 		log->lhs_type = lhs_type;
 		log->rhs_type = rhs_type;
 		mcc_print_type_log_bin(type_check->out, log, "bin op");
 	}
+	mcc_delete_log_struct(log);
 
 	switch (bin_expr->op) {
 	case MCC_AST_BINARY_OP_ADD:
@@ -548,4 +553,9 @@ void mcc_check_types(struct mcc_ast_program *program, struct mcc_symbol_table *s
 	}
 	}
 	free(type_checking);
+}
+
+void mcc_delete_log_struct(struct mcc_type_log *log)
+{
+	free(log);
 }
