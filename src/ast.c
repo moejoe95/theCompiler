@@ -264,7 +264,6 @@ struct mcc_ast_expression *mcc_ast_new_expression_array_access(struct mcc_ast_ex
 
 void mcc_ast_delete_expression(struct mcc_ast_expression *expression)
 {
-	printf("delete expression\n");
 	assert(expression);
 
 	switch (expression->type) {
@@ -319,6 +318,7 @@ void mcc_ast_delete_function_arguments(struct mcc_ast_function_arguments *argume
 void mcc_ast_delete_identifier(struct mcc_ast_identifier *id)
 {
 	assert(id);
+	free(id->name);
 	free(id);
 }
 
@@ -688,7 +688,6 @@ struct mcc_ast_program *mcc_ast_new_empty_program(char *filename)
 
 void mcc_ast_delete_program(struct mcc_ast_program *program)
 {
-	printf("delete program\n");
 	assert(program);
 
 	switch (program->type) {
