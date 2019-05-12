@@ -63,7 +63,7 @@ static void check_assignment(struct mcc_ast_declare_assign *declare_assign, void
 		log->rhs_type = rhs->expression_type;
 		char label[64] = {0};
 		if (lhs->type == MCC_AST_EXPRESSION_TYPE_ARRAY_ACCESS) {
-			check_expression_int(lhs, type_checking);
+			check_expression_array(lhs, type_checking);
 			snprintf(label, sizeof(label), "assign %s[]", lhs->expression->identifier->name);
 		} else {
 			snprintf(label, sizeof(label), "assign %s", declare_assign->assign_lhs->identifier->name);
@@ -506,7 +506,7 @@ static struct mcc_ast_visitor type_checking_visitor(void *data)
 	                                .expression_literal = check_expression_literal,
 	                                .expression_binary_op = check_expression_binary,
 	                                .expression_unary_op = check_expression_unary,
-	                                .expression_array_access = check_expression_int,
+	                                .expression_array_access = check_expression_array,
 	                                .statement_return = check_function_return,
 	                                .statement_if = check_statement_if,
 	                                .statement_while = check_statement_while};
