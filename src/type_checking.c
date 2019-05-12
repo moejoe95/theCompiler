@@ -3,11 +3,12 @@
 #include "mcc/symbol_table.h"
 #include <stdlib.h>
 
-static void check_expression_int(struct mcc_ast_expression *expr, struct mcc_type_checking *type_checking)
+static void check_expression_array(struct mcc_ast_expression *expr, void *data)
 {
 	assert(expr);
-	assert(type_checking);
+	assert(data);
 
+	struct mcc_type_checking *type_checking = data;
 	struct mcc_ast_expression *array_access_expr = expr->array_access_exp;
 
 	struct mcc_type_log *log = get_mcc_type_log_struct(MCC_TYPE_VALID);

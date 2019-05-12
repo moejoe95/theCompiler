@@ -337,7 +337,7 @@ static void symbol_table_function_def(struct mcc_ast_func_definition *function, 
 		}
 	}
 
-	struct mcc_ast_symbol_declaration *previous_declaration = lookup_symbol_in_scope(tmp->symbol_table, func_id);
+	struct mcc_symbol *previous_declaration = lookup_symbol_in_scope(tmp->symbol_table, func_id);
 	if (previous_declaration != NULL) {
 		tmp->error_found = true;
 		struct mcc_semantic_error *error =
@@ -541,7 +541,7 @@ static void symbol_table_expression(struct mcc_ast_expression *expr, void *data)
 	}
 }
 
-static void symbol_table_statement_expression(struct mcc_ast_expression *expr, void *data)
+static void symbol_table_statement_expression(struct mcc_ast_statement *expr, void *data)
 {
 	assert(expr);
 	assert(data);
