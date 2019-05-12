@@ -38,15 +38,21 @@ static void check_assignment(struct mcc_ast_declare_assign *declare_assign, void
 	struct mcc_ast_expression *lhs = declare_assign->assign_lhs;
 	struct mcc_ast_expression *rhs = declare_assign->assign_rhs;
 
-	struct mcc_semantic_error *error = get_mcc_semantic_error_struct(MCC_SC_ERROR_INVALID_ASSIGNMENT);
-	error->sloc = &declare_assign->node.sloc;
-	error->lhs_type = lhs->expression_type;
-	error->rhs_type = rhs->expression_type;
-
 	struct mcc_type_log *log = get_mcc_type_log_struct(MCC_TYPE_VALID);
-	log->sloc = error->sloc;
+	log->sloc = &declare_assign->node.sloc;
 
 	if (lhs->expression_type != rhs->expression_type) {
+		struct mcc_semantic_error *error = get_mcc_semantic_error_struct(MCC_SC_ERROR_INVALID_ASSIGNMENT);
+		error->sloc = &declare_assign->node.sloc;
+		error->lhs_type = lhs->expression_type;
+		error->rhs_type = rhs->expression_type;
+		print_semantic_error(error, type_checking->out);
+		log->status = MCC_TYPE_INVALID;
+	}
+
+	if (lhs->expression_type == MCC_AST_TYPE_ARRAY) {
+		struct mcc_semantic_error *error = get_mcc_semantic_error_struct(MCC_SC_ERROR_INVALID_ASSIGNMENT_ARR);
+		error->sloc = &declare_assign->node.sloc;
 		print_semantic_error(error, type_checking->out);
 		log->status = MCC_TYPE_INVALID;
 	}

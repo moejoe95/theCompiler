@@ -564,13 +564,6 @@ static void symbol_table_assignment(struct mcc_ast_declare_assign *assignment, v
 
 	struct mcc_symbol *previous_declaration = check_identifier(&assignment->node.sloc, temp, id, false);
 	if (previous_declaration != NULL) {
-		if (assignment->assign_lhs->array_access_exp == NULL) {
-			temp->error_found = true;
-			struct mcc_semantic_error *error = get_mcc_semantic_error_struct(MCC_SC_ERROR_INVALID_ARR_OP);
-			error->sloc = &assignment->node.sloc;
-			print_semantic_error(error, temp->out);
-			return;
-		}
 		assignment->assign_lhs->expression_type = previous_declaration->type;
 	}
 
