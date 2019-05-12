@@ -765,6 +765,8 @@ char *get_type_string(enum mcc_ast_type type)
 		return "STRING";
 	case MCC_AST_TYPE_VOID:
 		return "VOID";
+	case MCC_AST_TYPE_ARRAY:
+		return "ARRAY";
 	}
 
 	return "";

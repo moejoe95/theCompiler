@@ -409,7 +409,7 @@ static void check_expression_binary(struct mcc_ast_expression *bin_expr, void *d
 
 	struct mcc_type_log *log = get_mcc_type_log_struct(MCC_TYPE_VALID);
 
-	if (lhs_type != rhs_type) {
+	if (lhs_type != rhs_type || lhs_type == MCC_AST_TYPE_ARRAY) {
 		print_semantic_error(error, type_check->out);
 		log->status = MCC_TYPE_INVALID;
 	}
