@@ -13,6 +13,7 @@ static struct argument_type_list *create_argument_type_list()
 	if (!argument_type_list) {
 		return NULL;
 	}
+	argument_type_list->next_type = NULL;
 	return argument_type_list;
 }
 
@@ -106,40 +107,66 @@ void insert_built_in_symbol(struct temp_create_symbol_table *temp_st,
                             enum mcc_ast_type return_type,
                             enum mcc_ast_type parameter_type)
 {
-	struct mcc_ast_identifier *id = malloc(sizeof(*id));
+	struct mcc_ast_identifier *id = create_ast_identifier(0, 0, 0, 0, NULL, identifier);
 
-	if (!id) {
+	struct mcc_symbol *sym = malloc(sizeof(*sym));
+	if (!sym) {
 		return;
 	}
-	id->node.sloc.start_line = 0;
-	id->node.sloc.start_col = 0;
-	id->node.sloc.end_line = 0;
-	id->node.sloc.end_col = 0;
-	id->node.sloc.filename = NULL;
-	id->name = identifier;
-	struct mcc_symbol *symbol = create_symbol_built_in(return_type, id, NULL, 0, NULL);
+	sym->type = return_type;
+	sym->identifier = id;
+	sym->array_size = 0;
+	sym->numArgs = 0;
+	sym->index = -1;
+	sym->next_symbol = NULL;
+	sym->argument_type_list = NULL;
 
 	if (parameter_type != MCC_AST_TYPE_VOID) {
-		symbol->numArgs = 1;
+		sym->numArgs = 1;
 		struct argument_type_list *argument_type_list = create_argument_type_list();
 		argument_type_list->type = parameter_type;
+		sym->argument_type_list = argument_type_list;
 	}
 
-	add_symbol_to_list(temp_st->symbol_table->symbols, symbol);
+	add_symbol_to_list(temp_st->symbol_table->symbols, sym);
 }
 
-struct mcc_symbol *create_symbol_built_in(enum mcc_ast_type type,
-                                          struct mcc_ast_identifier *identifier,
-                                          long *arr_size,
-                                          int numArgs,
-                                          struct argument_type_list *argument_type_list)
+struct mcc_ast_identifier *
+create_ast_identifier(int start_line, int start_col, int end_line, int end_col, char *filename, char *identifier)
 {
+	struct mcc_ast_identifier *id = malloc(sizeof(*id));
+
+	char *name = strdup(identifier);
+
+	if (!id) {
+		return NULL;
+	}
+	id->node.sloc.start_line = start_line;
+	id->node.sloc.start_col = start_col;
+	id->node.sloc.end_line = end_line;
+	id->node.sloc.end_col = end_col;
+	id->node.sloc.filename = filename;
+	id->name = name;
+
+	return id;
+}
+
+struct mcc_symbol *create_symbol(enum mcc_ast_type type,
+                                 struct mcc_ast_identifier *identifier,
+                                 long *arr_size,
+                                 int numArgs,
+                                 struct argument_type_list *argument_type_list)
+{
+	struct mcc_ast_identifier *id = create_ast_identifier(
+	    identifier->node.sloc.start_line, identifier->node.sloc.start_col, identifier->node.sloc.end_line,
+	    identifier->node.sloc.end_col, NULL, identifier->name);
+
 	struct mcc_symbol *sym = malloc(sizeof(*sym));
 	if (!sym) {
 		return NULL;
 	}
 	sym->type = type;
-	sym->identifier = identifier;
+	sym->identifier = id;
 	sym->array_size = arr_size;
 	sym->numArgs = numArgs;
 	sym->index = -1;
@@ -214,8 +241,8 @@ static void symbol_table_declaration(struct mcc_ast_declare_assign *declaration,
 		return;
 	}
 
-	struct mcc_symbol *symbol = create_symbol_built_in(
-	    declaration->declare_type, declaration->declare_id->identifier, declaration->declare_array_size, 0, NULL);
+	struct mcc_symbol *symbol = create_symbol(declaration->declare_type, declaration->declare_id->identifier,
+	                                          declaration->declare_array_size, 0, NULL);
 
 	add_symbol_to_list(temp->symbol_table->symbols, symbol);
 
@@ -374,30 +401,30 @@ static void symbol_table_function_def(struct mcc_ast_func_definition *function, 
 		} while (param);
 	}
 
-	struct argument_type_list *argument_type_list = create_argument_type_list();
+	struct argument_type_list *arg_type_list_first = create_argument_type_list();
 	int numArgs = 0;
 	if (function->parameter_list) {
 		struct mcc_ast_parameter *param = function->parameter_list;
-		struct argument_type_list *tmp = create_argument_type_list();
-		tmp = argument_type_list;
-		tmp->type = lookup_symbol_in_scope(symbol_table, param->parameter->declare_id->identifier->name)->type;
+		arg_type_list_first->type =
+		    lookup_symbol_in_scope(symbol_table, param->parameter->declare_id->identifier->name)->type;
+		struct argument_type_list *arg_type_list_temp = arg_type_list_first;
 		do {
 			numArgs++;
-			struct argument_type_list *argument_type_list_next = create_argument_type_list();
 			if (param->next_parameter) {
+				struct argument_type_list *argument_type_list_next = create_argument_type_list();
 				argument_type_list_next->type =
 				    lookup_symbol_in_scope(
 				        symbol_table, param->next_parameter->parameter->declare_id->identifier->name)
 				        ->type;
-				tmp->next_type = argument_type_list_next;
-				tmp = argument_type_list_next;
+				arg_type_list_temp->next_type = argument_type_list_next;
+				arg_type_list_temp = argument_type_list_next;
 			}
 			param = param->next_parameter;
 		} while (param);
 	}
 
 	// set_semantic_annotation_function_duplicate(function, 0);
-	insert_symbol_function(outer_symbol_table, function, numArgs, argument_type_list);
+	insert_symbol_function(outer_symbol_table, function, numArgs, arg_type_list_first);
 }
 
 void insert_symbol_function(struct mcc_symbol_table *st,
@@ -406,8 +433,8 @@ void insert_symbol_function(struct mcc_symbol_table *st,
                             struct argument_type_list *argument_type_list)
 {
 	assert(function_def);
-	struct mcc_symbol *sym = create_symbol_built_in(
-	    function_def->func_type, function_def->func_identifier->identifier, NULL, numArgs, argument_type_list);
+	struct mcc_symbol *sym = create_symbol(function_def->func_type, function_def->func_identifier->identifier, NULL,
+	                                       numArgs, argument_type_list);
 
 	// function_def->func_identifier->identifier->sym_declaration = sym;
 
@@ -637,15 +664,45 @@ void mcc_delete_symbol_table(struct mcc_symbol_table *symbol_table)
 	if (symbol_table->sub_tables != NULL && symbol_table->sub_tables->head != NULL) {
 		mcc_delete_symbol_table(symbol_table->sub_tables->head);
 	}
+	mcc_delete_symbol(symbol_table->symbols->head);
 	free(symbol_table->symbols);
+	free(symbol_table->sub_tables);
 	free(symbol_table);
 }
 
-static char *concat(const char *s1, const char *s2)
+void mcc_delete_symbol(struct mcc_symbol *symbol)
+{
+	if (symbol == NULL) {
+		return;
+	}
+
+	if (symbol->next_symbol != NULL) {
+		mcc_delete_symbol(symbol->next_symbol);
+	}
+
+	mcc_delete_argument_typelist(symbol->argument_type_list);
+
+	free(symbol->identifier->name);
+	free(symbol->identifier);
+	free(symbol);
+}
+
+void mcc_delete_argument_typelist(struct argument_type_list *list)
+{
+	if (list == NULL) {
+		return;
+	}
+	mcc_delete_argument_typelist(list->next_type);
+	free(list);
+}
+
+static char *concat(char *s1, char *s2)
 {
 	char *result = malloc(strlen(s1) + strlen(s2) + 1);
 	strcpy(result, s1);
 	strcat(result, s2);
+	free(s1);
+	free(s2);
 	return result;
 }
 
@@ -660,7 +717,7 @@ void mcc_print_symbol_table(FILE *out, struct mcc_symbol_table *symbol_table, in
 	char *indention = "";
 
 	for (int i = 0; i < indent; i++) {
-		indention = concat(indention, "\t");
+		// indention = concat(indention, "\t");
 	}
 
 	fprintf(out, "\n%s[symbol_table ", indention);
@@ -692,6 +749,8 @@ void mcc_print_symbol_table(FILE *out, struct mcc_symbol_table *symbol_table, in
 	if (symbol_table->next != NULL) {
 		mcc_print_symbol_table(out, symbol_table->next, indent);
 	}
+
+	// free(indention);
 }
 
 void add_symbol_to_list(struct mcc_symbol_list *list, struct mcc_symbol *symbol)

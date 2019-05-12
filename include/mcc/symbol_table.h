@@ -83,6 +83,11 @@ void enter_scope(struct temp_create_symbol_table *tmp, struct mcc_symbol_table *
 void exit_scope(struct temp_create_symbol_table *tmp);
 
 void mcc_delete_symbol_table(struct mcc_symbol_table *symbol_table);
+void mcc_delete_symbol(struct mcc_symbol *symbol);
+void mcc_delete_argument_typelist(struct argument_type_list *list);
+
+struct mcc_ast_identifier *
+create_ast_identifier(int start_line, int start_col, int end_line, int end_col, char *filename, char *identifier);
 
 void mcc_print_symbol_table(FILE *out, struct mcc_symbol_table *symbol_table, int indent);
 
