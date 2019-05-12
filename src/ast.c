@@ -129,6 +129,13 @@ struct mcc_ast_literal *mcc_ast_get_new_literal_struct()
 void mcc_ast_delete_literal(struct mcc_ast_literal *literal)
 {
 	assert(literal);
+	switch (literal->type) {
+	case MCC_AST_TYPE_STRING:
+		free(literal->str_value);
+		break;
+	default:
+		break;
+	}
 	free(literal);
 }
 
@@ -257,6 +264,7 @@ struct mcc_ast_expression *mcc_ast_new_expression_array_access(struct mcc_ast_ex
 
 void mcc_ast_delete_expression(struct mcc_ast_expression *expression)
 {
+	printf("delete expression\n");
 	assert(expression);
 
 	switch (expression->type) {
@@ -311,7 +319,6 @@ void mcc_ast_delete_function_arguments(struct mcc_ast_function_arguments *argume
 void mcc_ast_delete_identifier(struct mcc_ast_identifier *id)
 {
 	assert(id);
-
 	free(id);
 }
 
@@ -681,6 +688,7 @@ struct mcc_ast_program *mcc_ast_new_empty_program(char *filename)
 
 void mcc_ast_delete_program(struct mcc_ast_program *program)
 {
+	printf("delete program\n");
 	assert(program);
 
 	switch (program->type) {
@@ -704,6 +712,13 @@ void mcc_ast_delete_program(struct mcc_ast_program *program)
 	}
 
 	free(program);
+}
+
+void mcc_ast_delete_string(char *id)
+{
+	printf("clean string\n");
+	assert(id);
+	free(id);
 }
 
 // ------------------------------------------------------------------- to String

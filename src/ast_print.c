@@ -1,6 +1,7 @@
 #include "mcc/ast_print.h"
 
 #include <assert.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "mcc/ast_visit.h"
@@ -238,6 +239,7 @@ static void print_dot_literal_string(struct mcc_ast_literal *literal, void *data
 	char label[LABEL_SIZE] = {0};
 	char *string_escaped = strndup(literal->str_value + 1, strlen(literal->str_value) - 2);
 	snprintf(label, sizeof(label), "\\\"%s\\\"", string_escaped);
+	free(string_escaped);
 
 	FILE *out = data;
 	print_dot_node(out, literal, label);

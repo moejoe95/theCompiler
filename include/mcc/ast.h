@@ -42,6 +42,8 @@ struct mcc_ast_node {
 	struct mcc_ast_source_location sloc;
 };
 
+void mcc_ast_delete_string(char *id);
+
 // ------------------------------------------------------------------ Operators
 
 enum mcc_ast_binary_op {
