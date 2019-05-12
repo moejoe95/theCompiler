@@ -696,14 +696,18 @@ void mcc_delete_argument_typelist(struct argument_type_list *list)
 	free(list);
 }
 
-static char *concat(char *s1, char *s2)
+char *string_repeat(int n, const char *s)
 {
-	char *result = malloc(strlen(s1) + strlen(s2) + 1);
-	strcpy(result, s1);
-	strcat(result, s2);
-	free(s1);
-	free(s2);
-	return result;
+	size_t slen = strlen(s);
+	char *dest = malloc(n * slen + 1);
+
+	int i;
+	char *p;
+	for (i = 0, p = dest; i < n; ++i, p += slen) {
+		memcpy(p, s, slen);
+	}
+	*p = '\0';
+	return dest;
 }
 
 void mcc_print_symbol_table(FILE *out, struct mcc_symbol_table *symbol_table, int indent)
@@ -714,11 +718,7 @@ void mcc_print_symbol_table(FILE *out, struct mcc_symbol_table *symbol_table, in
 		return;
 	}
 
-	char *indention = "";
-
-	for (int i = 0; i < indent; i++) {
-		// indention = concat(indention, "\t");
-	}
+	char *indention = string_repeat(indent, "\t");
 
 	fprintf(out, "\n%s[symbol_table ", indention);
 	if (symbol_table->sloc != NULL) {
@@ -750,7 +750,7 @@ void mcc_print_symbol_table(FILE *out, struct mcc_symbol_table *symbol_table, in
 		mcc_print_symbol_table(out, symbol_table->next, indent);
 	}
 
-	// free(indention);
+	free(indention);
 }
 
 void add_symbol_to_list(struct mcc_symbol_list *list, struct mcc_symbol *symbol)
