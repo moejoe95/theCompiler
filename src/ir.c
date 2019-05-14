@@ -47,7 +47,10 @@ static char *generate_ir_literal_entity(struct mcc_ast_literal *lit)
     switch (lit->type)
     {
     case MCC_AST_LITERAL_TYPE_BOOL:
-        sprintf(value, "%d", lit->b_value);
+        if(lit->b_value == 1)
+            sprintf(value, "%s", "true");
+        else
+            sprintf(value, "%s", "false");
         entity = strdup(value);
         break;
     case MCC_AST_LITERAL_TYPE_INT:
