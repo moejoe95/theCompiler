@@ -47,7 +47,10 @@ static char *generate_ir_literal_entity(struct mcc_ast_literal *lit)
     switch (lit->type)
     {
     case MCC_AST_LITERAL_TYPE_BOOL:
-        sprintf(value, "%d", lit->b_value);
+        if(lit->b_value == 1)
+            sprintf(value, "%s", "true");
+        else
+            sprintf(value, "%s", "false");
         entity = strdup(value);
         break;
     case MCC_AST_LITERAL_TYPE_INT:
@@ -359,6 +362,59 @@ static void generate_ir_if(struct mcc_ast_statement *stmt, struct mcc_ir_head *h
     jump_table->arg1 = jump_loc;
 }
 
+static void generate_ir_while(struct mcc_ast_statement *stmt, struct mcc_ir_head *head)
+{
+    assert(stmt);
+    assert(head);
+
+    char value[12] = {0};
+
+    char *jump_loc;
+    char *jump_false_loc;
+
+
+    // while condition
+    generate_ir_expression(stmt->while_cond, head, -1);
+
+    struct mcc_ir_table *jumpfalse_table = create_new_ir_table();
+    char *entity1;
+
+    sprintf(value, "(%d)", head->current->index);
+    entity1 = strdup(value);
+
+    head->index++;
+    jumpfalse_table->arg1 = entity1;
+    jumpfalse_table->arg2 = jump_false_loc;
+    jumpfalse_table->op_type = MCC_IR_TABLE_JUMPFALSE;
+    jumpfalse_table->index = head->index;
+    
+    head->current->next_table = jumpfalse_table;    
+    head->current = jumpfalse_table;
+
+    // set jump loc
+    sprintf(value, "(%d)", head->current->index);
+    jump_loc = strdup(value);
+
+    // while body
+    generate_ir_statement(stmt->while_stat, head);
+
+    // generate jump table
+    struct mcc_ir_table *jump_table = create_new_ir_table();
+    head->index++;
+    jump_table->arg1 = jump_loc;
+    jump_table->arg2 = NULL;
+    jump_table->op_type = MCC_IR_TABLE_JUMP;
+    jump_table->index = head->index;
+    
+    head->current->next_table = jump_table;    
+    head->current = jump_table;
+
+    // set jump false
+    sprintf(value, "(%d)", head->current->index+1);
+    jump_false_loc = strdup(value);
+    jumpfalse_table->arg2 = jump_false_loc;
+}
+
 static void generate_ir_statement(struct mcc_ast_statement *stmt, struct mcc_ir_head *head)
 {
     assert(stmt);
@@ -379,6 +435,9 @@ static void generate_ir_statement(struct mcc_ast_statement *stmt, struct mcc_ir_
         break;
     case MCC_AST_STATEMENT_IF:
         generate_ir_if(stmt, head);
+        break;
+    case MCC_AST_STATEMENT_WHILE:
+        generate_ir_while(stmt, head);
         break;
     case MCC_AST_STATEMENT_COMPOUND:
         {
