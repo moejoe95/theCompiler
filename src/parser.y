@@ -55,10 +55,10 @@ char *filename;
 FILE *out;
 
 #define loc(ast_node, ast_sloc) \
-	(ast_node)->node.sloc.start_col = (ast_sloc).first_column; \
-	(ast_node)->node.sloc.start_line = (ast_sloc).first_line; \
-	(ast_node)->node.sloc.end_col = (ast_sloc).last_column; \
-	(ast_node)->node.sloc.end_line = (ast_sloc).last_line; \
+	(ast_node)->node.sloc.start_col = (ast_sloc).first_column + 1; \
+	(ast_node)->node.sloc.start_line = (ast_sloc).first_line + 1; \
+	(ast_node)->node.sloc.end_col = (ast_sloc).last_column + 1; \
+	(ast_node)->node.sloc.end_line = (ast_sloc).last_line + 1; \
 	(ast_node)->node.sloc.filename = filename; \
 
 %}
@@ -152,7 +152,12 @@ FILE *out;
 
 %%
 
-program : func_list { *result = mcc_ast_new_program($1); loc($$, @1);}
+program : expression { *result = mcc_ast_new_program($1, MCC_AST_PROGRAM_TYPE_EXPRESSION); loc($$, @1);}
+ 		| assignment { *result = mcc_ast_new_program($1, MCC_AST_PROGRAM_TYPE_DECLARATION); loc($$, @1);}
+        | declaration { *result = mcc_ast_new_program($1, MCC_AST_PROGRAM_TYPE_DECLARATION); loc($$, @1);}
+        | statement { *result = mcc_ast_new_program($1, MCC_AST_PROGRAM_TYPE_STATEMENT); loc($$, @1);}
+        | END { *result = mcc_ast_new_program(NULL, MCC_AST_PROGRAM_TYPE_EMPTY); loc($$, @1);}
+		| func_list { *result = mcc_ast_new_program($1, MCC_AST_PROGRAM_TYPE_FUNCTION_LIST); loc($$, @1);}
 		;
 
 func_list  : function_def { $$ = mcc_ast_new_function_list($1, NULL); loc($$, @1);}

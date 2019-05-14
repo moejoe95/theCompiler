@@ -25,6 +25,7 @@ struct temp_create_symbol_table {
 
 struct mcc_symbol_table {
 	char *label;
+	struct mcc_ast_source_location *sloc;
 	struct mcc_symbol_list *symbols;
 	struct mcc_symbol_table *parent;
 	struct mcc_symbol_table *next;
@@ -54,6 +55,7 @@ struct mcc_symbol_list {
 	struct mcc_symbol *head;
 };
 
+void add_child_symbol_table(struct mcc_symbol_table *parent, struct mcc_symbol_table *table);
 void add_symbol_to_list(struct mcc_symbol_list *list, struct mcc_symbol *symbol);
 void add_symbol_table_to_list(struct mcc_symbol_table_list *list, struct mcc_symbol_table *table);
 
@@ -82,7 +84,7 @@ void exit_scope(struct temp_create_symbol_table *tmp);
 
 void mcc_delete_symbol_table(struct mcc_symbol_table *symbol_table);
 
-void mcc_print_symbol_table(FILE *out, struct mcc_symbol_table *symbol_table);
+void mcc_print_symbol_table(FILE *out, struct mcc_symbol_table *symbol_table, int indent);
 
 struct mcc_symbol *lookup_symbol_in_scope(struct mcc_symbol_table *symbol_table, char *key);
 struct mcc_symbol *lookup_symbol(struct mcc_symbol_table *symbol_table, char *symbol);

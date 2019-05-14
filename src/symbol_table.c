@@ -16,7 +16,8 @@ static struct argument_type_list *create_argument_type_list()
 	return argument_type_list;
 }
 
-static struct mcc_symbol_table *allocate_symbol_table(struct mcc_symbol_table *symbol_table_parent, char *label)
+static struct mcc_symbol_table *
+allocate_symbol_table(struct mcc_symbol_table *symbol_table_parent, char *label, struct mcc_ast_source_location *sloc)
 {
 	struct mcc_symbol_table *symbol_table = malloc(sizeof(*symbol_table));
 	if (!symbol_table) {
@@ -39,6 +40,7 @@ static struct mcc_symbol_table *allocate_symbol_table(struct mcc_symbol_table *s
 	symbol_table->symbols = symbol_list;
 	symbol_table->next = NULL;
 	symbol_table->sub_tables = NULL;
+	symbol_table->sloc = sloc;
 
 	return symbol_table;
 }
@@ -115,13 +117,12 @@ void insert_built_in_symbol(struct temp_create_symbol_table *temp_st,
 	id->node.sloc.end_col = 0;
 	id->node.sloc.filename = NULL;
 	id->name = identifier;
-	struct mcc_symbol *symbol = create_symbol_built_in(return_type, id, NULL, NULL, NULL);
+	struct mcc_symbol *symbol = create_symbol_built_in(return_type, id, NULL, 0, NULL);
 
 	if (parameter_type != MCC_AST_TYPE_VOID) {
 		symbol->numArgs = 1;
 		struct argument_type_list *argument_type_list = create_argument_type_list();
 		argument_type_list->type = parameter_type;
-		symbol->argument_type_list;
 	}
 
 	add_symbol_to_list(temp_st->symbol_table->symbols, symbol);
@@ -157,7 +158,7 @@ struct mcc_symbol_table *mcc_create_symbol_table(struct mcc_ast_program *program
 	struct temp_create_symbol_table *temp_st = malloc(sizeof(*temp_st));
 	temp_st->create_inner_scope = 1;
 	temp_st->main_found = 0;
-	temp_st->symbol_table = allocate_symbol_table(NULL, "global");
+	temp_st->symbol_table = allocate_symbol_table(NULL, "global", NULL);
 	temp_st->is_returned = 0;
 	temp_st->out = out;
 	temp_st->error_found = false;
@@ -202,9 +203,8 @@ static void symbol_table_declaration(struct mcc_ast_declare_assign *declaration,
 		return;
 	}
 
-	struct mcc_symbol *symbol =
-	    create_symbol_built_in(declaration->declare_type, declaration->declare_id->identifier,
-	                           declaration->declare_array_size, NULL, NULL);
+	struct mcc_symbol *symbol = create_symbol_built_in(
+	    declaration->declare_type, declaration->declare_id->identifier, declaration->declare_array_size, 0, NULL);
 
 	add_symbol_to_list(temp->symbol_table->symbols, symbol);
 
@@ -214,16 +214,14 @@ static void symbol_table_declaration(struct mcc_ast_declare_assign *declaration,
 	// }
 }
 
-static void symbol_table_compound(struct mcc_ast_statement __attribute__((unused)) * statement,
-                                  void *data,
-                                  enum mcc_ast_visit_order order)
+static void symbol_table_compound(struct mcc_ast_statement *statement, void *data, enum mcc_ast_visit_order order)
 {
-	struct mcc_ast_symbol_table *symbol_table;
+	struct mcc_symbol_table *symbol_table;
 	struct temp_create_symbol_table *tmp = data;
 
 	switch (order) {
 	case MCC_AST_VISIT_PRE_ORDER:
-		symbol_table = allocate_symbol_table(tmp->symbol_table, NULL);
+		symbol_table = allocate_symbol_table(tmp->symbol_table, "compound", &statement->node.sloc);
 		add_child_symbol_table(tmp->symbol_table, symbol_table);
 		enter_scope(tmp, symbol_table);
 		break;
@@ -341,7 +339,7 @@ static void symbol_table_function_def(struct mcc_ast_func_definition *function, 
 
 	// check if non-void function returns value
 	check_return(tmp, function);
-	if (!tmp->is_returned) {
+	if (!tmp->is_returned && function->func_type != MCC_AST_TYPE_VOID) {
 		tmp->error_found = true;
 		struct mcc_semantic_error *error = get_mcc_semantic_error_struct(MCC_SC_ERROR_NO_RETURN);
 		error->sloc = &function->node.sloc;
@@ -351,7 +349,7 @@ static void symbol_table_function_def(struct mcc_ast_func_definition *function, 
 	tmp->is_returned = 0;
 
 	struct mcc_symbol_table *outer_symbol_table = tmp->symbol_table;
-	struct mcc_symbol_table *symbol_table = allocate_symbol_table(tmp->symbol_table, func_id);
+	struct mcc_symbol_table *symbol_table = allocate_symbol_table(tmp->symbol_table, func_id, &function->node.sloc);
 	add_child_symbol_table(tmp->symbol_table, symbol_table);
 	enter_scope(tmp, symbol_table);
 
@@ -612,6 +610,10 @@ struct mcc_ast_visitor generate_symbol_table_visitor(struct temp_create_symbol_t
 
 void mcc_delete_symbol_table(struct mcc_symbol_table *symbol_table)
 {
+	if (symbol_table == NULL) {
+		return;
+	}
+
 	if (symbol_table->next != NULL) {
 		mcc_delete_symbol_table(symbol_table->next);
 	}
@@ -623,7 +625,15 @@ void mcc_delete_symbol_table(struct mcc_symbol_table *symbol_table)
 	free(symbol_table);
 }
 
-void mcc_print_symbol_table(FILE *out, struct mcc_symbol_table *symbol_table)
+static char *concat(const char *s1, const char *s2)
+{
+	char *result = malloc(strlen(s1) + strlen(s2) + 1);
+	strcpy(result, s1);
+	strcat(result, s2);
+	return result;
+}
+
+void mcc_print_symbol_table(FILE *out, struct mcc_symbol_table *symbol_table, int indent)
 {
 	assert(out);
 
@@ -631,28 +641,40 @@ void mcc_print_symbol_table(FILE *out, struct mcc_symbol_table *symbol_table)
 		return;
 	}
 
-	fprintf(out, "\n[symbol_table ");
-	fprintf(out, symbol_table->label);
-	fprintf(out, "]\nname\t\t|\ttype\n-----------------------------\n");
+	char *indention = "";
+
+	for (int i = 0; i < indent; i++) {
+		indention = concat(indention, "\t");
+	}
+
+	fprintf(out, "\n%s[symbol_table ", indention);
+	if (symbol_table->sloc != NULL) {
+		fprintf(out, "%s %d:%d", symbol_table->label, symbol_table->sloc->start_line,
+		        symbol_table->sloc->end_col);
+	} else {
+		fprintf(out, "%s", symbol_table->label);
+	}
+
+	fprintf(out, "]\n%sname\t\t|\ttype\n%s-----------------------------\n", indention, indention);
 
 	if (symbol_table->symbols != NULL) {
 		struct mcc_symbol *current_symbol = symbol_table->symbols->head;
 		while (current_symbol != NULL) {
-			fprintf(out, current_symbol->identifier->name);
+			fprintf(out, "%s%s", indention, current_symbol->identifier->name);
 			fprintf(out, "\t\t|\t");
-			fprintf(out, get_type_string(current_symbol->type));
+			fprintf(out, "%s", get_type_string(current_symbol->type));
 			fprintf(out, "\n");
 
 			current_symbol = current_symbol->next_symbol;
 		}
 	}
 
-	if (symbol_table->next != NULL) {
-		mcc_print_symbol_table(out, symbol_table->next);
+	if (symbol_table->sub_tables != NULL && symbol_table->sub_tables->head != NULL) {
+		mcc_print_symbol_table(out, symbol_table->sub_tables->head, indent + 1);
 	}
 
-	if (symbol_table->sub_tables != NULL && symbol_table->sub_tables->head != NULL) {
-		mcc_print_symbol_table(out, symbol_table->sub_tables->head);
+	if (symbol_table->next != NULL) {
+		mcc_print_symbol_table(out, symbol_table->next, indent);
 	}
 }
 

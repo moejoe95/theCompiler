@@ -64,71 +64,14 @@ enum mcc_ast_unary_op {
 	MCC_AST_UNARY_OP_NOT,
 };
 
-static char *get_bin_op_string(enum mcc_ast_binary_op op)
-{
-	switch (op) {
-	case MCC_AST_BINARY_OP_ADD:
-		return "+";
-	case MCC_AST_BINARY_OP_SUB:
-		return "-";
-	case MCC_AST_BINARY_OP_MUL:
-		return "*";
-	case MCC_AST_BINARY_OP_DIV:
-		return "/";
-	case MCC_AST_BINARY_OP_ST:
-		return "<";
-	case MCC_AST_BINARY_OP_GT:
-		return ">";
-	case MCC_AST_BINARY_OP_SE:
-		return "<=";
-	case MCC_AST_BINARY_OP_GE:
-		return ">=";
-	case MCC_AST_BINARY_OP_LAND:
-		return "&&";
-	case MCC_AST_BINARY_OP_LOR:
-		return "||";
-	case MCC_AST_BINARY_OP_EQ:
-		return "==";
-	case MCC_AST_BINARY_OP_NEQ:
-		return "!=";
-	}
-
-	return "";
-}
-
-static char *get_un_op_string(enum mcc_ast_unary_op op)
-{
-	switch (op) {
-	case MCC_AST_UNARY_OP_MINUS:
-		return "-";
-	case MCC_AST_UNARY_OP_NOT:
-		return "!";
-	}
-
-	return "";
-}
+char *get_bin_op_string(enum mcc_ast_binary_op op);
+char *get_un_op_string(enum mcc_ast_unary_op op);
 
 // -------------------------------------------------------------------- Types
 
 enum mcc_ast_type { MCC_AST_TYPE_BOOL, MCC_AST_TYPE_INT, MCC_AST_TYPE_FLOAT, MCC_AST_TYPE_STRING, MCC_AST_TYPE_VOID };
 
-static char *get_type_string(enum mcc_ast_type type)
-{
-	switch (type) {
-	case MCC_AST_TYPE_BOOL:
-		return "BOOL";
-	case MCC_AST_TYPE_INT:
-		return "INT";
-	case MCC_AST_TYPE_FLOAT:
-		return "FLOAT";
-	case MCC_AST_TYPE_STRING:
-		return "STRING";
-	case MCC_AST_TYPE_VOID:
-		return "VOID";
-	}
-
-	return "";
-}
+char *get_type_string(enum mcc_ast_type type);
 
 // ------------------------------------------------------------------- Literals
 
@@ -139,21 +82,7 @@ enum mcc_ast_literal_type {
 	MCC_AST_LITERAL_TYPE_STRING,
 };
 
-static char *get_literal_type_string(enum mcc_ast_literal_type type)
-{
-	switch (type) {
-	case MCC_AST_LITERAL_TYPE_INT:
-		return "INT";
-	case MCC_AST_LITERAL_TYPE_FLOAT:
-		return "FLOAT";
-	case MCC_AST_LITERAL_TYPE_BOOL:
-		return "BOOL";
-	case MCC_AST_LITERAL_TYPE_STRING:
-		return "STRING";
-	}
-
-	return "";
-}
+char *get_literal_type_string(enum mcc_ast_literal_type type);
 
 struct mcc_ast_literal {
 	struct mcc_ast_node node;
@@ -443,9 +372,12 @@ void mcc_ast_delete_func_list(struct mcc_ast_func_list *func_list);
 // ------------------------------------------------------------------- Program
 
 enum mcc_ast_program_type {
+	MCC_AST_PROGRAM_TYPE_EXPRESSION,
 	MCC_AST_PROGRAM_TYPE_FUNCTION,
 	MCC_AST_PROGRAM_TYPE_FUNCTION_LIST,
-
+	MCC_AST_PROGRAM_TYPE_DECLARATION,
+	MCC_AST_PROGRAM_TYPE_EMPTY,
+	MCC_AST_PROGRAM_TYPE_STATEMENT
 };
 
 struct mcc_ast_program {
@@ -460,7 +392,7 @@ struct mcc_ast_program {
 	};
 };
 
-struct mcc_ast_program *mcc_ast_new_program(struct mcc_ast_func_list *func_list);
+struct mcc_ast_program *mcc_ast_new_program(void *program, enum mcc_ast_program_type type);
 
 void mcc_ast_delete_program(struct mcc_ast_program *program);
 

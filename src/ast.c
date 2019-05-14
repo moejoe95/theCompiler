@@ -466,8 +466,11 @@ struct mcc_ast_statement *mcc_ast_new_if_stmt(struct mcc_ast_expression *expr,
 	if_stmt->type = MCC_AST_STATEMENT_IF;
 	if_stmt->if_cond = expr;
 	if_stmt->if_stat = if_body;
-	if (else_body != NULL)
+	if (else_body != NULL) {
 		if_stmt->else_stat = else_body;
+	} else {
+		if_stmt->else_stat = NULL;
+	}
 
 	return if_stmt;
 }
@@ -626,22 +629,37 @@ void mcc_ast_delete_func_list(struct mcc_ast_func_list *func_list)
 
 // ------------------------------------------------------------------- Program
 
-struct mcc_ast_program *mcc_ast_new_program(struct mcc_ast_func_list *func_list)
+struct mcc_ast_program *mcc_ast_new_program(void *program, enum mcc_ast_program_type type)
 {
-	assert(func_list);
+	assert(program);
 
 	struct mcc_ast_program *pro = malloc(sizeof(*pro));
 	if (!pro) {
 		return NULL;
 	}
 
-	if (func_list->next_function != NULL) {
-		pro->type = MCC_AST_PROGRAM_TYPE_FUNCTION_LIST;
-		pro->function_list = func_list;
-	} else {
-		pro->type = MCC_AST_PROGRAM_TYPE_FUNCTION;
-		pro->function = func_list->function;
+	pro->type = type;
+
+	switch (type) {
+	case MCC_AST_PROGRAM_TYPE_EXPRESSION:
+		pro->expression = program;
+		break;
+	case MCC_AST_PROGRAM_TYPE_DECLARATION:
+		pro->declaration = program;
+		break;
+	case MCC_AST_PROGRAM_TYPE_STATEMENT:
+		pro->statement = program;
+		break;
+	case MCC_AST_PROGRAM_TYPE_FUNCTION:
+		pro->function = program;
+		break;
+	case MCC_AST_PROGRAM_TYPE_FUNCTION_LIST:
+		pro->function_list = program;
+		break;
+	case MCC_AST_PROGRAM_TYPE_EMPTY:
+		break;
 	}
+
 	return pro;
 }
 
@@ -653,11 +671,101 @@ void mcc_ast_delete_program(struct mcc_ast_program *program)
 	case MCC_AST_PROGRAM_TYPE_FUNCTION:
 		mcc_ast_delete_func_definition(program->function);
 		break;
-
 	case MCC_AST_PROGRAM_TYPE_FUNCTION_LIST:
 		mcc_ast_delete_func_list(program->function_list);
+		break;
+	case MCC_AST_PROGRAM_TYPE_DECLARATION:
+		mcc_ast_delete_declare_assign(program->declaration);
+		break;
+	case MCC_AST_PROGRAM_TYPE_EXPRESSION:
+		mcc_ast_delete_expression(program->expression);
+		break;
+	case MCC_AST_PROGRAM_TYPE_EMPTY:
+		break;
+	case MCC_AST_PROGRAM_TYPE_STATEMENT:
+		mcc_ast_delete_statement(program->statement);
 		break;
 	}
 
 	free(program);
+}
+
+// ------------------------------------------------------------------- to String
+
+char *get_bin_op_string(enum mcc_ast_binary_op op)
+{
+	switch (op) {
+	case MCC_AST_BINARY_OP_ADD:
+		return "+";
+	case MCC_AST_BINARY_OP_SUB:
+		return "-";
+	case MCC_AST_BINARY_OP_MUL:
+		return "*";
+	case MCC_AST_BINARY_OP_DIV:
+		return "/";
+	case MCC_AST_BINARY_OP_ST:
+		return "<";
+	case MCC_AST_BINARY_OP_GT:
+		return ">";
+	case MCC_AST_BINARY_OP_SE:
+		return "<=";
+	case MCC_AST_BINARY_OP_GE:
+		return ">=";
+	case MCC_AST_BINARY_OP_LAND:
+		return "&&";
+	case MCC_AST_BINARY_OP_LOR:
+		return "||";
+	case MCC_AST_BINARY_OP_EQ:
+		return "==";
+	case MCC_AST_BINARY_OP_NEQ:
+		return "!=";
+	}
+
+	return "";
+}
+
+char *get_un_op_string(enum mcc_ast_unary_op op)
+{
+	switch (op) {
+	case MCC_AST_UNARY_OP_MINUS:
+		return "-";
+	case MCC_AST_UNARY_OP_NOT:
+		return "!";
+	}
+
+	return "";
+}
+
+char *get_type_string(enum mcc_ast_type type)
+{
+	switch (type) {
+	case MCC_AST_TYPE_BOOL:
+		return "BOOL";
+	case MCC_AST_TYPE_INT:
+		return "INT";
+	case MCC_AST_TYPE_FLOAT:
+		return "FLOAT";
+	case MCC_AST_TYPE_STRING:
+		return "STRING";
+	case MCC_AST_TYPE_VOID:
+		return "VOID";
+	}
+
+	return "";
+}
+
+char *get_literal_type_string(enum mcc_ast_literal_type type)
+{
+	switch (type) {
+	case MCC_AST_LITERAL_TYPE_INT:
+		return "INT";
+	case MCC_AST_LITERAL_TYPE_FLOAT:
+		return "FLOAT";
+	case MCC_AST_LITERAL_TYPE_BOOL:
+		return "BOOL";
+	case MCC_AST_LITERAL_TYPE_STRING:
+		return "STRING";
+	}
+
+	return "";
 }

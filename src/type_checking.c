@@ -92,7 +92,7 @@ static void check_function(struct mcc_ast_func_definition *func, void *data)
 	assert(data);
 
 	struct mcc_ast_parameter *parameter_list = func->parameter_list;
-	while (parameter_list != NULL){
+	while (parameter_list != NULL) {
 		check_declaration(parameter_list->parameter, data);
 		parameter_list = parameter_list->next_parameter;
 	}
@@ -137,34 +137,37 @@ static void check_function_return(struct mcc_ast_statement *ret_stmt, void *data
 	}
 }
 
-static void check_expression_call(struct mcc_ast_expression *expr, void *data){
+static void check_expression_call(struct mcc_ast_expression *expr, void *data)
+{
 	assert(data);
 	assert(expr);
 
 	struct mcc_type_checking *type_check = data;
 
-	if(expr->type == MCC_AST_EXPRESSION_TYPE_FUNCTION_CALL && expr->function_call_arguments){
-		struct mcc_symbol *symbol = lookup_symbol_in_scope(type_check->symbol_table, expr->function_call_identifier->identifier->name);
+	if (expr->type == MCC_AST_EXPRESSION_TYPE_FUNCTION_CALL && expr->function_call_arguments) {
+		struct mcc_symbol *symbol =
+		    lookup_symbol_in_scope(type_check->symbol_table, expr->function_call_identifier->identifier->name);
 		if (symbol != NULL) {
 			struct mcc_ast_function_arguments *tmp1 = expr->function_call_arguments;
 			struct argument_type_list *tmp2 = symbol->argument_type_list;
-			if (!tmp2) return;
+			if (!tmp2)
+				return;
 			do {
-				if(tmp1->expression->expression_type != tmp2->type){
-					struct mcc_semantic_error *error = get_mcc_semantic_error_struct(MCC_SC_ERROR_TYPE_INVALID_ARGUMENT_TYPE);
+				if (tmp1->expression->expression_type != tmp2->type) {
+					struct mcc_semantic_error *error =
+					    get_mcc_semantic_error_struct(MCC_SC_ERROR_TYPE_INVALID_ARGUMENT_TYPE);
 					error->sloc = &expr->node.sloc;
 					error->par_type = tmp2->type;
 					error->arg_type = tmp1->expression->expression_type;
 					print_semantic_error(error, type_check->out);
 					break;
-				}
-				else{
+				} else {
 					tmp1 = tmp1->next_argument;
 					tmp2 = tmp2->next_type;
-				}		
+				}
 			} while (tmp1 && tmp2);
 		}
-	}	
+	}
 	return;
 }
 
@@ -195,7 +198,8 @@ static void check_eval_expression(struct mcc_ast_expression *expr, struct mcc_sy
 	}
 
 	if (expr->type == MCC_AST_EXPRESSION_TYPE_PARENTH) {
-		return check_eval_expression(expr->expression, symbol_table, data);
+		check_eval_expression(expr->expression, symbol_table, data);
+		return;
 	}
 
 	if (expr->type == MCC_AST_EXPRESSION_TYPE_ARRAY_ACCESS) {
@@ -337,7 +341,6 @@ static void check_arithmetic_ops(struct mcc_ast_expression *bin_expr, void *data
 
 	struct mcc_type_log *log = get_mcc_type_log_struct(MCC_TYPE_VALID);
 
-	bin_expr->lhs->expression_type;
 	if (bin_expr->expression_type != MCC_AST_TYPE_INT && bin_expr->expression_type != MCC_AST_TYPE_FLOAT) {
 		struct mcc_semantic_error *error = get_mcc_semantic_error_struct(MCC_SC_ERROR_INVALID_AR_OPERATION);
 		error->sloc = &bin_expr->node.sloc;
@@ -479,8 +482,6 @@ static void check_expression_parenth(struct mcc_ast_expression *expr, void *data
 {
 	assert(data);
 	assert(expr);
-	struct mcc_type_checking *type_check = data;
-
 	expr->expression_type = expr->expression->expression_type;
 }
 
@@ -490,7 +491,7 @@ static struct mcc_ast_visitor type_checking_visitor(void *data)
 	                                .order = MCC_AST_VISIT_POST_ORDER,
 
 	                                .userdata = data,
-									.function = check_function,
+	                                .function = check_function,
 	                                .declaration = check_declaration,
 	                                .assignment = check_assignment,
 	                                .expression = check_expression_call,
@@ -536,7 +537,8 @@ void mcc_check_types(struct mcc_ast_program *program, struct mcc_symbol_table *s
 			list = list->next_function;
 		}
 	} break;
+	default: {
 	}
-	mcc_print_type_log_footer(out);
+	}
 	free(type_checking);
 }

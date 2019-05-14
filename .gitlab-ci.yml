@@ -1,7 +1,7 @@
 image: debian:buster
 
 before_script:
-  - apt-get update && apt-get install -y python3 python3-pip ninja-build flex bison gcc build-essential
+  - apt-get update && apt-get install -y python3 python3-pip ninja-build flex bison gcc build-essential time
   - pip3 install meson
 
 stages:
@@ -11,4 +11,7 @@ meson_build:
   stage: build
   script:
     - meson builddir
-    - ninja -C builddir
+    - cd builddir
+    - ninja test
+    - chmod +x ../scripts/run_integration_tests
+    - ../scripts/run_integration_tests

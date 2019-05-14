@@ -107,16 +107,16 @@ static void print_dot_expression_binary_op(struct mcc_ast_expression *expression
 
 	FILE *out = data;
 	print_dot_node(out, expression, label);
-	if (expression->lhs->type == MCC_AST_EXPRESSION_TYPE_ARRAY_ACCESS){
+	if (expression->lhs->type == MCC_AST_EXPRESSION_TYPE_ARRAY_ACCESS) {
 		print_dot_edge(out, expression, expression->lhs->array_access_id, "lhs");
 		print_dot_edge(out, expression, expression->lhs->array_access_exp, "access expr.");
-	}else{
+	} else {
 		print_dot_edge(out, expression, expression->lhs, "lhs");
 	}
-	if (expression->rhs->type == MCC_AST_EXPRESSION_TYPE_ARRAY_ACCESS){
+	if (expression->rhs->type == MCC_AST_EXPRESSION_TYPE_ARRAY_ACCESS) {
 		print_dot_edge(out, expression, expression->rhs->array_access_id, "rhs");
 		print_dot_edge(out, expression, expression->rhs->array_access_exp, "access expr.");
-	}else{
+	} else {
 		print_dot_edge(out, expression, expression->rhs, "rhs");
 	}
 }
@@ -269,7 +269,7 @@ static void print_dot_assignment(struct mcc_ast_declare_assign *assignment, void
 	snprintf(label, sizeof(label), "%s %d", "assign:", assignment->type);
 	print_dot_node(out, assignment, label);
 
-	if (assignment->assign_lhs->type == MCC_AST_EXPRESSION_TYPE_ARRAY_ACCESS){
+	if (assignment->assign_lhs->type == MCC_AST_EXPRESSION_TYPE_ARRAY_ACCESS) {
 		print_dot_edge(out, assignment, assignment->assign_lhs->array_access_id, "lhs");
 		print_dot_edge(out, assignment, assignment->assign_lhs->array_access_exp, "access expr.");
 	} else {
