@@ -96,6 +96,7 @@ static void generate_ir_literal(struct mcc_ast_literal *lit, struct mcc_ir_head 
 
 static char *generate_ir_entity(struct mcc_ast_expression *expr){
     char *entity;
+    char value[64] = {0};
     switch (expr->type)
     {
     case MCC_AST_EXPRESSION_TYPE_LITERAL:
@@ -103,6 +104,10 @@ static char *generate_ir_entity(struct mcc_ast_expression *expr){
         break;
     case MCC_AST_EXPRESSION_TYPE_IDENTIFIER:
         entity = strdup(expr->identifier->name);
+        break;
+    case MCC_AST_EXPRESSION_TYPE_ARRAY_ACCESS:
+        sprintf(value, "%s[]", expr->array_access_id->identifier->name);
+        entity = strdup(value);
         break;
     default:
         break;
@@ -115,10 +120,25 @@ static void generate_ir_binary_expression(struct mcc_ast_expression *bin_expr, s
     assert(bin_expr);
     assert(head);
 
+    if (bin_expr->lhs->type == MCC_AST_EXPRESSION_TYPE_BINARY_OP){
+        generate_ir_binary_expression(bin_expr->lhs, head, type);
+    }
+    if (bin_expr->rhs->type == MCC_AST_EXPRESSION_TYPE_BINARY_OP){
+        generate_ir_binary_expression(bin_expr->rhs, head, type);
+    }
+
     head->index++;
     struct mcc_ir_table *new_table = create_new_ir_table();
 
-    char *entity1 = generate_ir_entity(bin_expr->lhs);
+    char *entity1;
+    if (bin_expr->lhs->type != MCC_AST_EXPRESSION_TYPE_LITERAL){
+        char value[14];
+        sprintf(value, "(%d)", head->index-1);
+        entity1 = strdup(value);
+    } 
+    else {
+        entity1 = generate_ir_entity(bin_expr->lhs);
+    }
     char *entity2 = generate_ir_entity(bin_expr->rhs);
 
     new_table->arg1 = entity1;
@@ -168,6 +188,28 @@ static void generate_ir_function_call(struct mcc_ast_expression *expr_call, stru
     }
 }
 
+static void generate_ir_array_access(struct mcc_ast_expression *id_expr, struct mcc_ast_expression *array_expr, struct mcc_ir_head *head, enum ir_table_operation_type type)
+{
+    assert(id_expr);
+    assert(array_expr);
+    assert(head);
+
+    head->index++;
+    struct mcc_ir_table *new_table = create_new_ir_table();
+
+    char *entity1 = generate_ir_entity(id_expr);
+    char value[14] = {0};
+    sprintf(value, "%s[]", entity1);
+
+    new_table->arg1 = strdup(value);
+    new_table->arg2 = NULL;
+    new_table->op_type = type;
+    new_table->index = head->index;
+    
+    head->current->next_table = new_table;
+    head->current = new_table;
+}
+
 static void generate_ir_expression(struct mcc_ast_expression *expr, struct mcc_ir_head *head, enum ir_table_operation_type type)
 {
     assert(expr);
@@ -190,6 +232,9 @@ static void generate_ir_expression(struct mcc_ast_expression *expr, struct mcc_i
     case MCC_AST_EXPRESSION_TYPE_FUNCTION_CALL:
         generate_ir_function_call(expr->function_call_identifier, head, MCC_IR_TABLE_CALL);
         break;
+    case MCC_AST_EXPRESSION_TYPE_ARRAY_ACCESS:
+        generate_ir_array_access(expr->array_access_id, expr->array_access_exp, head, MCC_IR_TABLE_LOAD);
+        break;
     default:
         printf("todo\n");
         break;
@@ -201,15 +246,33 @@ static void generate_ir_assignment(struct mcc_ast_declare_assign *assign, struct
     assert(assign);
     assert(head);
 
+    char *entity2;
+    char value[14] = {0};
+    if (assign->assign_rhs->type != MCC_AST_EXPRESSION_TYPE_LITERAL){
+        generate_ir_expression(assign->assign_rhs, head, -1);
+        sprintf(value, "(%d)", head->index);
+        entity2 = strdup(value);
+    } else {
+        entity2 = generate_ir_literal_entity(assign->assign_rhs->literal);
+    }
+
     head->index++;
     struct mcc_ir_table *new_table = create_new_ir_table();
 
-    char *entity1 = generate_ir_entity(assign->assign_lhs);
-    char *entity2 = generate_ir_entity(assign->assign_rhs); // TODO what if rhs is an expression?
+    char *entity1; 
+    if (assign->assign_lhs->type == MCC_AST_EXPRESSION_TYPE_IDENTIFIER){
+        entity1 = generate_ir_entity(assign->assign_lhs);
+        new_table->op_type = MCC_IR_TABLE_ASSIGNMENT;
+    } else if(assign->assign_lhs->type == MCC_AST_EXPRESSION_TYPE_ARRAY_ACCESS){
+        entity1 = generate_ir_entity(assign->assign_lhs->array_access_id);
+        sprintf(value, "%s[i]", entity1); // TODO array access expression
+        entity1 = strdup(value);
+        new_table->op_type = MCC_IR_TABLE_STORE;
+    }
 
     new_table->arg1 = entity1;
     new_table->arg2 = entity2;
-    new_table->op_type = MCC_IR_TABLE_ASSIGNMENT;
+    
     new_table->index = head->index;
     
     head->current->next_table = new_table;    

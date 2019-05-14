@@ -1,26 +1,5 @@
-<<<<<<< HEAD
 int main() {
-    int x;
-    if(x < 4){
-        x = 1;
-    } else{
-        x = 2;
-    }
-    x = 3;
-    return x;
+    int[5] x;
+    x[0] = 0;
+    return 0;
 }
-=======
-void convert2bin(int number){
-	if (true){
-		
-	}
-	else{
-		
-	}
-}
-
-int main()
-{
-	return 0;
-}
->>>>>>> master

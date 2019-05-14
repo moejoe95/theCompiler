@@ -14,6 +14,8 @@ enum ir_table_operation_type {
     MCC_IR_TABLE_CALL,
     MCC_IR_TABLE_POP,
     MCC_IR_TABLE_PUSH,
+    MCC_IR_TABLE_STORE,
+    MCC_IR_TABLE_LOAD,
 };
 
 struct mcc_ir_table{

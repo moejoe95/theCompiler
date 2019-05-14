@@ -53,8 +53,15 @@ void print_line(struct mcc_ir_table *table, FILE *out){
             sprintf(operation, "push\t");
             break;
 
+        case MCC_IR_TABLE_LOAD:
+            sprintf(operation, "load\t");
+            break;
+
+        case MCC_IR_TABLE_STORE:
+            sprintf(operation, "store\t");
+            break;
         default:
-            sprintf(operation, "undef op\t");
+            sprintf(operation, "undef op");
             break;
     }
 
