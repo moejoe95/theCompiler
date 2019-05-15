@@ -60,6 +60,11 @@ void print_line(struct mcc_ir_table *table, FILE *out){
         case MCC_IR_TABLE_STORE:
             sprintf(operation, "store\t");
             break;
+
+        case MCC_IR_TABLE_BUILT_IN:
+            sprintf(operation, "builtin\t");
+            break;
+
         default:
             sprintf(operation, "undef op");
             break;

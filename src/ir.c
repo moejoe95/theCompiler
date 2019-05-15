@@ -196,6 +196,19 @@ static void generate_ir_function_call(struct mcc_ast_expression *expr_call,
 	assert(expr_call);
 	assert(head);
 
+    //built in functions
+    char *x[] = {"print_nl", "read_int", 0}; //TODO rest of built in functions
+    int i = 0;
+    while(x[i]) {
+        if(strcmp(x[i], expr_call->function_call_identifier->identifier->name) == 0) {
+            generate_ir_identifier(expr_call->function_call_identifier->identifier, head, MCC_IR_TABLE_BUILT_IN);
+            break;
+        }
+        i++;
+    }
+
+
+    //normal functions
 	generate_function_arguments(expr_call->function_call_arguments, head);
 
 	struct mcc_ast_func_list *list = head->program->function_list;
