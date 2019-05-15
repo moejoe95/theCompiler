@@ -181,7 +181,6 @@ static void generate_ir_unary_expression(struct mcc_ast_expression *un_expr,
 
 static void generate_function_arguments(struct mcc_ast_function_arguments *args, struct mcc_ir_head *head)
 {
-	assert(args);
 	assert(head);
 
 	struct mcc_ast_function_arguments *list = args;
@@ -311,7 +310,23 @@ static void generate_ir_return(struct mcc_ast_expression *expr, struct mcc_ir_he
 	assert(head);
 
 	// push
-	generate_ir_expression(expr, head, MCC_IR_TABLE_PUSH); // TODO PUSH works only on literals
+	generate_ir_expression(expr, head, MCC_IR_TABLE_PUSH);
+
+	// insert additional line in IR table
+	if (expr->type != MCC_AST_EXPRESSION_TYPE_LITERAL || expr->type != MCC_AST_EXPRESSION_TYPE_IDENTIFIER){
+		head->index++;
+		struct mcc_ir_table *new_table = create_new_ir_table();
+
+		char value[14] = {0};
+		sprintf(value, "(%d)", head->index - 1);
+
+		new_table->arg1 = strdup(value);
+		new_table->op_type = MCC_IR_TABLE_PUSH;
+		new_table->index = head->index;
+
+		head->current->next_table = new_table;
+		head->current = new_table;
+	}
 
 	// jump
 	head->index++;
