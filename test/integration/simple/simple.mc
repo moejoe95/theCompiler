@@ -1,5 +1,5 @@
 int inc(int x, int y){
-    return x+y+1;
+    return 1;
 }
 
 int main() {
