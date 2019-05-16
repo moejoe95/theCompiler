@@ -1,86 +1,96 @@
 #include "mcc/print_ir.h"
 #include <string.h>
 
-void print_table_legend(FILE *out){
-    fprintf(out, "%s\t|   %s   \t|\t%s\t|\t%s\n", "index", "operation", "arg1", "arg2");
-    fprintf(out, "------------------------------------------------------------\n");
+void print_table_line(FILE *out)
+{
+	for (int i = 0; i < 109; i++) {
+		fprintf(out, "-");
+	}
+	fprintf(out, "\n");
 }
 
-void print_line(struct mcc_ir_table *table, FILE *out){
+void print_table_legend(FILE *out)
+{
+	print_table_line(out);
+	fprintf(out, "| %s\t| %s\t| %-40s| %-40s|\n", "index", "operation", "argument 1", "argument 2");
+	print_table_line(out);
+}
 
-    if(!table->arg2){
-        char *entity2 = "-";
-        table->arg2 = entity2;
-    }
+void print_row(struct mcc_ir_table *table, FILE *out)
+{
 
-    char operation[32] = {0};
-    switch (table->op_type) {
-        case MCC_IR_TABLE_UNARY_OP:
-            sprintf(operation, get_un_op_string(table->un_op));
-            strcat(operation, "\t");
-            break;
+	if (!table->arg2) {
+		char *entity2 = "-";
+		table->arg2 = entity2;
+	}
 
-        case MCC_IR_TABLE_BINARY_OP:
-            sprintf(operation, get_bin_op_string(table->bin_op));
-            strcat(operation, "\t");
-            break;
+	char operation[32] = {0};
+	switch (table->op_type) {
+	case MCC_IR_TABLE_UNARY_OP:
+		sprintf(operation, get_un_op_string(table->un_op));
+		strcat(operation, "\t");
+		break;
 
-        case MCC_IR_TABLE_ASSIGNMENT:
-            sprintf(operation, "assign\t");
-            break;
+	case MCC_IR_TABLE_BINARY_OP:
+		sprintf(operation, get_bin_op_string(table->bin_op));
+		strcat(operation, "\t");
+		break;
 
-        case MCC_IR_TABLE_JUMPFALSE:
-            sprintf(operation, "jumpfalse");
-            break;
+	case MCC_IR_TABLE_ASSIGNMENT:
+		sprintf(operation, "assign");
+		break;
 
-        case MCC_IR_TABLE_JUMP:
-            sprintf(operation, "jump\t");
-            break;
+	case MCC_IR_TABLE_JUMPFALSE:
+		sprintf(operation, "jumpfalse");
+		break;
 
-        case MCC_IR_TABLE_LABEL:
-            sprintf(operation, "label\t");
-            break;
+	case MCC_IR_TABLE_JUMP:
+		sprintf(operation, "jump\t");
+		break;
 
-        case MCC_IR_TABLE_COPY:
-            sprintf(operation, "copy\t");
-            break;
+	case MCC_IR_TABLE_LABEL:
+		sprintf(operation, "label\t");
+		break;
 
-        case MCC_IR_TABLE_POP:
-            sprintf(operation, "pop\t");
-            break;
+	case MCC_IR_TABLE_COPY:
+		sprintf(operation, "copy\t");
+		break;
 
-        case MCC_IR_TABLE_PUSH:
-            sprintf(operation, "push\t");
-            break;
+	case MCC_IR_TABLE_POP:
+		sprintf(operation, "pop\t");
+		break;
 
-        case MCC_IR_TABLE_LOAD:
-            sprintf(operation, "load\t");
-            break;
+	case MCC_IR_TABLE_PUSH:
+		sprintf(operation, "push\t");
+		break;
 
-        case MCC_IR_TABLE_STORE:
-            sprintf(operation, "store\t");
-            break;
+	case MCC_IR_TABLE_LOAD:
+		sprintf(operation, "load\t");
+		break;
 
-        case MCC_IR_TABLE_BUILT_IN:
-            sprintf(operation, "builtin\t");
-            break;
+	case MCC_IR_TABLE_STORE:
+		sprintf(operation, "store\t");
+		break;
 
-        default:
-            sprintf(operation, "undef op");
-            break;
-    }
+	case MCC_IR_TABLE_BUILT_IN:
+		sprintf(operation, "builtin\t");
+		break;
 
+	default:
+		sprintf(operation, "undef op");
+		break;
+	}
 
-    fprintf(out, "%d\t|\t%s\t|\t%s\t|\t%s\n", table->index, operation, table->arg1, table->arg2);
+	fprintf(out, "| %d\t| %s\t| %-40.40s| %-40.40s|\n", table->index, operation, table->arg1, table->arg2);
 }
 
 void mcc_print_ir_table(struct mcc_ir_table *table, FILE *out)
 {
-    print_table_legend(out);
-    struct mcc_ir_table *current_table = table->next_table;
-    while (current_table != NULL){
-        print_line(current_table, out);
-        current_table = current_table->next_table;
-    }
-    printf("------------------------------------------------------------\n");
+	print_table_legend(out);
+	struct mcc_ir_table *current_table = table->next_table;
+	while (current_table != NULL) {
+		print_row(current_table, out);
+		current_table = current_table->next_table;
+	}
+	print_table_line(out);
 }
