@@ -12,7 +12,7 @@ static void check_expression_array(struct mcc_ast_expression *expr, void *data)
 	struct mcc_ast_expression *array_access_expr = expr->array_access_exp;
 
 	struct mcc_type_log *log = get_mcc_type_log_struct(MCC_TYPE_VALID);
-	log->sloc = &expr->node.sloc;
+	log->sloc = &expr->array_access_id->node.sloc;
 	log->lhs_type = array_access_expr->expression_type;
 
 	if (array_access_expr->expression_type != MCC_AST_TYPE_INT) {
@@ -64,7 +64,6 @@ static void check_assignment(struct mcc_ast_declare_assign *declare_assign, void
 		log->rhs_type = rhs->expression_type;
 		char label[64] = {0};
 		if (lhs->type == MCC_AST_EXPRESSION_TYPE_ARRAY_ACCESS) {
-			check_expression_array(lhs, type_checking);
 			snprintf(label, sizeof(label), "assign %s[]", lhs->expression->identifier->name);
 		} else {
 			snprintf(label, sizeof(label), "assign %s", declare_assign->assign_lhs->identifier->name);
