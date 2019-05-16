@@ -191,7 +191,7 @@ static void generate_ir_unary_expression(struct mcc_ast_expression *un_expr,
 	new_table->arg1 = entity1;
 	new_table->arg2 = NULL;
 	new_table->op_type = type;
-	new_table->un_op = un_expr->rhs->type;
+	new_table->un_op = un_expr->u_op;
 	new_table->index = head->index;
 
 	head->current->next_table = new_table;
