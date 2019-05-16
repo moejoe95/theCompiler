@@ -3,10 +3,9 @@
 
 #include "mcc/ast.h"
 #include "mcc/symbol_table.h"
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <assert.h>
-
 
 enum semantic_error_type {
 	MCC_SC_ERROR_NO_MAIN,
@@ -16,6 +15,7 @@ enum semantic_error_type {
 	MCC_SC_ERROR_FUNCTION_NOT_DECLARED,
 	MCC_SC_ERROR_UNDEFINED_IDENTIFIER,
 	MCC_SC_ERROR_INVALID_ASSIGNMENT,
+	MCC_SC_ERROR_INVALID_ASSIGNMENT_ARR,
 	MCC_SC_ERROR_INVALID_RETURN_TYPE,
 	MCC_SC_ERROR_INVALID_AR_OPERATION,
 	MCC_SC_ERROR_INVALID_LOG_OPERATION,
@@ -37,12 +37,12 @@ struct mcc_semantic_error {
 	union {
 		struct mcc_ast_identifier *identifier;
 
-		struct{
+		struct {
 			struct mcc_symbol *symbol;
 			struct mcc_ast_expression *rhs;
 		};
-		
-		struct{
+
+		struct {
 			enum mcc_ast_type ret_type;
 			enum mcc_ast_type func_type;
 		};
@@ -52,18 +52,18 @@ struct mcc_semantic_error {
 		struct mcc_ast_expression *bin_expr;
 		struct mcc_ast_expression *un_expr;
 
-		struct{
+		struct {
 			struct mcc_ast_identifier *func_identifier;
 			int expArgs;
 			int gotArgs;
 		};
 
-		struct{
+		struct {
 			enum mcc_ast_type rhs_type;
 			enum mcc_ast_type lhs_type;
 		};
 
-		struct{
+		struct {
 			enum mcc_ast_type par_type;
 			enum mcc_ast_type arg_type;
 		};
@@ -72,8 +72,9 @@ struct mcc_semantic_error {
 
 struct mcc_semantic_error *get_mcc_semantic_error_struct(enum semantic_error_type error_type);
 
-void print_lexer_error(char* filename, int last_line, int last_column, const char *msg, FILE* out);
-void print_scanner_error(char* filename, int last_line, int last_column, char error_char, FILE* out);
-void print_semantic_error(struct mcc_semantic_error *semantic_error, FILE* out);
+void print_lexer_error(char *filename, int last_line, int last_column, const char *msg, FILE *out);
+void print_scanner_error(char *filename, int last_line, int last_column, char error_char, FILE *out);
+void print_semantic_error(struct mcc_semantic_error *semantic_error, FILE *out);
+void delete_mcc_semantic_error_struct(struct mcc_semantic_error *semantic_error);
 
 #endif // MCC_ERROR_HANDLER_H

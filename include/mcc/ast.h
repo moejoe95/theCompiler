@@ -42,6 +42,8 @@ struct mcc_ast_node {
 	struct mcc_ast_source_location sloc;
 };
 
+void mcc_ast_delete_string(char *id);
+
 // ------------------------------------------------------------------ Operators
 
 enum mcc_ast_binary_op {
@@ -69,7 +71,14 @@ char *get_un_op_string(enum mcc_ast_unary_op op);
 
 // -------------------------------------------------------------------- Types
 
-enum mcc_ast_type { MCC_AST_TYPE_BOOL, MCC_AST_TYPE_INT, MCC_AST_TYPE_FLOAT, MCC_AST_TYPE_STRING, MCC_AST_TYPE_VOID };
+enum mcc_ast_type {
+	MCC_AST_TYPE_BOOL,
+	MCC_AST_TYPE_INT,
+	MCC_AST_TYPE_FLOAT,
+	MCC_AST_TYPE_STRING,
+	MCC_AST_TYPE_VOID,
+	MCC_AST_TYPE_ARRAY
+};
 
 char *get_type_string(enum mcc_ast_type type);
 
@@ -393,6 +402,7 @@ struct mcc_ast_program {
 };
 
 struct mcc_ast_program *mcc_ast_new_program(void *program, enum mcc_ast_program_type type);
+struct mcc_ast_program *mcc_ast_new_empty_program(char *filename);
 
 void mcc_ast_delete_program(struct mcc_ast_program *program);
 

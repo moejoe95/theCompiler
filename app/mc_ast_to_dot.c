@@ -109,10 +109,11 @@ int main(int argc, char **argv)
 
 		// parsing phase
 		{
-			struct mcc_parser_result result = mcc_parse_file(in, argv[i], out);
+			struct mcc_parser_result result = mcc_parse_file(in, argv[i], out, log_level_to_int(LOG_LEVEL));
 
 			if (result.status != MCC_PARSER_STATUS_OK) {
 				fprintf(stdout, "...parsing failed...\n");
+				fclose(in);
 				return EXIT_FAILURE;
 			}
 			pro = result.program;
@@ -130,11 +131,6 @@ int main(int argc, char **argv)
 			}
 			pro->function_list = scope_func_list;
 			pro->function_list->next_function = NULL;
-		}
-
-		// print
-		if (LOG_LEVEL != LOG_DEFAULT) {
-			mcc_ast_print_dot(out, pro);
 		}
 
 		// cleanup

@@ -156,7 +156,7 @@ program : expression { *result = mcc_ast_new_program($1, MCC_AST_PROGRAM_TYPE_EX
  		| assignment { *result = mcc_ast_new_program($1, MCC_AST_PROGRAM_TYPE_DECLARATION); loc($$, @1);}
         | declaration { *result = mcc_ast_new_program($1, MCC_AST_PROGRAM_TYPE_DECLARATION); loc($$, @1);}
         | statement { *result = mcc_ast_new_program($1, MCC_AST_PROGRAM_TYPE_STATEMENT); loc($$, @1);}
-        | END { *result = mcc_ast_new_program(NULL, MCC_AST_PROGRAM_TYPE_EMPTY); loc($$, @1);}
+        | END { *result = mcc_ast_new_empty_program(filename);}
 		| func_list { *result = mcc_ast_new_program($1, MCC_AST_PROGRAM_TYPE_FUNCTION_LIST); loc($$, @1);}
 		;
 
@@ -269,7 +269,7 @@ void mcc_parser_error(struct MCC_PARSER_LTYPE *yylloc, yyscan_t *scanner, struct
 	UNUSED(scanner);
 }
 
-struct mcc_parser_result mcc_parse_string(const char *input)
+struct mcc_parser_result mcc_parse_string(const char *input, int log_level)
 {
 	assert(input);
 
@@ -280,14 +280,14 @@ struct mcc_parser_result mcc_parse_string(const char *input)
 		};
 	}
 
-	struct mcc_parser_result result = mcc_parse_file(in, "input", stdout);
+	struct mcc_parser_result result = mcc_parse_file(in, "input", stdout, log_level);
 
 	fclose(in);
 
 	return result;
 }
 
-struct mcc_parser_result mcc_parse_file(FILE *input, char *input_filename, FILE *outfile)
+struct mcc_parser_result mcc_parse_file(FILE *input, char *input_filename, FILE *outfile, int log_level)
 {
 	assert(input);
 
@@ -307,6 +307,10 @@ struct mcc_parser_result mcc_parse_file(FILE *input, char *input_filename, FILE 
 	}
 
 	mcc_parser_lex_destroy(scanner);
+
+	if (result.status == MCC_PARSER_STATUS_OK && log_level != 0) {
+		mcc_ast_print_dot(out, result.program);
+	}
 
 	return result;
 }

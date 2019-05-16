@@ -9,7 +9,7 @@ static const double EPS = 1e-3;
 void BinaryOp_1(CuTest *tc)
 {
 	const char input[] = "192 + 3.14";
-	struct mcc_parser_result result = mcc_parse_string(input);
+	struct mcc_parser_result result = mcc_parse_string(input, 0);
 
 	CuAssertIntEquals(tc, MCC_PARSER_STATUS_OK, result.status);
 
@@ -39,7 +39,7 @@ void BinaryOp_1(CuTest *tc)
 void NestedExpression_1(CuTest *tc)
 {
 	const char input[] = "42 * (192 + 3.14)";
-	struct mcc_parser_result result = mcc_parse_string(input);
+	struct mcc_parser_result result = mcc_parse_string(input, 0);
 
 	CuAssertIntEquals(tc, MCC_PARSER_STATUS_OK, result.status);
 
@@ -87,7 +87,7 @@ void MissingClosingParenthesis_1(CuTest *tc)
 	// TODO: fix memory leak
 
 	const char input[] = "(42";
-	struct mcc_parser_result result = mcc_parse_string(input);
+	struct mcc_parser_result result = mcc_parse_string(input, 0);
 
 	CuAssertTrue(tc, MCC_PARSER_STATUS_OK != result.status);
 	CuAssertTrue(tc, NULL == result.program);
@@ -96,7 +96,7 @@ void MissingClosingParenthesis_1(CuTest *tc)
 void SourceLocation_SingleLineColumn(CuTest *tc)
 {
 	const char input[] = "(42 + 192)";
-	struct mcc_parser_result result = mcc_parse_string(input);
+	struct mcc_parser_result result = mcc_parse_string(input, 0);
 
 	CuAssertIntEquals(tc, MCC_PARSER_STATUS_OK, result.status);
 

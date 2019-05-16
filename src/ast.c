@@ -129,6 +129,13 @@ struct mcc_ast_literal *mcc_ast_get_new_literal_struct()
 void mcc_ast_delete_literal(struct mcc_ast_literal *literal)
 {
 	assert(literal);
+	switch (literal->type) {
+	case MCC_AST_TYPE_STRING:
+		free(literal->str_value);
+		break;
+	default:
+		break;
+	}
 	free(literal);
 }
 
@@ -311,7 +318,7 @@ void mcc_ast_delete_function_arguments(struct mcc_ast_function_arguments *argume
 void mcc_ast_delete_identifier(struct mcc_ast_identifier *id)
 {
 	assert(id);
-
+	free(id->name);
 	free(id);
 }
 
@@ -663,6 +670,22 @@ struct mcc_ast_program *mcc_ast_new_program(void *program, enum mcc_ast_program_
 	return pro;
 }
 
+struct mcc_ast_program *mcc_ast_new_empty_program(char *filename)
+{
+	struct mcc_ast_program *pro = malloc(sizeof(*pro));
+	if (!pro) {
+		return NULL;
+	}
+
+	pro->type = MCC_AST_PROGRAM_TYPE_EMPTY;
+
+	pro->node.sloc.end_line = 1;
+	pro->node.sloc.end_col = 1;
+	pro->node.sloc.filename = filename;
+
+	return pro;
+}
+
 void mcc_ast_delete_program(struct mcc_ast_program *program)
 {
 	assert(program);
@@ -688,6 +711,13 @@ void mcc_ast_delete_program(struct mcc_ast_program *program)
 	}
 
 	free(program);
+}
+
+void mcc_ast_delete_string(char *id)
+{
+	printf("clean string\n");
+	assert(id);
+	free(id);
 }
 
 // ------------------------------------------------------------------- to String
@@ -749,6 +779,8 @@ char *get_type_string(enum mcc_ast_type type)
 		return "STRING";
 	case MCC_AST_TYPE_VOID:
 		return "VOID";
+	case MCC_AST_TYPE_ARRAY:
+		return "ARRAY";
 	}
 
 	return "";

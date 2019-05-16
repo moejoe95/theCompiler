@@ -74,6 +74,11 @@ void print_semantic_error(struct mcc_semantic_error *semantic_error, FILE *out)
 		        "invalid assignment", get_type_string(semantic_error->lhs_type),
 		        get_type_string(semantic_error->rhs_type));
 		break;
+	case MCC_SC_ERROR_INVALID_ASSIGNMENT_ARR:
+		assert(semantic_error);
+		fprintf(out, "%s:%d:%d: error: %s\n", semantic_error->sloc->filename, semantic_error->sloc->end_line,
+		        semantic_error->sloc->end_col, "assignment not allowed on type array");
+		break;
 	case MCC_SC_ERROR_INVALID_RETURN_TYPE:
 		fprintf(out, "%s:%d:%d: error: %s (expected type '%s', but got type '%s')\n",
 		        semantic_error->sloc->filename, semantic_error->sloc->end_line, semantic_error->sloc->end_col,
@@ -160,6 +165,13 @@ void print_semantic_error(struct mcc_semantic_error *semantic_error, FILE *out)
 		        get_type_string(semantic_error->arg_type));
 		break;
 	}
+
+	delete_mcc_semantic_error_struct(semantic_error);
+}
+
+void delete_mcc_semantic_error_struct(struct mcc_semantic_error *error)
+{
+	free(error);
 }
 
 struct mcc_semantic_error *get_mcc_semantic_error_struct(enum semantic_error_type error_type)
