@@ -8,6 +8,7 @@
 
 // forward declarations
 static void generate_function_definition(struct mcc_ast_func_definition *func, struct mcc_ir_head *head);
+static void generate_built_in_function_definition(struct mcc_ast_expression *expr_call, struct mcc_ir_head *head);
 static void generate_ir_statement(struct mcc_ast_statement *stmt, struct mcc_ir_head *head);
 static void
 generate_ir_expression(struct mcc_ast_expression *e, struct mcc_ir_head *head, enum ir_table_operation_type t);
@@ -218,8 +219,9 @@ static void generate_ir_function_call(struct mcc_ast_expression *expr_call, stru
 	int i = 0;
 	while (x[i]) {
 		if (strcmp(x[i], expr_call->function_call_identifier->identifier->name) == 0) {
-			generate_ir_identifier(expr_call->function_call_identifier->identifier, head,
-			                       MCC_IR_TABLE_BUILT_IN);
+			/*generate_ir_identifier(expr_call->function_call_identifier->identifier, head,
+			                       MCC_IR_TABLE_BUILT_IN);*/
+			generate_built_in_function_definition(expr_call, head);
 			break;
 		}
 		i++;
@@ -511,6 +513,32 @@ static void generate_ir_param(struct mcc_ast_parameter *param, struct mcc_ir_hea
 
 	head->current->next_table = new_table;
 	head->current = new_table;
+}
+
+static void generate_built_in_function_definition(struct mcc_ast_expression *expr_call, struct mcc_ir_head *head)
+{
+	assert(expr_call);
+	assert(head);
+
+	// func identifier
+	head->index++;
+	struct mcc_ir_table *new_table = create_new_ir_table();
+	char *id_entity = generate_ir_entity(expr_call->function_call_identifier);
+
+	new_table->arg1 = id_entity;
+	new_table->arg2 = NULL;
+	new_table->op_type = MCC_IR_TABLE_LABEL;
+	new_table->index = head->index;
+
+	head->current->next_table = new_table;
+	head->current = new_table;
+
+	// func parameter list
+	struct mcc_ast_parameter *param = expr_call->function_call_arguments;
+	while (param != NULL) {
+		generate_ir_param(param, head);
+		param = param->next_parameter;
+	}
 }
 
 static void generate_function_definition(struct mcc_ast_func_definition *func, struct mcc_ir_head *head)
