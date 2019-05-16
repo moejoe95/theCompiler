@@ -195,8 +195,6 @@ static void generate_ir_unary_expression(struct mcc_ast_expression *un_expr,
 
 	head->current->next_table = new_table;
 	head->current = new_table;
-
-	// generate_ir_table_line(head, entity1, NULL, un_expr->rhs->type);
 }
 
 static void generate_function_arguments(struct mcc_ast_function_arguments *args, struct mcc_ir_head *head)
