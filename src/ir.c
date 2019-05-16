@@ -399,7 +399,8 @@ static void generate_ir_if(struct mcc_ast_statement *stmt, struct mcc_ir_head *h
 	jumpfalse_table->arg2 = jump_false_loc;
 
 	// else body
-	generate_ir_statement(stmt->else_stat, head);
+	if (stmt->else_stat)
+		generate_ir_statement(stmt->else_stat, head);
 
 	// set jump loc
 	sprintf(value, "(%d)", head->current->index + 1);
