@@ -195,6 +195,8 @@ static void generate_ir_unary_expression(struct mcc_ast_expression *un_expr,
 
 	head->current->next_table = new_table;
 	head->current = new_table;
+
+	// generate_ir_table_line(head, entity1, NULL, un_expr->rhs->type);
 }
 
 static void generate_function_arguments(struct mcc_ast_function_arguments *args, struct mcc_ir_head *head)
@@ -254,15 +256,9 @@ static void generate_ir_array_access(struct mcc_ast_expression *id_expr,
 
 	char *entity1 = generate_ir_entity(id_expr);
 	char value[14] = {0};
-	sprintf(value, "%s[]", entity1);
+	sprintf(value, "%s[]", entity1); // TODO
 
-	new_table->arg1 = strdup(value);
-	new_table->arg2 = NULL;
-	new_table->op_type = type;
-	new_table->index = head->index;
-
-	head->current->next_table = new_table;
-	head->current = new_table;
+	generate_ir_table_line(head, value, NULL, MCC_IR_TABLE_LOAD);
 }
 
 static void
@@ -311,11 +307,11 @@ static void generate_ir_assignment(struct mcc_ast_declare_assign *assign, struct
 		entity2 = generate_ir_literal_entity(assign->assign_rhs->literal);
 	}
 
-	struct mcc_ir_table *new_table = create_new_ir_table();
+	enum ir_table_operation_type type;
 	char *entity1;
 	if (assign->assign_lhs->type == MCC_AST_EXPRESSION_TYPE_IDENTIFIER) {
 		entity1 = generate_ir_entity(assign->assign_lhs);
-		new_table->op_type = MCC_IR_TABLE_ASSIGNMENT;
+		type = MCC_IR_TABLE_ASSIGNMENT;
 	} else if (assign->assign_lhs->type == MCC_AST_EXPRESSION_TYPE_ARRAY_ACCESS) {
 		char *id = assign->assign_lhs->array_access_id->identifier->name;
 		if (assign->assign_lhs->array_access_exp->type != MCC_AST_EXPRESSION_TYPE_LITERAL) {
@@ -326,18 +322,10 @@ static void generate_ir_assignment(struct mcc_ast_declare_assign *assign, struct
 			sprintf(value, "%s[%s]", id, lit);
 		}
 		entity1 = strdup(value);
-		new_table->op_type = MCC_IR_TABLE_STORE;
+		type = MCC_IR_TABLE_STORE;
 	}
 
-	head->index++;
-
-	new_table->arg1 = entity1;
-	new_table->arg2 = entity2;
-
-	new_table->index = head->index;
-
-	head->current->next_table = new_table;
-	head->current = new_table;
+	generate_ir_table_line(head, entity1, entity2, type);
 }
 
 static void generate_ir_return(struct mcc_ast_expression *expr, struct mcc_ir_head *head)
