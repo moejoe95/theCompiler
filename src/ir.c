@@ -9,7 +9,8 @@
 // forward declarations
 static void generate_function_definition(struct mcc_ast_func_definition *func, struct mcc_ir_head *head);
 static void generate_ir_statement(struct mcc_ast_statement *stmt, struct mcc_ir_head *head);
-static void generate_ir_expression(struct mcc_ast_expression *e, struct mcc_ir_head *head, enum ir_table_operation_type t);
+static void
+generate_ir_expression(struct mcc_ast_expression *e, struct mcc_ir_head *head, enum ir_table_operation_type t);
 
 static struct mcc_ir_table *create_new_ir_table()
 {
@@ -184,31 +185,30 @@ static void generate_function_arguments(struct mcc_ast_function_arguments *args,
 	assert(head);
 
 	struct mcc_ast_function_arguments *list = args;
-	while(list != NULL){
+	while (list != NULL) {
 		generate_ir_expression(list->expression, head, MCC_IR_TABLE_PUSH);
 		list = list->next_argument;
 	}
 }
 
-static void generate_ir_function_call(struct mcc_ast_expression *expr_call,
-                                      struct mcc_ir_head *head)
+static void generate_ir_function_call(struct mcc_ast_expression *expr_call, struct mcc_ir_head *head)
 {
 	assert(expr_call);
 	assert(head);
 
-    //built in functions
-    char *x[] = {"print_nl", "read_int", 0}; //TODO rest of built in functions
-    int i = 0;
-    while(x[i]) {
-        if(strcmp(x[i], expr_call->function_call_identifier->identifier->name) == 0) {
-            generate_ir_identifier(expr_call->function_call_identifier->identifier, head, MCC_IR_TABLE_BUILT_IN);
-            break;
-        }
-        i++;
-    }
+	// built in functions
+	char *x[] = {"print_nl", "read_int", 0}; // TODO rest of built in functions
+	int i = 0;
+	while (x[i]) {
+		if (strcmp(x[i], expr_call->function_call_identifier->identifier->name) == 0) {
+			generate_ir_identifier(expr_call->function_call_identifier->identifier, head,
+			                       MCC_IR_TABLE_BUILT_IN);
+			break;
+		}
+		i++;
+	}
 
-
-    //normal functions
+	// normal functions
 	generate_function_arguments(expr_call->function_call_arguments, head);
 
 	struct mcc_ast_func_list *list = head->program->function_list;
@@ -294,19 +294,25 @@ static void generate_ir_assignment(struct mcc_ast_declare_assign *assign, struct
 		entity2 = generate_ir_literal_entity(assign->assign_rhs->literal);
 	}
 
-	head->index++;
 	struct mcc_ir_table *new_table = create_new_ir_table();
-
 	char *entity1;
 	if (assign->assign_lhs->type == MCC_AST_EXPRESSION_TYPE_IDENTIFIER) {
 		entity1 = generate_ir_entity(assign->assign_lhs);
 		new_table->op_type = MCC_IR_TABLE_ASSIGNMENT;
 	} else if (assign->assign_lhs->type == MCC_AST_EXPRESSION_TYPE_ARRAY_ACCESS) {
-		entity1 = generate_ir_entity(assign->assign_lhs->array_access_id);
-		sprintf(value, "%s[i]", entity1); // TODO array access expression
+		char *id = assign->assign_lhs->array_access_id->identifier->name;
+		if (assign->assign_lhs->array_access_exp->type != MCC_AST_EXPRESSION_TYPE_LITERAL) {
+			generate_ir_expression(assign->assign_lhs->array_access_exp, head, -1);
+			sprintf(value, "%s[(%d)]", id, head->index);
+		} else {
+			char *lit = generate_ir_literal_entity(assign->assign_lhs->array_access_exp->literal);
+			sprintf(value, "%s[%s]", id, lit);
+		}
 		entity1 = strdup(value);
 		new_table->op_type = MCC_IR_TABLE_STORE;
 	}
+
+	head->index++;
 
 	new_table->arg1 = entity1;
 	new_table->arg2 = entity2;
@@ -326,7 +332,7 @@ static void generate_ir_return(struct mcc_ast_expression *expr, struct mcc_ir_he
 	generate_ir_expression(expr, head, MCC_IR_TABLE_PUSH);
 
 	// insert additional line in IR table
-	if (expr->type != MCC_AST_EXPRESSION_TYPE_LITERAL || expr->type != MCC_AST_EXPRESSION_TYPE_IDENTIFIER){
+	if (expr->type != MCC_AST_EXPRESSION_TYPE_LITERAL || expr->type != MCC_AST_EXPRESSION_TYPE_IDENTIFIER) {
 		head->index++;
 		struct mcc_ir_table *new_table = create_new_ir_table();
 
