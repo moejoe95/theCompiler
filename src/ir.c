@@ -356,20 +356,22 @@ static void generate_ir_if(struct mcc_ast_statement *stmt, struct mcc_ir_head *h
 	assert(stmt);
 	assert(head);
 
-	char value[12] = {0};
+	char value[14] = {0};
 
 	char *jump_loc;
 	char *jump_false_loc;
-
-	// if condition
-	generate_ir_expression(stmt->if_cond, head, -1);
-
 	struct mcc_ir_table *jumpfalse_table = create_new_ir_table();
 	char *entity1;
 
-	sprintf(value, "(%d)", head->current->index);
-	entity1 = strdup(value);
-
+	// if condition
+	if (stmt->if_cond->type == MCC_AST_EXPRESSION_TYPE_IDENTIFIER ||
+	    stmt->if_cond->type == MCC_AST_EXPRESSION_TYPE_LITERAL) {
+		entity1 = generate_ir_entity(stmt->if_cond);
+	} else {
+		generate_ir_expression(stmt->if_cond, head, -1);
+		sprintf(value, "(%d)", head->current->index);
+		entity1 = strdup(value);
+	}
 	head->index++;
 	jumpfalse_table->arg1 = entity1;
 	jumpfalse_table->arg2 = jump_false_loc;
@@ -393,7 +395,7 @@ static void generate_ir_if(struct mcc_ast_statement *stmt, struct mcc_ir_head *h
 	head->current->next_table = jump_table;
 	head->current = jump_table;
 
-	// set jump false
+	// set jumpfalse
 	sprintf(value, "(%d)", head->current->index + 1);
 	jump_false_loc = strdup(value);
 	jumpfalse_table->arg2 = jump_false_loc;
