@@ -121,6 +121,23 @@ static char *generate_ir_entity(struct mcc_ast_expression *expr)
 	return entity;
 }
 
+static void generate_ir_table_line(struct mcc_ir_head *head, char *arg1, char *arg2, enum ir_table_operation_type type)
+{
+	assert(head);
+
+	head->index++;
+	struct mcc_ir_table *new_table = create_new_ir_table();
+
+	new_table->arg1 = strdup(arg1);
+	if (arg2)
+		new_table->arg2 = strdup(arg2);
+	new_table->op_type = type;
+	new_table->index = head->index;
+
+	head->current->next_table = new_table;
+	head->current = new_table;
+}
+
 static void generate_ir_binary_expression(struct mcc_ast_expression *bin_expr,
                                           struct mcc_ir_head *head,
                                           enum ir_table_operation_type type)
@@ -331,47 +348,21 @@ static void generate_ir_return(struct mcc_ast_expression *expr, struct mcc_ir_he
 	// push
 	generate_ir_expression(expr, head, MCC_IR_TABLE_PUSH);
 
+	char value[14] = {0};
+
 	// insert additional line in IR table
-	if (expr->type != MCC_AST_EXPRESSION_TYPE_LITERAL || expr->type != MCC_AST_EXPRESSION_TYPE_IDENTIFIER) {
-		head->index++;
-		struct mcc_ir_table *new_table = create_new_ir_table();
-
-		char value[14] = {0};
+	if (expr->type != MCC_AST_EXPRESSION_TYPE_LITERAL && expr->type != MCC_AST_EXPRESSION_TYPE_IDENTIFIER) {
 		sprintf(value, "(%d)", head->index - 1);
-
-		new_table->arg1 = strdup(value);
-		new_table->op_type = MCC_IR_TABLE_PUSH;
-		new_table->index = head->index;
-
-		head->current->next_table = new_table;
-		head->current = new_table;
+		generate_ir_table_line(head, value, NULL, MCC_IR_TABLE_PUSH);
 	}
 
 	// jump
-	head->index++;
-	struct mcc_ir_table *new_table1 = create_new_ir_table();
-
-	char value[14] = {0};
-	sprintf(value, "(%d)", head->index + 1);
-
-	new_table1->arg1 = strdup(value);
-	new_table1->op_type = MCC_IR_TABLE_JUMP;
-	new_table1->index = head->index;
-
-	head->current->next_table = new_table1;
-	head->current = new_table1;
+	sprintf(value, "(%d)", head->index + 2);
+	generate_ir_table_line(head, value, NULL, MCC_IR_TABLE_JUMP);
 
 	// pop
-	head->index++;
-	struct mcc_ir_table *new_table2 = create_new_ir_table();
-	sprintf(value, "(%d)", head->index - 1);
-
-	new_table2->arg1 = strdup(value);
-	new_table2->op_type = MCC_IR_TABLE_POP;
-	new_table2->index = head->index;
-
-	head->current->next_table = new_table2;
-	head->current = new_table2;
+	sprintf(value, "(%d)", head->index);
+	generate_ir_table_line(head, value, NULL, MCC_IR_TABLE_POP);
 }
 
 static void generate_ir_if(struct mcc_ast_statement *stmt, struct mcc_ir_head *head)
