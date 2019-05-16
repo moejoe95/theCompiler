@@ -3,13 +3,28 @@
 
 #include "mcc/ast.h"
 #include "mcc/ast_print.h"
+#include "mcc/ir.h"
 #include "mcc/parser.h"
+#include "mcc/print_ir.h"
 #include "mcc/symbol_table.h"
 #include "mcc/type_checking.h"
-#include "mcc/ir.h"
-#include "mcc/print_ir.h"
 #include <getopt.h>
 #include <string.h>
+
+enum log_level { LOG_DEFAULT, LOG_INFO, LOG_DEBUG };
+
+int log_level_to_int(enum log_level level)
+{
+	switch (level) {
+	case LOG_DEFAULT:
+		return 0;
+	case LOG_INFO:
+		return 1;
+	case LOG_DEBUG:
+		return 2;
+	}
+	return 0;
+}
 
 void print_help(const char *prg_name)
 {
@@ -24,6 +39,18 @@ void print_help(const char *prg_name)
 
 int main(int argc, char **argv)
 {
+
+	enum log_level LOG_LEVEL = LOG_DEFAULT;
+	if (getenv("MCC_LOG_LEVEL")) {
+		char *log_level_env = getenv("MCC_LOG_LEVEL");
+		if (strcmp(log_level_env, "1") == 0) {
+			LOG_LEVEL = LOG_INFO;
+		}
+		if (strcmp(log_level_env, "2") == 0) {
+			LOG_LEVEL = LOG_DEBUG;
+		}
+	}
+
 	static struct option long_options[] = {{"help", no_argument, NULL, 'h'},
 	                                       {"output", optional_argument, NULL, 'o'},
 	                                       {"function", optional_argument, NULL, 'f'}};
@@ -80,7 +107,7 @@ int main(int argc, char **argv)
 
 		// parsing phase
 		{
-			struct mcc_parser_result result = mcc_parse_file(in, argv[i], out);
+			struct mcc_parser_result result = mcc_parse_file(in, argv[i], out, log_level_to_int(LOG_LEVEL));
 
 			if (result.status != MCC_PARSER_STATUS_OK) {
 				fprintf(stdout, "...parsing failed...\n");
@@ -104,7 +131,7 @@ int main(int argc, char **argv)
 		}
 
 		struct mcc_symbol_table *st = NULL;
-		st = mcc_create_symbol_table(pro, out);
+		st = mcc_create_symbol_table(pro, out, log_level_to_int(LOG_LEVEL));
 
 		// type checking
 		if (st != NULL) {
@@ -113,13 +140,13 @@ int main(int argc, char **argv)
 		}
 
 		// generate IR code
-        struct mcc_ir_table *ir = mcc_create_ir(pro);
-        // print IR
+		struct mcc_ir_table *ir = mcc_create_ir(pro);
+		// print IR
 		mcc_print_ir_table(ir, out);
 
 		// cleanup
 		mcc_ast_delete_program(pro);
-		
+
 		if (fclose(in) != 0) { // TODO segfaults
 			perror("fclose input");
 			return EXIT_FAILURE;
