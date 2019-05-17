@@ -198,11 +198,23 @@ static void generate_ir_unary_expression(struct mcc_ast_expression *un_expr,
 	head->current = new_table;
 }
 
+static struct mcc_ast_function_arguments* reverse_recursive(struct mcc_ast_function_arguments *args){
+	if (args == NULL || args->next_argument == NULL) {
+    	return args;
+  	}
+
+	struct mcc_ast_function_arguments *reversed_list = reverse_recursive(args->next_argument);
+
+	args->next_argument->next_argument = args;
+	args->next_argument = NULL;
+	return reversed_list;
+}
+
 static void generate_function_arguments(struct mcc_ast_function_arguments *args, struct mcc_ir_head *head)
 {
 	assert(head);
 
-	struct mcc_ast_function_arguments *list = args;
+	struct mcc_ast_function_arguments *list = reverse_recursive(args);
 	while (list != NULL) {
 		generate_ir_expression(list->expression, head, MCC_IR_TABLE_PUSH);
 		list = list->next_argument;
