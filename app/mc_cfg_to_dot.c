@@ -146,7 +146,7 @@ int main(int argc, char **argv)
 		mcc_print_ir_table(ir, out);
 
         //cfg
-        generate_cfg();
+        generate_cfg(ir);
 
 		// cleanup
 		mcc_ast_delete_program(pro);
