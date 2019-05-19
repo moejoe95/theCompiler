@@ -25,7 +25,7 @@ static struct mcc_ir_table *create_new_ir_table()
 static char *lookup_table_args(struct mcc_ir_head *head, char *arg1, char *arg2)
 {
 	assert(head);
-
+	char *result = NULL;
 	struct mcc_ir_table *table = head->root->next_table;
 	while (table != NULL) {
 		int arg2eq = 1;
@@ -35,11 +35,11 @@ static char *lookup_table_args(struct mcc_ir_head *head, char *arg1, char *arg2)
 		if (strcmp(arg1, table->arg1) == 0 && arg2eq) {
 			char value[12] = {0};
 			sprintf(value, "(%d)", table->index);
-			return strdup(value);
+			result = strdup(value);
 		}
 		table = table->next_table;
 	}
-	return NULL;
+	return result;
 }
 
 static char *generate_ir_literal_entity(struct mcc_ast_literal *lit)
@@ -110,8 +110,8 @@ static char *generate_ir_entity(struct mcc_ir_head *head, struct mcc_ast_express
 		entity = generate_ir_literal_entity(expr->literal);
 		break;
 	case MCC_AST_EXPRESSION_TYPE_IDENTIFIER:
-		entity= lookup_table_args(head, expr->identifier->name, NULL);
-		if(!entity)
+		entity = lookup_table_args(head, expr->identifier->name, NULL);
+		if (!entity)
 			entity = strdup(expr->identifier->name);
 		break;
 	case MCC_AST_EXPRESSION_TYPE_ARRAY_ACCESS:
@@ -119,7 +119,7 @@ static char *generate_ir_entity(struct mcc_ir_head *head, struct mcc_ast_express
 		entity = strdup(value);
 		break;
 	case MCC_AST_EXPRESSION_TYPE_BINARY_OP:
-		sprintf(value, "(%d)", head->index -1);
+		sprintf(value, "(%d)", head->index - 1);
 		entity = strdup(value);
 		break;
 	default:
@@ -152,15 +152,13 @@ static void generate_ir_binary_expression(struct mcc_ast_expression *bin_expr,
 	assert(bin_expr);
 	assert(head);
 
-	// TODO check for unary expressions also
-	if (bin_expr->lhs->type == MCC_AST_EXPRESSION_TYPE_BINARY_OP) {
-		generate_ir_binary_expression(bin_expr->lhs, head, type);
+	if (bin_expr->lhs->type != MCC_AST_EXPRESSION_TYPE_IDENTIFIER ||
+	    bin_expr->lhs->type != MCC_AST_EXPRESSION_TYPE_LITERAL) {
+		generate_ir_expression(bin_expr->lhs, head, type);
 	}
-	if (bin_expr->lhs->type == MCC_AST_EXPRESSION_TYPE_PARENTH) {
-		generate_ir_binary_expression(bin_expr->lhs->expression, head, type);
-	}
-	if (bin_expr->rhs->type == MCC_AST_EXPRESSION_TYPE_BINARY_OP) {
-		generate_ir_binary_expression(bin_expr->rhs, head, type);
+	if (bin_expr->rhs->type != MCC_AST_EXPRESSION_TYPE_IDENTIFIER ||
+	    bin_expr->lhs->type != MCC_AST_EXPRESSION_TYPE_LITERAL) {
+		generate_ir_expression(bin_expr->rhs, head, type);
 	}
 
 	head->index++;
@@ -173,10 +171,10 @@ static void generate_ir_binary_expression(struct mcc_ast_expression *bin_expr,
 			entity1 = strdup(line);
 		} else {
 			char value[14];
-			sprintf(value, "(%d)", head->index-1);
+			sprintf(value, "(%d)", head->index - 1);
 			entity1 = strdup(value);
 		}
-		
+
 	} else {
 		entity1 = generate_ir_entity(head, bin_expr->lhs);
 	}
@@ -214,10 +212,11 @@ static void generate_ir_unary_expression(struct mcc_ast_expression *un_expr,
 	head->current = new_table;
 }
 
-static struct mcc_ast_function_arguments* reverse_recursive(struct mcc_ast_function_arguments *args){
+static struct mcc_ast_function_arguments *reverse_recursive(struct mcc_ast_function_arguments *args)
+{
 	if (args == NULL || args->next_argument == NULL) {
-    	return args;
-  	}
+		return args;
+	}
 
 	struct mcc_ast_function_arguments *reversed_list = reverse_recursive(args->next_argument);
 
@@ -243,7 +242,8 @@ static void generate_ir_function_call(struct mcc_ast_expression *expr_call, stru
 	assert(head);
 
 	// built in functions
-	char *x[] = {"print_nl", "read_int", "print", "print_int", "print_float", "read_float", 0}; // TODO rest of built in functions
+	char *x[] = {"print_nl",    "read_int",   "print", "print_int",
+	             "print_float", "read_float", 0}; // TODO rest of built in functions
 	int i = 0;
 	while (x[i]) {
 		if (strcmp(x[i], expr_call->function_call_identifier->identifier->name) == 0) {
@@ -290,8 +290,8 @@ static void generate_built_in_function_call(struct mcc_ast_expression *expr_call
 	assert(expr_call);
 	assert(head);
 
-	//args
-	if(expr_call->function_call_arguments)
+	// args
+	if (expr_call->function_call_arguments)
 		generate_function_arguments(expr_call->function_call_arguments, head);
 
 	// func identifier
@@ -346,6 +346,9 @@ generate_ir_expression(struct mcc_ast_expression *expr, struct mcc_ir_head *head
 		break;
 	case MCC_AST_EXPRESSION_TYPE_UNARY_OP:
 		generate_ir_unary_expression(expr, head, MCC_IR_TABLE_UNARY_OP);
+		break;
+	case MCC_AST_EXPRESSION_TYPE_PARENTH:
+		generate_ir_unary_expression(expr->expression, head, MCC_IR_TABLE_UNARY_OP);
 		break;
 	case MCC_AST_EXPRESSION_TYPE_LITERAL:
 		generate_ir_literal(expr->literal, head, type);
@@ -589,7 +592,6 @@ static void generate_ir_param(struct mcc_ast_parameter *param, struct mcc_ir_hea
 	head->current->next_table = new_table;
 	head->current = new_table;
 }
-
 
 static void generate_function_definition(struct mcc_ast_func_definition *func, struct mcc_ir_head *head)
 {
