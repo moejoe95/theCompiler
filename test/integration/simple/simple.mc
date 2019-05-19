@@ -1,9 +1,10 @@
-int inc(int x, int y){
-    return 1;
-}
-
 int main() {
     int x;
-    x = inc(0, 1);
-    return x;
+    int n;
+    int i;
+
+    n = 3;
+    i = 5;
+    x = (n / i) * i;
+    return 0;
 }

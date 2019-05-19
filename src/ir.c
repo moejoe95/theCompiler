@@ -101,7 +101,7 @@ generate_ir_literal(struct mcc_ast_literal *lit, struct mcc_ir_head *head, enum 
 	head->current = new_table;
 }
 
-static char *generate_ir_entity(struct mcc_ast_expression *expr)
+static char *generate_ir_entity(struct mcc_ir_head *head, struct mcc_ast_expression *expr)
 {
 	char *entity;
 	char value[64] = {0};
@@ -114,6 +114,10 @@ static char *generate_ir_entity(struct mcc_ast_expression *expr)
 		break;
 	case MCC_AST_EXPRESSION_TYPE_ARRAY_ACCESS:
 		sprintf(value, "%s[]", expr->array_access_id->identifier->name);
+		entity = strdup(value);
+		break;
+	case MCC_AST_EXPRESSION_TYPE_BINARY_OP:
+		sprintf(value, "(%d)", head->index -1);
 		entity = strdup(value);
 		break;
 	default:
@@ -146,8 +150,12 @@ static void generate_ir_binary_expression(struct mcc_ast_expression *bin_expr,
 	assert(bin_expr);
 	assert(head);
 
+	// TODO check for unary expressions also
 	if (bin_expr->lhs->type == MCC_AST_EXPRESSION_TYPE_BINARY_OP) {
 		generate_ir_binary_expression(bin_expr->lhs, head, type);
+	}
+	if (bin_expr->lhs->type == MCC_AST_EXPRESSION_TYPE_PARENTH) {
+		generate_ir_binary_expression(bin_expr->lhs->expression, head, type);
 	}
 	if (bin_expr->rhs->type == MCC_AST_EXPRESSION_TYPE_BINARY_OP) {
 		generate_ir_binary_expression(bin_expr->rhs, head, type);
@@ -158,13 +166,19 @@ static void generate_ir_binary_expression(struct mcc_ast_expression *bin_expr,
 
 	char *entity1;
 	if (bin_expr->lhs->type != MCC_AST_EXPRESSION_TYPE_LITERAL) {
-		char value[14];
-		sprintf(value, "(%d)", head->index - 1);
-		entity1 = strdup(value);
+		if (bin_expr->lhs->type == MCC_AST_EXPRESSION_TYPE_IDENTIFIER) {
+			char *line = lookup_table_args(head, bin_expr->lhs->identifier->name, NULL);
+			entity1 = strdup(line);
+		} else {
+			char value[14];
+			sprintf(value, "(%d)", head->index-1);
+			entity1 = strdup(value);
+		}
+		
 	} else {
-		entity1 = generate_ir_entity(bin_expr->lhs);
+		entity1 = generate_ir_entity(head, bin_expr->lhs);
 	}
-	char *entity2 = generate_ir_entity(bin_expr->rhs);
+	char *entity2 = generate_ir_entity(head, bin_expr->rhs);
 
 	new_table->arg1 = entity1;
 	new_table->arg2 = entity2;
@@ -186,7 +200,7 @@ static void generate_ir_unary_expression(struct mcc_ast_expression *un_expr,
 	head->index++;
 	struct mcc_ir_table *new_table = create_new_ir_table();
 
-	char *entity1 = generate_ir_entity(un_expr->rhs);
+	char *entity1 = generate_ir_entity(head, un_expr->rhs);
 
 	new_table->arg1 = entity1;
 	new_table->arg2 = NULL;
@@ -259,7 +273,7 @@ static void generate_ir_args(struct mcc_ast_function_arguments *args, struct mcc
 
 	head->index++;
 	struct mcc_ir_table *new_table = create_new_ir_table();
-	char *entity = generate_ir_entity(args->expression);
+	char *entity = generate_ir_entity(head, args->expression);
 
 	new_table->arg1 = entity;
 	new_table->op_type = MCC_IR_TABLE_POP;
@@ -281,7 +295,7 @@ static void generate_built_in_function_call(struct mcc_ast_expression *expr_call
 	// func identifier
 	head->index++;
 	struct mcc_ir_table *new_table = create_new_ir_table();
-	char *id_entity = generate_ir_entity(expr_call->function_call_identifier);
+	char *id_entity = generate_ir_entity(head, expr_call->function_call_identifier);
 
 	new_table->arg1 = id_entity;
 	new_table->arg2 = NULL;
@@ -311,7 +325,7 @@ static void generate_ir_array_access(struct mcc_ast_expression *id_expr,
 	head->index++;
 	struct mcc_ir_table *new_table = create_new_ir_table();
 
-	char *entity1 = generate_ir_entity(id_expr);
+	char *entity1 = generate_ir_entity(head, id_expr);
 	char value[14] = {0};
 	sprintf(value, "%s[]", entity1); // TODO
 
@@ -367,7 +381,7 @@ static void generate_ir_assignment(struct mcc_ast_declare_assign *assign, struct
 	enum ir_table_operation_type type;
 	char *entity1;
 	if (assign->assign_lhs->type == MCC_AST_EXPRESSION_TYPE_IDENTIFIER) {
-		entity1 = generate_ir_entity(assign->assign_lhs);
+		entity1 = generate_ir_entity(head, assign->assign_lhs);
 		type = MCC_IR_TABLE_ASSIGNMENT;
 	} else if (assign->assign_lhs->type == MCC_AST_EXPRESSION_TYPE_ARRAY_ACCESS) {
 		char *id = assign->assign_lhs->array_access_id->identifier->name;
@@ -425,7 +439,7 @@ static void generate_ir_if(struct mcc_ast_statement *stmt, struct mcc_ir_head *h
 	// if condition
 	if (stmt->if_cond->type == MCC_AST_EXPRESSION_TYPE_IDENTIFIER ||
 	    stmt->if_cond->type == MCC_AST_EXPRESSION_TYPE_LITERAL) {
-		entity1 = generate_ir_entity(stmt->if_cond);
+		entity1 = generate_ir_entity(head, stmt->if_cond);
 	} else {
 		generate_ir_expression(stmt->if_cond, head, -1);
 		sprintf(value, "(%d)", head->current->index);
@@ -564,7 +578,7 @@ static void generate_ir_param(struct mcc_ast_parameter *param, struct mcc_ir_hea
 
 	head->index++;
 	struct mcc_ir_table *new_table = create_new_ir_table();
-	char *entity = generate_ir_entity(param->parameter->declare_id);
+	char *entity = generate_ir_entity(head, param->parameter->declare_id);
 
 	new_table->arg1 = entity;
 	new_table->op_type = MCC_IR_TABLE_POP;
@@ -583,7 +597,7 @@ static void generate_function_definition(struct mcc_ast_func_definition *func, s
 	// func identifier
 	head->index++;
 	struct mcc_ir_table *new_table = create_new_ir_table();
-	char *id_entity = generate_ir_entity(func->func_identifier);
+	char *id_entity = generate_ir_entity(head, func->func_identifier);
 
 	new_table->arg1 = id_entity;
 	new_table->arg2 = NULL;
