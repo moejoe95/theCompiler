@@ -110,7 +110,9 @@ static char *generate_ir_entity(struct mcc_ir_head *head, struct mcc_ast_express
 		entity = generate_ir_literal_entity(expr->literal);
 		break;
 	case MCC_AST_EXPRESSION_TYPE_IDENTIFIER:
-		entity = strdup(expr->identifier->name);
+		entity= lookup_table_args(head, expr->identifier->name, NULL);
+		if(!entity)
+			entity = strdup(expr->identifier->name);
 		break;
 	case MCC_AST_EXPRESSION_TYPE_ARRAY_ACCESS:
 		sprintf(value, "%s[]", expr->array_access_id->identifier->name);
