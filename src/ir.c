@@ -678,5 +678,17 @@ struct mcc_ir_table *mcc_create_ir(struct mcc_ast_program *program, FILE *out, i
 	if (log_level > 0)
 		mcc_print_ir_table(table, out);
 
+	free(head);
 	return table;
+}
+
+void mcc_delete_ir(struct mcc_ir_table *table)
+{
+	if (table->next_table != NULL) {
+		mcc_delete_ir(table->next_table);
+	}
+
+	// free(table->arg1);
+	// free(table->arg2);
+	free(table);
 }

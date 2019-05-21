@@ -50,5 +50,6 @@ struct mcc_ir_head {
 
 struct mcc_ast_visitor generate_ir_visitor(struct mcc_ir_head *head);
 struct mcc_ir_table *mcc_create_ir(struct mcc_ast_program *program, FILE *out, int log_level);
+void mcc_delete_ir(struct mcc_ir_table *head);
 
 #endif
