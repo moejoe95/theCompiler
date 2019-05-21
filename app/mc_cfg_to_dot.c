@@ -3,14 +3,15 @@
 
 #include "mcc/ast.h"
 #include "mcc/ast_print.h"
-#include "mcc/ir.h"
 #include "mcc/cfg.h"
+#include "mcc/ir.h"
 #include "mcc/parser.h"
 #include "mcc/print_ir.h"
 #include "mcc/symbol_table.h"
 #include "mcc/type_checking.h"
 #include <getopt.h>
 #include <string.h>
+
 
 enum log_level { LOG_DEFAULT, LOG_INFO, LOG_DEBUG };
 
@@ -112,6 +113,7 @@ int main(int argc, char **argv)
 
 			if (result.status != MCC_PARSER_STATUS_OK) {
 				fprintf(stdout, "...parsing failed...\n");
+				fclose(in);
 				return EXIT_FAILURE;
 			}
 			pro = result.program;
@@ -145,8 +147,8 @@ int main(int argc, char **argv)
 		// print IR
 		mcc_print_ir_table(ir, out);
 
-        //cfg
-        generate_cfg(ir);
+		// cfg
+		generate_cfg(ir);
 
 		// cleanup
 		mcc_ast_delete_program(pro);
