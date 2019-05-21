@@ -3,6 +3,7 @@
 
 #include "mcc/ast.h"
 #include "mcc/ast_print.h"
+#include "mcc/ir.h"
 #include "mcc/parser.h"
 #include "mcc/symbol_table.h"
 #include "mcc/type_checking.h"

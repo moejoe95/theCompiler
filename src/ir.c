@@ -321,24 +321,22 @@ static void generate_built_in_function_call(struct mcc_ast_expression *expr_call
 	head->current = new_table;
 
 	// func parameter list
-	struct mcc_ast_parameter *arg = expr_call->function_call_arguments;
+	struct mcc_ast_function_arguments *arg = expr_call->function_call_arguments;
 	while (arg != NULL) {
 		generate_ir_args(arg, head);
-		arg = arg->next_parameter;
+		arg = arg->next_argument;
 	}
 }
 
 static void generate_ir_array_access(struct mcc_ast_expression *id_expr,
                                      struct mcc_ast_expression *array_expr,
-                                     struct mcc_ir_head *head,
-                                     enum ir_table_operation_type type)
+                                     struct mcc_ir_head *head)
 {
 	assert(id_expr);
 	assert(array_expr);
 	assert(head);
 
 	head->index++;
-	struct mcc_ir_table *new_table = create_new_ir_table();
 
 	char *entity1 = generate_ir_entity(head, id_expr);
 	char value[14] = {0};
@@ -373,7 +371,7 @@ generate_ir_expression(struct mcc_ast_expression *expr, struct mcc_ir_head *head
 		generate_ir_function_call(expr, head);
 		break;
 	case MCC_AST_EXPRESSION_TYPE_ARRAY_ACCESS:
-		generate_ir_array_access(expr->array_access_id, expr->array_access_exp, head, MCC_IR_TABLE_LOAD);
+		generate_ir_array_access(expr->array_access_id, expr->array_access_exp, head);
 		break;
 	default:
 		printf("todo\n");
@@ -449,8 +447,8 @@ static void generate_ir_if(struct mcc_ast_statement *stmt, struct mcc_ir_head *h
 
 	char value[14] = {0};
 
-	char *jump_loc;
-	char *jump_false_loc;
+	char *jump_loc = NULL;
+	char *jump_false_loc = NULL;
 	struct mcc_ir_table *jumpfalse_table = create_new_ir_table();
 	char *entity1;
 
@@ -508,8 +506,8 @@ static void generate_ir_while(struct mcc_ast_statement *stmt, struct mcc_ir_head
 
 	char value[12] = {0};
 
-	char *jump_loc;
-	char *jump_false_loc;
+	char *jump_loc = NULL;
+	char *jump_false_loc = NULL;
 
 	// while condition
 	generate_ir_expression(stmt->while_cond, head, -1);
