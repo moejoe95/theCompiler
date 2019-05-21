@@ -2,6 +2,7 @@
 #include "assert.h"
 #include "mcc/ast.h"
 #include "mcc/ast_visit.h"
+#include "mcc/print_ir.h"
 #include "stdio.h"
 #include "stdlib.h"
 #include "string.h"
@@ -247,12 +248,14 @@ static void generate_ir_function_call(struct mcc_ast_expression *expr_call, stru
 	assert(expr_call);
 	assert(head);
 
+	char *func_id = expr_call->function_call_identifier->identifier->name;
+
 	// built in functions
 	char *x[] = {"print_nl",    "read_int",   "print", "print_int",
 	             "print_float", "read_float", 0}; // TODO rest of built in functions
 	int i = 0;
 	while (x[i]) {
-		if (strcmp(x[i], expr_call->function_call_identifier->identifier->name) == 0) {
+		if (strcmp(x[i], func_id) == 0) {
 			generate_built_in_function_call(expr_call, head);
 			return;
 		}
@@ -262,11 +265,15 @@ static void generate_ir_function_call(struct mcc_ast_expression *expr_call, stru
 	// normal functions
 	generate_function_arguments(expr_call->function_call_arguments, head);
 
+	char *label = lookup_table_args(head, func_id, NULL);
+	if (label) {
+		generate_ir_table_line(head, label, NULL, MCC_IR_TABLE_JUMP);
+		return;
+	}
+
 	struct mcc_ast_func_list *list = head->program->function_list;
-	// search for main function
 	while (list != NULL) {
-		if (strcmp(list->function->func_identifier->identifier->name,
-		           expr_call->function_call_identifier->identifier->name) == 0) {
+		if (strcmp(list->function->func_identifier->identifier->name, func_id) == 0) {
 			generate_function_definition(list->function, head);
 			break;
 		}
@@ -314,24 +321,22 @@ static void generate_built_in_function_call(struct mcc_ast_expression *expr_call
 	head->current = new_table;
 
 	// func parameter list
-	struct mcc_ast_parameter *arg = expr_call->function_call_arguments;
+	struct mcc_ast_function_arguments *arg = expr_call->function_call_arguments;
 	while (arg != NULL) {
 		generate_ir_args(arg, head);
-		arg = arg->next_parameter;
+		arg = arg->next_argument;
 	}
 }
 
 static void generate_ir_array_access(struct mcc_ast_expression *id_expr,
                                      struct mcc_ast_expression *array_expr,
-                                     struct mcc_ir_head *head,
-                                     enum ir_table_operation_type type)
+                                     struct mcc_ir_head *head)
 {
 	assert(id_expr);
 	assert(array_expr);
 	assert(head);
 
 	head->index++;
-	struct mcc_ir_table *new_table = create_new_ir_table();
 
 	char *entity1 = generate_ir_entity(head, id_expr);
 	char value[14] = {0};
@@ -366,7 +371,7 @@ generate_ir_expression(struct mcc_ast_expression *expr, struct mcc_ir_head *head
 		generate_ir_function_call(expr, head);
 		break;
 	case MCC_AST_EXPRESSION_TYPE_ARRAY_ACCESS:
-		generate_ir_array_access(expr->array_access_id, expr->array_access_exp, head, MCC_IR_TABLE_LOAD);
+		generate_ir_array_access(expr->array_access_id, expr->array_access_exp, head);
 		break;
 	default:
 		printf("todo\n");
@@ -442,8 +447,8 @@ static void generate_ir_if(struct mcc_ast_statement *stmt, struct mcc_ir_head *h
 
 	char value[14] = {0};
 
-	char *jump_loc;
-	char *jump_false_loc;
+	char *jump_loc = NULL;
+	char *jump_false_loc = NULL;
 	struct mcc_ir_table *jumpfalse_table = create_new_ir_table();
 	char *entity1;
 
@@ -501,8 +506,8 @@ static void generate_ir_while(struct mcc_ast_statement *stmt, struct mcc_ir_head
 
 	char value[12] = {0};
 
-	char *jump_loc;
-	char *jump_false_loc;
+	char *jump_loc = NULL;
+	char *jump_false_loc = NULL;
 
 	// while condition
 	generate_ir_expression(stmt->while_cond, head, -1);

@@ -5,7 +5,6 @@
 #include "mcc/ast_print.h"
 #include "mcc/ir.h"
 #include "mcc/parser.h"
-#include "mcc/print_ir.h"
 #include "mcc/symbol_table.h"
 #include "mcc/type_checking.h"
 #include <getopt.h>
@@ -140,10 +139,11 @@ int main(int argc, char **argv)
 		}
 
 		// type checking
-		mcc_check_types(pro, st, out, log_level_to_int(LOG_LEVEL));
+		int error = mcc_check_types(pro, st, out, log_level_to_int(LOG_LEVEL));
 
 		// generate IR code
-		mcc_create_ir(pro, out, log_level_to_int(LOG_LEVEL));
+		if (!error)
+			mcc_create_ir(pro, out, log_level_to_int(LOG_LEVEL));
 
 		// cleanup
 		mcc_delete_symbol_table(st);
