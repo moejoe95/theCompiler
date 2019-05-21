@@ -19,6 +19,8 @@ static struct mcc_ir_table *create_new_ir_table()
 	if (!table) {
 		return NULL;
 	}
+	table->arg1 = NULL;
+	table->arg2 = NULL;
 	table->next_table = NULL;
 	table->op_type = MCC_IR_TABLE_NULL;
 	return table;

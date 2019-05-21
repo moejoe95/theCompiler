@@ -551,6 +551,10 @@ void mcc_check_types(struct mcc_ast_program *program, struct mcc_symbol_table *s
 	default: {
 	}
 	}
+
+	if (tracing) {
+		fprintf(out, "\n");
+	}
 	free(type_checking);
 }
 
