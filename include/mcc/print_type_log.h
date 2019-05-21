@@ -25,5 +25,6 @@ struct mcc_type_log *get_mcc_type_log_struct(enum mcc_type_status status);
 void mcc_print_type_log_footer(FILE *out);
 char *get_status_string(enum mcc_type_status status);
 void mcc_delete_log_struct(struct mcc_type_log *log);
+void print_line(FILE *out);
 
 #endif
