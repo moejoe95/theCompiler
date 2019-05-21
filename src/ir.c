@@ -34,10 +34,12 @@ static char *lookup_table_args(struct mcc_ir_head *head, char *arg1, char *arg2)
 		if (arg2 != NULL) {
 			arg2eq = strcmp(arg2, table->arg2);
 		}
-		if (strcmp(arg1, table->arg1) == 0 && arg2eq) {
-			char value[12] = {0};
-			sprintf(value, "(%d)", table->index);
-			result = strdup(value);
+		if (table->arg1 != NULL) {
+			if (strcmp(arg1, table->arg1) == 0 && arg2eq) {
+				char value[12] = {0};
+				sprintf(value, "(%d)", table->index);
+				result = strdup(value);
+			}
 		}
 		table = table->next_table;
 	}
@@ -628,7 +630,7 @@ static void generate_function_definition(struct mcc_ast_func_definition *func, s
 	}
 }
 
-struct mcc_ir_table *mcc_create_ir(struct mcc_ast_program *program)
+struct mcc_ir_table *mcc_create_ir(struct mcc_ast_program *program, FILE *out, int log_level)
 {
 	assert(program);
 
@@ -665,5 +667,6 @@ struct mcc_ir_table *mcc_create_ir(struct mcc_ast_program *program)
 		break;
 	}
 
-	return table;
+	if (log_level > 0)
+		mcc_print_ir_table(table, out);
 }
