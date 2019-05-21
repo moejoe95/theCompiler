@@ -43,6 +43,7 @@ static char *lookup_table_args(struct mcc_ir_head *head, char *arg1, char *arg2)
 				char value[12] = {0};
 				sprintf(value, "(%d)", table->index);
 				result = strdup(value);
+				break;
 			}
 		}
 		table = table->next_table;
@@ -187,6 +188,7 @@ static void generate_ir_binary_expression(struct mcc_ast_expression *bin_expr,
 	}
 	char *entity2 = generate_ir_entity(head, bin_expr->rhs);
 
+	printf("entity1 %s\n", entity1);
 	new_table->arg1 = entity1;
 	new_table->arg2 = entity2;
 	new_table->op_type = type;
