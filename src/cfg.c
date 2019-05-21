@@ -1,6 +1,6 @@
 #include "mcc/cfg.h"
 
-static void generate_block(struct mcc_cfg* cfg, struct mcc_ir_table* ir){
+static void generate_block(struct mcc_cfg* cfg, struct mcc_ir_table* ir, int table_id_start, int table_id_end){
     assert(cfg);
     assert(ir);
     
@@ -9,11 +9,13 @@ static void generate_block(struct mcc_cfg* cfg, struct mcc_ir_table* ir){
 		return NULL;
 
     block->block_id = cfg->current_block->block_id + 1;
+    block->table_id_start = table_id_start;
+    block->table_id_end = table_id_end;
 
     printf("current block id: %d\n", cfg->current_block->block_id);
     printf("new block id: %d\n", block->block_id);
 
-    cfg->current_block->next_block = block;
+    cfg->current_block->child_blocks->child = block;
     cfg->current_block = block;
 }
 
@@ -38,14 +40,14 @@ struct mcc_cfg* generate_cfg(struct mcc_ir_table *ir){
     while (ir != NULL) {
         switch (ir->op_type){
             case MCC_IR_TABLE_JUMP:
-                generate_block(cfg, ir);
+                generate_block(cfg, ir, 0, 4);
                 break;
 
             case MCC_IR_TABLE_JUMPFALSE:
-                generate_block(cfg, ir);
+                generate_block(cfg, ir, 0, 1);
                 break;
             case MCC_IR_TABLE_LABEL:
-                generate_block(cfg, ir);
+                generate_block(cfg, ir, 0, 1);
                 break;			
 		}
         ir = ir->next_table;
