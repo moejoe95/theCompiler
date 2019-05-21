@@ -104,6 +104,7 @@ int main(int argc, char **argv)
 		}
 
 		struct mcc_ast_program *pro = NULL;
+		struct mcc_symbol_table *st = NULL;
 
 		// parsing phase
 		{
@@ -131,21 +132,22 @@ int main(int argc, char **argv)
 			pro->function_list->next_function = NULL;
 		}
 
-		struct mcc_symbol_table *st = NULL;
+		// build symbol table
 		st = mcc_create_symbol_table(pro, out, log_level_to_int(LOG_LEVEL));
+		if (st == NULL) {
+			mcc_ast_delete_program(pro);
+			return EXIT_FAILURE;
+		}
 
 		// type checking
-		if (st != NULL) {
-			mcc_check_types(pro, st, out, 0);
-			mcc_delete_symbol_table(st);
-		}
+		mcc_check_types(pro, st, out, log_level_to_int(LOG_LEVEL));
 
 		// generate IR code
 		struct mcc_ir_table *ir = mcc_create_ir(pro);
-		// print IR
 		mcc_print_ir_table(ir, out);
 
 		// cleanup
+		mcc_delete_symbol_table(st);
 		mcc_ast_delete_program(pro);
 
 		if (fclose(in) != 0) { // TODO segfaults
