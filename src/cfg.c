@@ -1,10 +1,11 @@
 #include "mcc/cfg.h"
 
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-static void generate_block(struct mcc_cfg *cfg, int table_id_start)
+static void generate_block(struct mcc_cfg *cfg, int table_id_start, bool add_child)
 {
 	assert(cfg);
 
@@ -22,26 +23,40 @@ static void generate_block(struct mcc_cfg *cfg, int table_id_start)
 	block->child_blocks = NULL;
 	block->next_block = NULL;
 
-	if (cfg->current_block != NULL) {
-		if (cfg->current_block->child_blocks == NULL) {
-			struct child_blocks *child = malloc(sizeof(*child));
-			if (!child)
-				return;
-
-			cfg->current_block->child_blocks = child;
-			cfg->current_block->child_blocks->head = block;
-		} else {
-			struct mcc_block *temp = cfg->current_block->child_blocks->head;
-			while (temp->next_block != NULL) {
-				temp = temp->next_block;
-			}
-			temp->next_block = block;
-		}
-	} else {
+	if (cfg->current_block == NULL) {
 		cfg->root_block = block;
+	} else {
+		add_node(cfg->current_block, block, add_child);
 	}
 
 	cfg->current_block = block;
+}
+
+void add_node(struct mcc_block *current, struct mcc_block *new, bool add_child)
+{
+	if (!add_child) {
+		struct mcc_block *temp = current;
+		while (temp->next_block != NULL) {
+			temp = temp->next_block;
+		}
+		temp->next_block = new;
+		return;
+	}
+
+	if (current->child_blocks == NULL) {
+		struct child_blocks *child = malloc(sizeof(*child));
+		if (!child)
+			return;
+
+		current->child_blocks = child;
+		current->child_blocks->head = new;
+	} else {
+		struct mcc_block *temp = current->child_blocks->head;
+		while (temp->next_block != NULL) {
+			temp = temp->next_block;
+		}
+		temp->next_block = new;
+	}
 }
 
 // TODO Andreas remove this print and replace it with something cool
@@ -86,22 +101,28 @@ struct mcc_cfg *generate_cfg(struct mcc_ir_table *ir)
 
 	cfg->current_block = NULL;
 
+	bool child = true;
+
 	while (ir != NULL) {
 		switch (ir->op_type) {
 		case MCC_IR_TABLE_JUMP:
 			if (cfg->current_block != NULL)
 				cfg->current_block->table_id_end = (ir->index - 1);
-			generate_block(cfg, ir->index);
+			generate_block(cfg, ir->index, child);
+			child = true;
 			break;
 		case MCC_IR_TABLE_JUMPFALSE:
 			if (cfg->current_block != NULL)
 				cfg->current_block->table_id_end = (ir->index - 1);
-			generate_block(cfg, ir->index);
+			generate_block(cfg, ir->index, true);
+			child = false;
 			break;
 		case MCC_IR_TABLE_LABEL:
 			if (cfg->current_block != NULL)
 				cfg->current_block->table_id_end = (ir->index - 1);
-			generate_block(cfg, ir->index);
+			generate_block(cfg, ir->index, child);
+			break;
+		default:
 			break;
 		}
 
