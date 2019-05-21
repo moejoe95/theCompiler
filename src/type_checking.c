@@ -569,6 +569,10 @@ int mcc_check_types(struct mcc_ast_program *program, struct mcc_symbol_table *sy
 	}
 	}
 	int error = type_checking->error;
+
+	if (tracing) {
+		fprintf(out, "\n");
+	}
 	free(type_checking);
 	return error;
 }

@@ -44,9 +44,24 @@ static void generate_block(struct mcc_cfg *cfg, int table_id_start)
 	cfg->current_block = block;
 }
 
+// TODO Andreas remove this print and replace it with something cool
+char *string_repeat2(int n, const char *s)
+{
+	size_t slen = strlen(s);
+	char *dest = malloc(n * slen + 1);
+
+	int i;
+	char *p;
+	for (i = 0, p = dest; i < n; ++i, p += slen) {
+		memcpy(p, s, slen);
+	}
+	*p = '\0';
+	return dest;
+}
+
 void print_block(struct mcc_block *temp_block, int indent)
 {
-	char *indention = string_repeat(indent, "\t");
+	char *indention = string_repeat2(indent, "\t");
 	printf("%sblock %d start %d end %d\n", indention, temp_block->block_id, temp_block->table_id_start,
 	       temp_block->table_id_end);
 
@@ -59,6 +74,7 @@ void print_block(struct mcc_block *temp_block, int indent)
 		print_block(temp_block->child_blocks->head, indent);
 	}
 }
+// TODO Andras End
 
 struct mcc_cfg *generate_cfg(struct mcc_ir_table *ir)
 {
