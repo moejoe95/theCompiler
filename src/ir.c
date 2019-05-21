@@ -143,9 +143,9 @@ static void generate_ir_table_line(struct mcc_ir_head *head, char *arg1, char *a
 	head->index++;
 	struct mcc_ir_table *new_table = create_new_ir_table();
 
-	new_table->arg1 = strdup(arg1);
+	new_table->arg1 = arg1;
 	if (arg2)
-		new_table->arg2 = strdup(arg2);
+		new_table->arg2 = arg2;
 	new_table->op_type = type;
 	new_table->index = head->index;
 
@@ -175,8 +175,7 @@ static void generate_ir_binary_expression(struct mcc_ast_expression *bin_expr,
 	char *entity1;
 	if (bin_expr->lhs->type != MCC_AST_EXPRESSION_TYPE_LITERAL) {
 		if (bin_expr->lhs->type == MCC_AST_EXPRESSION_TYPE_IDENTIFIER) {
-			char *line = lookup_table_args(head, bin_expr->lhs->identifier->name, NULL);
-			entity1 = strdup(line);
+			entity1 = lookup_table_args(head, bin_expr->lhs->identifier->name, NULL);
 		} else {
 			char value[14];
 			sprintf(value, "(%d)", head->index - 1);
@@ -343,7 +342,7 @@ static void generate_ir_array_access(struct mcc_ast_expression *id_expr,
 	char value[14] = {0};
 	sprintf(value, "%s[]", entity1); // TODO
 
-	generate_ir_table_line(head, value, NULL, MCC_IR_TABLE_LOAD);
+	generate_ir_table_line(head, strdup(value), NULL, MCC_IR_TABLE_LOAD);
 }
 
 static void
@@ -429,16 +428,16 @@ static void generate_ir_return(struct mcc_ast_expression *expr, struct mcc_ir_he
 	// insert additional line in IR table
 	if (expr->type != MCC_AST_EXPRESSION_TYPE_LITERAL && expr->type != MCC_AST_EXPRESSION_TYPE_IDENTIFIER) {
 		sprintf(value, "(%d)", head->index - 1);
-		generate_ir_table_line(head, value, NULL, MCC_IR_TABLE_PUSH);
+		generate_ir_table_line(head, strdup(value), NULL, MCC_IR_TABLE_PUSH);
 	}
 
 	// jump
 	sprintf(value, "(%d)", head->index + 2);
-	generate_ir_table_line(head, value, NULL, MCC_IR_TABLE_JUMP);
+	generate_ir_table_line(head, strdup(value), NULL, MCC_IR_TABLE_JUMP);
 
 	// pop
 	sprintf(value, "(%d)", head->index);
-	generate_ir_table_line(head, value, NULL, MCC_IR_TABLE_POP);
+	generate_ir_table_line(head, strdup(value), NULL, MCC_IR_TABLE_POP);
 }
 
 static void generate_ir_if(struct mcc_ast_statement *stmt, struct mcc_ir_head *head)
@@ -688,7 +687,7 @@ void mcc_delete_ir(struct mcc_ir_table *table)
 		mcc_delete_ir(table->next_table);
 	}
 
-	// free(table->arg1);
-	// free(table->arg2);
+	free(table->arg1);
+	free(table->arg2);
 	free(table);
 }
