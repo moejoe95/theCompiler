@@ -16,10 +16,17 @@ struct mcc_cfg{
 
 struct mcc_block{
     int block_id;
+    int table_id_start;
+    int table_id_end;
 
     struct mcc_ir_table *entities;
 
-    struct mcc_block *next_block;
+    struct child_blocks *child_blocks;
+};
+
+struct child_blocks{
+    struct mcc_block *child;
+    struct mcc_block *next_child;
 };
 
 struct mcc_cfg* generate_cfg(struct mcc_ir_table *ir);
