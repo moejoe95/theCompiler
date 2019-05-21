@@ -144,8 +144,7 @@ int main(int argc, char **argv)
 		mcc_check_types(pro, st, out, log_level_to_int(LOG_LEVEL));
 
 		// generate IR code
-		struct mcc_ir_table *ir = mcc_create_ir(pro);
-		mcc_print_ir_table(ir, out);
+		struct mcc_ir_table *ir = mcc_create_ir(pro, out, log_level_to_int(LOG_LEVEL));
 
 		// cfg
 		generate_cfg(ir);

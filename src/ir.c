@@ -626,7 +626,7 @@ static void generate_function_definition(struct mcc_ast_func_definition *func, s
 	}
 }
 
-struct mcc_ir_table *mcc_create_ir(struct mcc_ast_program *program)
+struct mcc_ir_table *mcc_create_ir(struct mcc_ast_program *program, FILE *out, int log_level)
 {
 	assert(program);
 
@@ -663,5 +663,6 @@ struct mcc_ir_table *mcc_create_ir(struct mcc_ast_program *program)
 		break;
 	}
 
-	return table;
+	if (log_level > 0)
+		mcc_print_ir_table(table, out);
 }
