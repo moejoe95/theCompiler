@@ -32,10 +32,12 @@ static char *lookup_table_args(struct mcc_ir_head *head, char *arg1, char *arg2)
 		if (arg2 != NULL) {
 			arg2eq = strcmp(arg2, table->arg2);
 		}
-		if (strcmp(arg1, table->arg1) == 0 && arg2eq) {
-			char value[12] = {0};
-			sprintf(value, "(%d)", table->index);
-			result = strdup(value);
+		if (table->arg1 != NULL) {
+			if (strcmp(arg1, table->arg1) == 0 && arg2eq) {
+				char value[12] = {0};
+				sprintf(value, "(%d)", table->index);
+				result = strdup(value);
+			}
 		}
 		table = table->next_table;
 	}
