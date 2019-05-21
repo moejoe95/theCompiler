@@ -3,6 +3,7 @@
 
 #include "mcc/ast.h"
 #include <stdio.h>
+#include <string.h>
 
 enum ir_table_operation_type {
 	MCC_IR_TABLE_UNARY_OP,
