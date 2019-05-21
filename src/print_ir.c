@@ -20,7 +20,7 @@ void print_row(struct mcc_ir_table *table, FILE *out)
 {
 
 	if (!table->arg2) {
-		char *entity2 = "-";
+		char *entity2 = strdup("-");
 		table->arg2 = entity2;
 	}
 

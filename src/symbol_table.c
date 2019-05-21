@@ -513,10 +513,11 @@ static struct mcc_symbol *check_identifier(struct mcc_ast_source_location *sloc,
 	struct mcc_symbol *previous_declaration = lookup_symbol(symbol_table, id->name);
 	if (previous_declaration == NULL) {
 		temp->error_found = true;
-		struct mcc_semantic_error *error = get_mcc_semantic_error_struct(MCC_SC_ERROR_UNDEFINED_IDENTIFIER);
-		error->sloc = sloc;
-		error->identifier = id;
 		if (print_error) {
+			struct mcc_semantic_error *error =
+			    get_mcc_semantic_error_struct(MCC_SC_ERROR_UNDEFINED_IDENTIFIER);
+			error->sloc = sloc;
+			error->identifier = id;
 			print_semantic_error(error, temp->out);
 		}
 		return NULL;
