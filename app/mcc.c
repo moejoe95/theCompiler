@@ -145,7 +145,7 @@ int main(int argc, char *argv[])
 		mcc_check_types(pro, st, out, log_level_to_int(LOG_LEVEL));
 
 		// generate IR code
-		// mcc_create_ir(pro, out, log_level_to_int(LOG_LEVEL));
+		mcc_create_ir(pro, out, log_level_to_int(LOG_LEVEL));
 
 		// cleanup
 		mcc_delete_symbol_table(st);

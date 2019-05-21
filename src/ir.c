@@ -243,12 +243,14 @@ static void generate_ir_function_call(struct mcc_ast_expression *expr_call, stru
 	assert(expr_call);
 	assert(head);
 
+	char *func_id = expr_call->function_call_identifier->identifier->name;
+
 	// built in functions
 	char *x[] = {"print_nl",    "read_int",   "print", "print_int",
 	             "print_float", "read_float", 0}; // TODO rest of built in functions
 	int i = 0;
 	while (x[i]) {
-		if (strcmp(x[i], expr_call->function_call_identifier->identifier->name) == 0) {
+		if (strcmp(x[i], func_id) == 0) {
 			generate_built_in_function_call(expr_call, head);
 			return;
 		}
@@ -258,11 +260,15 @@ static void generate_ir_function_call(struct mcc_ast_expression *expr_call, stru
 	// normal functions
 	generate_function_arguments(expr_call->function_call_arguments, head);
 
+	char *label = lookup_table_args(head, func_id, NULL);
+	if (label) {
+		generate_ir_table_line(head, label, NULL, MCC_IR_TABLE_JUMP);
+		return;
+	}
+
 	struct mcc_ast_func_list *list = head->program->function_list;
-	// search for main function
 	while (list != NULL) {
-		if (strcmp(list->function->func_identifier->identifier->name,
-		           expr_call->function_call_identifier->identifier->name) == 0) {
+		if (strcmp(list->function->func_identifier->identifier->name, func_id) == 0) {
 			generate_function_definition(list->function, head);
 			break;
 		}
