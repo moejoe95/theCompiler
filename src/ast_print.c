@@ -33,9 +33,9 @@ const char *mcc_ast_print_binary_op(enum mcc_ast_binary_op op)
 		return "==";
 	case MCC_AST_BINARY_OP_NEQ:
 		return "!=";
+	default:
+		return "unknown op";
 	}
-
-	return "unknown op";
 }
 
 const char *mcc_ast_print_unary_op(enum mcc_ast_unary_op op)

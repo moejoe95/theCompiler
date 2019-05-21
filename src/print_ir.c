@@ -27,57 +27,45 @@ void print_row(struct mcc_ir_table *table, FILE *out)
 	char operation[32] = {0};
 	switch (table->op_type) {
 	case MCC_IR_TABLE_UNARY_OP:
-		sprintf(operation, get_un_op_string(table->un_op));
+		sprintf(operation, "%s", get_un_op_string(table->un_op));
 		strcat(operation, "\t");
 		break;
-
 	case MCC_IR_TABLE_BINARY_OP:
-		sprintf(operation, get_bin_op_string(table->bin_op));
+		sprintf(operation, "%s", get_bin_op_string(table->bin_op));
 		strcat(operation, "\t");
 		break;
-
 	case MCC_IR_TABLE_ASSIGNMENT:
-		sprintf(operation, "assign");
+		sprintf(operation, "%s", "assign");
 		break;
-
 	case MCC_IR_TABLE_JUMPFALSE:
-		sprintf(operation, "jumpfalse");
+		sprintf(operation, "%s", "jumpfalse");
 		break;
-
 	case MCC_IR_TABLE_JUMP:
-		sprintf(operation, "jump\t");
+		sprintf(operation, "%s", "jump\t");
 		break;
-
 	case MCC_IR_TABLE_LABEL:
-		sprintf(operation, "label\t");
+		sprintf(operation, "%s", "label\t");
 		break;
-
 	case MCC_IR_TABLE_COPY:
-		sprintf(operation, "copy\t");
+		sprintf(operation, "%s", "copy\t");
 		break;
-
 	case MCC_IR_TABLE_POP:
-		sprintf(operation, "pop\t");
+		sprintf(operation, "%s", "pop\t");
 		break;
-
 	case MCC_IR_TABLE_PUSH:
-		sprintf(operation, "push\t");
+		sprintf(operation, "%s", "push\t");
 		break;
-
 	case MCC_IR_TABLE_LOAD:
-		sprintf(operation, "load\t");
+		sprintf(operation, "%s", "load\t");
 		break;
-
 	case MCC_IR_TABLE_STORE:
-		sprintf(operation, "store\t");
+		sprintf(operation, "%s", "store\t");
 		break;
-
 	case MCC_IR_TABLE_BUILT_IN:
-		sprintf(operation, "builtin\t");
+		sprintf(operation, "%s", "builtin\t");
 		break;
-
 	default:
-		sprintf(operation, "undef op");
+		sprintf(operation, "%s", "undef op");
 		break;
 	}
 

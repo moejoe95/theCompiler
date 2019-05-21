@@ -23,6 +23,7 @@ static struct mcc_ir_table *create_new_ir_table()
 	table->arg1 = NULL;
 	table->arg2 = NULL;
 	table->next_table = NULL;
+	table->bin_op = MCC_AST_BINARY_OP_NULL;
 	table->op_type = MCC_IR_TABLE_NULL;
 	return table;
 }

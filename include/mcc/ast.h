@@ -59,6 +59,7 @@ enum mcc_ast_binary_op {
 	MCC_AST_BINARY_OP_LOR,
 	MCC_AST_BINARY_OP_EQ,
 	MCC_AST_BINARY_OP_NEQ,
+	MCC_AST_BINARY_OP_NULL
 };
 
 enum mcc_ast_unary_op {

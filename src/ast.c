@@ -749,9 +749,9 @@ char *get_bin_op_string(enum mcc_ast_binary_op op)
 		return "==";
 	case MCC_AST_BINARY_OP_NEQ:
 		return "!=";
+	default:
+		return "";
 	}
-
-	return "";
 }
 
 char *get_un_op_string(enum mcc_ast_unary_op op)

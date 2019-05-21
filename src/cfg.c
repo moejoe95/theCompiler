@@ -5,33 +5,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-static void generate_block(struct mcc_cfg *cfg, int table_id_start, bool add_child)
-{
-	assert(cfg);
-
-	struct mcc_block *block = malloc(sizeof(*block));
-	if (!block)
-		return;
-
-	if (cfg->current_block == NULL) {
-		block->block_id = 0;
-	} else {
-		block->block_id = cfg->current_block->block_id + 1;
-	}
-	block->table_id_start = table_id_start;
-	block->table_id_end = 0;
-	block->child_blocks = NULL;
-	block->next_block = NULL;
-
-	if (cfg->current_block == NULL) {
-		cfg->root_block = block;
-	} else {
-		add_node(cfg->current_block, block, add_child);
-	}
-
-	cfg->current_block = block;
-}
-
 void add_node(struct mcc_block *current, struct mcc_block *new, bool add_child)
 {
 	if (!add_child) {
@@ -57,6 +30,33 @@ void add_node(struct mcc_block *current, struct mcc_block *new, bool add_child)
 		}
 		temp->next_block = new;
 	}
+}
+
+static void generate_block(struct mcc_cfg *cfg, int table_id_start, bool add_child)
+{
+	assert(cfg);
+
+	struct mcc_block *block = malloc(sizeof(*block));
+	if (!block)
+		return;
+
+	if (cfg->current_block == NULL) {
+		block->block_id = 0;
+	} else {
+		block->block_id = cfg->current_block->block_id + 1;
+	}
+	block->table_id_start = table_id_start;
+	block->table_id_end = 0;
+	block->child_blocks = NULL;
+	block->next_block = NULL;
+
+	if (cfg->current_block == NULL) {
+		cfg->root_block = block;
+	} else {
+		add_node(cfg->current_block, block, add_child);
+	}
+
+	cfg->current_block = block;
 }
 
 // TODO Andreas remove this print and replace it with something cool
