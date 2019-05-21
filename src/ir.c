@@ -165,7 +165,7 @@ static void generate_ir_binary_expression(struct mcc_ast_expression *bin_expr,
 		generate_ir_expression(bin_expr->lhs, head, type);
 	}
 	if (bin_expr->rhs->type != MCC_AST_EXPRESSION_TYPE_IDENTIFIER &&
-	    bin_expr->lhs->type != MCC_AST_EXPRESSION_TYPE_LITERAL) {
+	    bin_expr->rhs->type != MCC_AST_EXPRESSION_TYPE_LITERAL) {
 		generate_ir_expression(bin_expr->rhs, head, type);
 	}
 
