@@ -3,14 +3,14 @@
 
 void print_table_line(FILE *out)
 {
-	for (int i = 0; i < 109; i++) {
+	for (int i = 0; i < 109; i++)
 		fprintf(out, "-");
-	}
 	fprintf(out, "\n");
 }
 
 void print_table_legend(FILE *out)
 {
+	fprintf(out, "generate IR code...\n\n");
 	print_table_line(out);
 	fprintf(out, "| %s\t| %s\t| %-40s| %-40s|\n", "index", "operation", "argument 1", "argument 2");
 	print_table_line(out);
