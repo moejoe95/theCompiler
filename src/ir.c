@@ -2,6 +2,7 @@
 #include "assert.h"
 #include "mcc/ast.h"
 #include "mcc/ast_visit.h"
+#include "mcc/print_ir.h"
 #include "stdio.h"
 #include "stdlib.h"
 #include "string.h"
@@ -675,4 +676,6 @@ struct mcc_ir_table *mcc_create_ir(struct mcc_ast_program *program, FILE *out, i
 
 	if (log_level > 0)
 		mcc_print_ir_table(table, out);
+
+	return table;
 }
