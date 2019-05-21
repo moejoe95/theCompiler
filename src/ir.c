@@ -348,7 +348,7 @@ generate_ir_expression(struct mcc_ast_expression *expr, struct mcc_ir_head *head
 		generate_ir_unary_expression(expr, head, MCC_IR_TABLE_UNARY_OP);
 		break;
 	case MCC_AST_EXPRESSION_TYPE_PARENTH:
-		generate_ir_unary_expression(expr->expression, head, MCC_IR_TABLE_UNARY_OP);
+		generate_ir_expression(expr->expression, head, type);
 		break;
 	case MCC_AST_EXPRESSION_TYPE_LITERAL:
 		generate_ir_literal(expr->literal, head, type);
