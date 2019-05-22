@@ -558,6 +558,15 @@ static void symbol_table_expression(struct mcc_ast_expression *expr, void *data)
 		sym =
 		    check_identifier(&expr->array_access_id->node.sloc, temp, expr->array_access_id->identifier, true);
 		if (sym) {
+			if (sym->array_size == NULL) {
+				temp->error_found = true;
+				struct mcc_semantic_error *error =
+				    get_mcc_semantic_error_struct(MCC_SC_ERROR_INVALID_ARRAY_ACCESS);
+				error->sloc = &expr->node.sloc;
+				error->lhs_type = sym->type;
+				print_semantic_error(error, temp->out);
+				return;
+			}
 			expr->expression_type = sym->type;
 		}
 		break;

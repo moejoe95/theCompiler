@@ -79,6 +79,12 @@ void print_semantic_error(struct mcc_semantic_error *semantic_error, FILE *out)
 		fprintf(out, "%s:%d:%d: error: %s\n", semantic_error->sloc->filename, semantic_error->sloc->end_line,
 		        semantic_error->sloc->end_col, "assignment not allowed on type array");
 		break;
+	case MCC_SC_ERROR_INVALID_ARRAY_ACCESS:
+		assert(semantic_error);
+		fprintf(out, "%s:%d:%d: error: %s %s\n", semantic_error->sloc->filename, semantic_error->sloc->end_line,
+		        semantic_error->sloc->end_col, "array access not allowed on type",
+		        get_type_string(semantic_error->lhs_type));
+		break;
 	case MCC_SC_ERROR_INVALID_RETURN_TYPE:
 		fprintf(out, "%s:%d:%d: error: %s (expected type '%s', but got type '%s')\n",
 		        semantic_error->sloc->filename, semantic_error->sloc->end_line, semantic_error->sloc->end_col,
