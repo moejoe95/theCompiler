@@ -95,6 +95,8 @@ struct mcc_cfg *generate_cfg(struct mcc_ir_table *ir)
 {
 	assert(ir);
 
+	struct mcc_ir_table *ir_cfg_print = ir;
+
 	struct mcc_cfg *cfg = malloc(sizeof(*cfg));
 	if (!cfg)
 		return NULL;
@@ -132,6 +134,9 @@ struct mcc_cfg *generate_cfg(struct mcc_ir_table *ir)
 		ir = ir->next_table;
 	}
 
-	print_block(cfg->root_block, 0);
+	//print_block(cfg->root_block, 0);
+
+	print_cfg(ir_cfg_print, cfg, stdout); //TODO change file out
+
 	return cfg;
 }
