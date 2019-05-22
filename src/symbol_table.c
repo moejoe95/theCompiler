@@ -405,17 +405,25 @@ static void symbol_table_function_def(struct mcc_ast_func_definition *function, 
 	int numArgs = 0;
 	if (function->parameter_list) {
 		struct mcc_ast_parameter *param = function->parameter_list;
-		arg_type_list_first->type =
-		    lookup_symbol_in_scope(symbol_table, param->parameter->declare_id->identifier->name)->type;
+		struct mcc_symbol *sym =
+		    lookup_symbol_in_scope(symbol_table, param->parameter->declare_id->identifier->name);
+		if (sym->array_size != NULL) {
+			arg_type_list_first->type = MCC_AST_TYPE_ARRAY;
+		} else {
+			arg_type_list_first->type = sym->type;
+		}
 		struct argument_type_list *arg_type_list_temp = arg_type_list_first;
 		do {
 			numArgs++;
 			if (param->next_parameter) {
 				struct argument_type_list *argument_type_list_next = create_argument_type_list();
-				argument_type_list_next->type =
-				    lookup_symbol_in_scope(
-				        symbol_table, param->next_parameter->parameter->declare_id->identifier->name)
-				        ->type;
+				sym = lookup_symbol_in_scope(
+				    symbol_table, param->next_parameter->parameter->declare_id->identifier->name);
+				if (sym->array_size != NULL) {
+					argument_type_list_next->type = MCC_AST_TYPE_ARRAY;
+				} else {
+					argument_type_list_next->type = sym->type;
+				}
 				arg_type_list_temp->next_type = argument_type_list_next;
 				arg_type_list_temp = argument_type_list_next;
 			}
@@ -657,6 +665,7 @@ struct mcc_ast_visitor generate_symbol_table_visitor(struct temp_create_symbol_t
 
 	    .expression_call = symbol_table_function_call,
 	    .expression_identifier = symbol_table_expression,
+	    .expression_array_access = symbol_table_expression,
 
 	    .statement_if = symbol_table_if_statement,
 	    .statement_while = symbol_table_while_statement,
