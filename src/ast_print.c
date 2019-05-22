@@ -98,6 +98,18 @@ static void print_dot_expression_literal(struct mcc_ast_expression *expression, 
 	print_dot_edge(out, expression, expression->literal, "lit");
 }
 
+static void print_dot_array_access(struct mcc_ast_expression *expression, void *data)
+{
+	assert(expression);
+	assert(data);
+	FILE *out = data;
+
+	print_dot_node(out, expression, "access expr.");
+
+	print_dot_edge(out, expression, expression->array_access_id, "identifier");
+	print_dot_edge(out, expression, expression->array_access_exp, "[ ]");
+}
+
 static void print_dot_expression_binary_op(struct mcc_ast_expression *expression, void *data)
 {
 	assert(expression);
@@ -109,14 +121,12 @@ static void print_dot_expression_binary_op(struct mcc_ast_expression *expression
 	FILE *out = data;
 	print_dot_node(out, expression, label);
 	if (expression->lhs->type == MCC_AST_EXPRESSION_TYPE_ARRAY_ACCESS) {
-		print_dot_edge(out, expression, expression->lhs->array_access_id, "lhs");
-		print_dot_edge(out, expression, expression->lhs->array_access_exp, "access expr.");
+		print_dot_edge(out, expression, expression->lhs, "lhs");
 	} else {
 		print_dot_edge(out, expression, expression->lhs, "lhs");
 	}
 	if (expression->rhs->type == MCC_AST_EXPRESSION_TYPE_ARRAY_ACCESS) {
-		print_dot_edge(out, expression, expression->rhs->array_access_id, "rhs");
-		print_dot_edge(out, expression, expression->rhs->array_access_exp, "access expr.");
+		print_dot_edge(out, expression, expression->rhs, "rhs");
 	} else {
 		print_dot_edge(out, expression, expression->rhs, "rhs");
 	}
@@ -387,6 +397,7 @@ static struct mcc_ast_visitor print_dot_visitor(FILE *out)
 	    .expression_identifier = print_dot_expression_identifier,
 	    .expression_call = print_dot_expression_call,
 	    .expression_argument = print_dot_expression_argument,
+	    .expression_array_access = print_dot_array_access,
 
 	    .literal_int = print_dot_literal_int,
 	    .literal_float = print_dot_literal_float,
