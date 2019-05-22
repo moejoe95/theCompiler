@@ -418,27 +418,29 @@ static void generate_ir_assignment(struct mcc_ast_declare_assign *assign, struct
 
 static void generate_ir_return(struct mcc_ast_expression *expr, struct mcc_ir_head *head)
 {
-	assert(expr);
 	assert(head);
-
-	// push
-	generate_ir_expression(expr, head, MCC_IR_TABLE_PUSH);
 
 	char value[14] = {0};
 
-	// insert additional line in IR table
-	if (expr->type != MCC_AST_EXPRESSION_TYPE_LITERAL && expr->type != MCC_AST_EXPRESSION_TYPE_IDENTIFIER) {
-		sprintf(value, "(%d)", head->index - 1);
-		generate_ir_table_line(head, strdup(value), NULL, MCC_IR_TABLE_PUSH);
-	}
+	// push
+	if (expr) {
+		generate_ir_expression(expr, head, MCC_IR_TABLE_PUSH);
 
+		// insert additional line in IR table
+		if (expr->type != MCC_AST_EXPRESSION_TYPE_LITERAL && expr->type != MCC_AST_EXPRESSION_TYPE_IDENTIFIER) {
+			sprintf(value, "(%d)", head->index - 1);
+			generate_ir_table_line(head, strdup(value), NULL, MCC_IR_TABLE_PUSH);
+		}
+	}
 	// jump
 	sprintf(value, "(%d)", head->index + 2);
 	generate_ir_table_line(head, strdup(value), NULL, MCC_IR_TABLE_JUMP);
 
 	// pop
-	sprintf(value, "(%d)", head->index);
-	generate_ir_table_line(head, strdup(value), NULL, MCC_IR_TABLE_POP);
+	if (expr) {
+		sprintf(value, "(%d)", head->index);
+		generate_ir_table_line(head, strdup(value), NULL, MCC_IR_TABLE_POP);
+	}
 }
 
 static void generate_ir_if(struct mcc_ast_statement *stmt, struct mcc_ir_head *head)
