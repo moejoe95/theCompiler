@@ -91,7 +91,7 @@ void print_block(struct mcc_block *temp_block, int indent)
 }
 // TODO Andras End
 
-struct mcc_cfg *generate_cfg(struct mcc_ir_table *ir)
+struct mcc_cfg *generate_cfg(struct mcc_ir_table *ir, int log_level)
 {
 	assert(ir);
 
@@ -109,20 +109,20 @@ struct mcc_cfg *generate_cfg(struct mcc_ir_table *ir)
 		switch (ir->op_type) {
 		case MCC_IR_TABLE_JUMP:
 			if (cfg->current_block != NULL)
-				cfg->current_block->table_id_end = (ir->index - 1);
-			generate_block(cfg, ir->index, child);
+				cfg->current_block->table_id_end = (ir->index);
+			generate_block(cfg, ir->next_table->index, child);
 			child = true;
 			break;
 		case MCC_IR_TABLE_JUMPFALSE:
 			if (cfg->current_block != NULL)
-				cfg->current_block->table_id_end = (ir->index - 1);
-			generate_block(cfg, ir->index, true);
+				cfg->current_block->table_id_end = (ir->index);
+			generate_block(cfg, ir->next_table->index, true);
 			child = false;
 			break;
 		case MCC_IR_TABLE_LABEL:
 			if (cfg->current_block != NULL)
-				cfg->current_block->table_id_end = (ir->index - 1);
-			generate_block(cfg, ir->index, child);
+				cfg->current_block->table_id_end = (ir->index);
+			generate_block(cfg, ir->next_table->index, child);
 			break;
 		default:
 			break;
@@ -134,7 +134,8 @@ struct mcc_cfg *generate_cfg(struct mcc_ir_table *ir)
 		ir = ir->next_table;
 	}
 
-	//print_block(cfg->root_block, 0);
+	if (log_level > 0)
+		print_block(cfg->root_block, 0);
 
 	print_cfg(ir_cfg_print, cfg, stdout); //TODO change file out
 

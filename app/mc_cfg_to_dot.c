@@ -154,7 +154,7 @@ int main(int argc, char **argv)
 		ir = mcc_create_ir(pro, out, log_level_to_int(LOG_LEVEL));
 
 		// cfg
-		generate_cfg(ir);
+		generate_cfg(ir, log_level_to_int(LOG_LEVEL));
 
 		// cleanup
 		mcc_delete_ir(ir);

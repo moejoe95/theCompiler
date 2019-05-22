@@ -25,6 +25,6 @@ struct child_blocks {
 	struct mcc_block *head;
 };
 
-struct mcc_cfg *generate_cfg(struct mcc_ir_table *ir);
+struct mcc_cfg *generate_cfg(struct mcc_ir_table *ir, int log_level);
 
 #endif // MCC_CFG_H

@@ -45,7 +45,6 @@ struct mcc_ir_head {
 
 	struct mcc_ast_program *program;
 
-	int labelIndex;
 	int index;
 };
 

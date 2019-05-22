@@ -663,7 +663,6 @@ struct mcc_ir_table *mcc_create_ir(struct mcc_ast_program *program, FILE *out, i
 	head->root = table;
 	head->current = table;
 	head->index = 0;
-	head->labelIndex = 1;
 	head->program = program;
 
 	switch (program->type) {

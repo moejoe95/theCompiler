@@ -1,10 +1,19 @@
+
 int main() {
     int x;
     int n;
     int i;
 
+
+    i = 4;
+    if(true){
+        x = 2;
+    }
+    else{
+        i = 5;
+    }
+
     n = 3;
-    i = 5;
-    x = (n / i) * i;
+  
     return 0;
 }
