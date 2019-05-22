@@ -39,7 +39,8 @@ static char *lookup_table_args(struct mcc_ir_head *head, char *arg1, char *arg2)
 			arg2eq = strcmp(arg2, table->arg2);
 		}
 		if (table->arg1 != NULL) {
-			if (strcmp(arg1, table->arg1) == 0 && arg2eq) {
+			char *table_arg = strdup(table->arg1);
+			if (strcmp(arg1, strtok(table_arg, "[")) == 0 && arg2eq) {
 				char value[12] = {0};
 				sprintf(value, "(%d)", table->index);
 				result = strdup(value);
@@ -124,9 +125,6 @@ static char *generate_ir_entity(struct mcc_ir_head *head, struct mcc_ast_express
 			entity = strdup(expr->identifier->name);
 		break;
 	case MCC_AST_EXPRESSION_TYPE_ARRAY_ACCESS:
-		sprintf(value, "%s[]", expr->array_access_id->identifier->name);
-		entity = strdup(value);
-		break;
 	case MCC_AST_EXPRESSION_TYPE_BINARY_OP:
 	case MCC_AST_EXPRESSION_TYPE_PARENTH:
 		sprintf(value, "(%d)", head->index - 1);
@@ -340,10 +338,16 @@ static void generate_ir_array_access(struct mcc_ast_expression *id_expr,
 	assert(head);
 
 	head->index++;
+	char value[128] = {0};
 
-	char *entity1 = generate_ir_entity(head, id_expr);
-	char value[14] = {0};
-	sprintf(value, "%s[]", entity1); // TODO
+	char *id = id_expr->identifier->name;
+	if (array_expr->type != MCC_AST_EXPRESSION_TYPE_LITERAL) {
+		generate_ir_expression(array_expr, head, -1);
+		sprintf(value, "%s[(%d)]", id, head->index);
+	} else {
+		char *lit = generate_ir_literal_entity(array_expr->literal);
+		sprintf(value, "%s[%s]", id, lit);
+	}
 
 	generate_ir_table_line(head, strdup(value), NULL, MCC_IR_TABLE_LOAD);
 }
