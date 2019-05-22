@@ -386,7 +386,7 @@ static void generate_ir_assignment(struct mcc_ast_declare_assign *assign, struct
 	assert(head);
 
 	char *entity2;
-	char value[14] = {0};
+	char value[64] = {0};
 	if (assign->assign_rhs->type != MCC_AST_EXPRESSION_TYPE_LITERAL) {
 		generate_ir_expression(assign->assign_rhs, head, -1);
 		sprintf(value, "(%d)", head->index);
