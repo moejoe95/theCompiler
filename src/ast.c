@@ -258,6 +258,7 @@ struct mcc_ast_expression *mcc_ast_new_expression_array_access(struct mcc_ast_ex
 
 	expr->array_access_exp = expression;
 	expr->array_access_id = identifier;
+	expr->array_access_id->array_access_exp = expression;
 
 	return expr;
 }

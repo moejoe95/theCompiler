@@ -537,7 +537,7 @@ static void symbol_table_expression(struct mcc_ast_expression *expr, void *data)
 	case MCC_AST_EXPRESSION_TYPE_IDENTIFIER: {
 		sym = check_identifier(&expr->node.sloc, temp, expr->identifier, true);
 		if (sym) {
-			if (sym->array_size != NULL) {
+			if (sym->array_size != NULL && expr->array_access_exp == NULL) {
 				expr->expression_type = MCC_AST_TYPE_ARRAY;
 			} else {
 				expr->expression_type = sym->type;
@@ -558,11 +558,7 @@ static void symbol_table_expression(struct mcc_ast_expression *expr, void *data)
 		sym =
 		    check_identifier(&expr->array_access_id->node.sloc, temp, expr->array_access_id->identifier, true);
 		if (sym) {
-			if (expr->array_access_exp == NULL) {
-				expr->expression_type = MCC_AST_TYPE_ARRAY;
-			} else {
-				expr->expression_type = sym->type;
-			}
+			expr->expression_type = sym->type;
 		}
 		break;
 	case MCC_AST_EXPRESSION_TYPE_LITERAL:
