@@ -188,7 +188,6 @@ static void generate_ir_binary_expression(struct mcc_ast_expression *bin_expr,
 	}
 	char *entity2 = generate_ir_entity(head, bin_expr->rhs);
 
-	printf("entity1 %s\n", entity1);
 	new_table->arg1 = entity1;
 	new_table->arg2 = entity2;
 	new_table->op_type = type;
