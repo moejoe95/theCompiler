@@ -128,10 +128,12 @@ static char *generate_ir_entity(struct mcc_ir_head *head, struct mcc_ast_express
 		entity = strdup(value);
 		break;
 	case MCC_AST_EXPRESSION_TYPE_BINARY_OP:
+	case MCC_AST_EXPRESSION_TYPE_PARENTH:
 		sprintf(value, "(%d)", head->index - 1);
 		entity = strdup(value);
 		break;
 	default:
+		printf("todo\n");
 		break;
 	}
 	return entity;
