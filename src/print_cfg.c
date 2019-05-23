@@ -41,7 +41,7 @@ static void print_dot_node(FILE *out, const void *node, const char *label)
 	assert(node);
 	assert(label);
 
-	char target[64] = {0};
+	char target[LABEL_SIZE] = {0};
 	escape_string(label, target);
 
 	fprintf(out, "\t\"%p\" [shape=box, label=\"%s\"];\n", node, target);
