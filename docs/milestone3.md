@@ -1,4 +1,4 @@
-## Milestone 3 IR Generation and Control Flow Graph
+## Milestone 3 - IR Generation and Control Flow Graph
 
 __Main goals__
 
