@@ -14,7 +14,7 @@ Our IR was inspired by the concept of Triples presented in Lecture 6.
 
 __Testing the objective__
 
-To verify the correct behavious, please follow the [Build Instructions](#build-instructions) from above.
+To verify the correct behaviour, please follow the [Build Instructions](../README.md#build-instructions) from above.
 Afterwards the `mc_ir` binary can produce the intermediate representation and the `mc_cfg_to_dot` will produce an output in the DOT format to visualize the CFG.
 
 ```
@@ -23,6 +23,13 @@ Afterwards the `mc_ir` binary can produce the intermediate representation and th
 
 ```
 ./mc_cfg_to_dot ../test/integration/euclid/euclid.mc
+```
+
+For the CFG a graphical output is available through graphviz:
+(make sure that the log level is set to 0 to make this work)
+
+```
+./mc_cfg_to_dot ../test/integration/euclid/euclid.mc | dot -Tpng > euclid_cfg.png
 ```
 
 __Example output__
@@ -106,3 +113,4 @@ generate IR code...
 -------------------------------------------------------------------------------------------------------------
 ```
 
+![CFG of euclid.mc](./images/euclid_cfg.png "CFG of euclid.mc")

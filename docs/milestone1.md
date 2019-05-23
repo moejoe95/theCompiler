@@ -9,7 +9,7 @@ __Main goals__
 
 __Testing the objective__
 
-To verify the correct behavious, please follow the [Build Instructions](#build-instructions) from above.
+To verify the correct behavious, please follow the [Build Instructions](../README.md#build-instructions).
 Afterwards the `mc_ast_to_dot` binary can produce the DOT output:
 
 ```
