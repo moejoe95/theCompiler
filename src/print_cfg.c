@@ -17,31 +17,14 @@ static void print_dot_end(FILE *out)
 	fprintf(out, "}\n");
 }
 
-static char *escape_string(const char *source_str, char *target_str)
-{
-	for (size_t i = 0; i < strlen(source_str); i++) {
-		switch (source_str[i]) {
-		case '\"':
-			target_str[i] = '\'';
-			break;
-		default:
-			target_str[i] = source_str[i];
-			break;
-		}
-	}
-	return target_str;
-}
-
 static void print_dot_node(FILE *out, const void *node, char *label)
 {
 	assert(out);
 	assert(node);
 	assert(label);
 
-	char target[LABEL_SIZE] = {0};
-	escape_string(label, target);
-
-	fprintf(out, "\t\"%p\" [shape=box, label=\"%s\"];\n", node, target);
+	char *string_escaped = strndup(label + 1, strlen(label) - 2);
+	fprintf(out, "\t\"%p\" [shape=box, label=\\\"%s\\\"];\n", node, string_escaped);
 	free(label);
 }
 
