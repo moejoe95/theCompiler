@@ -32,7 +32,7 @@ static char *escape_string(const char *source_str, char *target_str)
 	return target_str;
 }
 
-static void print_dot_node(FILE *out, const void *node, const char *label)
+static void print_dot_node(FILE *out, const void *node, char *label)
 {
 	assert(out);
 	assert(node);
@@ -42,6 +42,7 @@ static void print_dot_node(FILE *out, const void *node, const char *label)
 	escape_string(label, target);
 
 	fprintf(out, "\t\"%p\" [shape=box, label=\"%s\"];\n", node, target);
+	free(label);
 }
 
 static void print_dot_edge(FILE *out, const void *src_node, const void *dst_node, const char *label)
@@ -119,7 +120,9 @@ static char *get_ir_entries(struct mcc_ir_table *ir, int start, int end)
 	while (ir != NULL) {
 		if (ir->index == start) {
 			while (ir != NULL && ir->index != end + 1) {
-				strcat(result, get_table_line(ir));
+				char *line = get_table_line(ir);
+				strcat(result, line);
+				free(line);
 				ir = ir->next_table;
 			}
 			break;

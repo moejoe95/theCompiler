@@ -46,8 +46,10 @@ static char *lookup_table_args(struct mcc_ir_head *head, char *arg1, char *arg2)
 				char value[12] = {0};
 				sprintf(value, "(%d)", table->index);
 				result = strdup(value);
+				free(table_arg);
 				break;
 			}
+			free(table_arg);
 		}
 		table = table->next_table;
 	}
