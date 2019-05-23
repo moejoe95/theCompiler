@@ -11,6 +11,7 @@
 static void generate_function_definition(struct mcc_ast_func_definition *func, struct mcc_ir_head *head);
 static void generate_built_in_function_call(struct mcc_ast_expression *expr_call, struct mcc_ir_head *head);
 static void generate_ir_statement(struct mcc_ast_statement *stmt, struct mcc_ir_head *head);
+static void generate_ir_function_call(struct mcc_ast_expression *e, struct mcc_ir_head *head);
 static void
 generate_ir_expression(struct mcc_ast_expression *e, struct mcc_ir_head *head, enum ir_table_operation_type t);
 
@@ -127,11 +128,12 @@ static char *generate_ir_entity(struct mcc_ir_head *head, struct mcc_ast_express
 	case MCC_AST_EXPRESSION_TYPE_ARRAY_ACCESS:
 	case MCC_AST_EXPRESSION_TYPE_BINARY_OP:
 	case MCC_AST_EXPRESSION_TYPE_PARENTH:
+	case MCC_AST_EXPRESSION_TYPE_FUNCTION_CALL:
 		sprintf(value, "(%d)", head->index - 1);
 		entity = strdup(value);
 		break;
 	default:
-		printf("todo\n");
+		printf("todo");
 		break;
 	}
 	return entity;
