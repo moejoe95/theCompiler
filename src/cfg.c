@@ -62,7 +62,7 @@ struct mcc_block *find_block(struct mcc_cfg *cfg, int line)
 	return NULL;
 }
 
-void create_graph(struct mcc_cfg *cfg)
+void create_cf_graph(struct mcc_cfg *cfg)
 {
 	if (cfg->root_block == NULL) {
 		return;
@@ -132,12 +132,23 @@ struct mcc_cfg *generate_cfg(struct mcc_ir_table *ir, FILE *out, int log_level)
 		ir = ir->next_table;
 	}
 
-	create_graph(cfg);
+	create_cf_graph(cfg);
 
 	if (log_level == 2)
 		print_basic_blocks(out, cfg->root_block);
-
 	print_cfg(ir_cfg_print, cfg, out);
 
 	return cfg;
+}
+
+void mcc_delete_cfg(struct mcc_cfg *cfg)
+{
+	struct mcc_block *current_block = cfg->root_block;
+
+	while (current_block != NULL) {
+		free(current_block);
+		current_block = current_block->next_block;
+	}
+
+	free(cfg);
 }

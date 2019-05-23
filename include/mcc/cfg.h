@@ -21,14 +21,9 @@ struct mcc_block {
 	bool has_follower;
 
 	struct mcc_block *next_block;
-	struct mcc_block *next_block_cond;
 
 	struct mcc_block *child_first;
 	struct mcc_block *child_second;
-};
-
-struct child_blocks {
-	struct mcc_block *head;
 };
 
 struct mcc_cfg *generate_cfg(struct mcc_ir_table *ir, FILE *out, int log_level);
