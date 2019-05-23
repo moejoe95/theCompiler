@@ -64,18 +64,25 @@ struct mcc_block *find_block(struct mcc_cfg *cfg, int line)
 
 void create_graph(struct mcc_cfg *cfg)
 {
+	if (cfg->root_block == NULL) {
+		return;
+	}
+
 	struct mcc_block *current_block = cfg->root_block;
 
-	while (current_block != NULL) {
+	do {
+		struct mcc_block *next_block;
 		if (current_block->target_id == 0) {
-			return;
+			next_block = current_block->next_block;
+		} else {
+			next_block = find_block(cfg, current_block->target_id);
 		}
-		current_block->child_first = find_block(cfg, current_block->target_id);
+		current_block->child_first = next_block;
 		if (current_block->has_follower) {
 			current_block->child_second = current_block->next_block;
 		}
 		current_block = current_block->next_block;
-	}
+	} while (current_block != NULL);
 }
 
 struct mcc_cfg *generate_cfg(struct mcc_ir_table *ir, FILE *out, int log_level)
@@ -109,10 +116,10 @@ struct mcc_cfg *generate_cfg(struct mcc_ir_table *ir, FILE *out, int log_level)
 			break;
 		case MCC_IR_TABLE_LABEL:
 			if (cfg->current_block != NULL) {
-				cfg->current_block->table_id_end = (ir->index);
+				cfg->current_block->table_id_end = (ir->index - 1);
 				cfg->current_block->target_id = ir->jump_target;
 			}
-			generate_block(cfg, ir->next_table->index);
+			generate_block(cfg, ir->index);
 			break;
 		default:
 			break;
