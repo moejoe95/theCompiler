@@ -5,34 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-void add_node(struct mcc_block *current, struct mcc_block *new, bool add_child)
-{
-	if (!add_child) {
-		struct mcc_block *temp = current;
-		while (temp->next_block != NULL) {
-			temp = temp->next_block;
-		}
-		temp->next_block = new;
-		return;
-	}
-
-	if (current->child_blocks == NULL) {
-		struct child_blocks *child = malloc(sizeof(*child));
-		if (!child)
-			return;
-
-		current->child_blocks = child;
-		current->child_blocks->head = new;
-	} else {
-		struct mcc_block *temp = current->child_blocks->head;
-		while (temp->next_block != NULL) {
-			temp = temp->next_block;
-		}
-		temp->next_block = new;
-	}
-}
-
-static void generate_block(struct mcc_cfg *cfg, int table_id_start, bool add_child)
+static void generate_block(struct mcc_cfg *cfg, int table_id_start)
 {
 	assert(cfg);
 
@@ -47,51 +20,35 @@ static void generate_block(struct mcc_cfg *cfg, int table_id_start, bool add_chi
 	}
 	block->table_id_start = table_id_start;
 	block->table_id_end = 0;
-	block->child_blocks = NULL;
 	block->next_block = NULL;
+	block->has_follower = false;
 
 	if (cfg->current_block == NULL) {
 		cfg->root_block = block;
 	} else {
-		add_node(cfg->current_block, block, add_child);
+		struct mcc_block *temp = cfg->current_block;
+		while (temp->next_block != NULL) {
+			temp = temp->next_block;
+		}
+		temp->next_block = block;
 	}
 
 	cfg->current_block = block;
 }
 
-// TODO Andreas remove this print and replace it with something cool
-char *string_repeat2(int n, const char *s)
+void print_basic_blocks(FILE *out, struct mcc_block *temp_block)
 {
-	size_t slen = strlen(s);
-	char *dest = malloc(n * slen + 1);
+	fprintf(out, "%s\n", "generate basic blocks...");
 
-	int i;
-	char *p;
-	for (i = 0, p = dest; i < n; ++i, p += slen) {
-		memcpy(p, s, slen);
+	while (temp_block != NULL) {
+		fprintf(out, "block %d start %d end %d target %d follower %d\n", temp_block->block_id,
+		        temp_block->table_id_start, temp_block->table_id_end, temp_block->target_id,
+		        temp_block->has_follower);
+		temp_block = temp_block->next_block;
 	}
-	*p = '\0';
-	return dest;
 }
 
-void print_block(struct mcc_block *temp_block, int indent)
-{
-	char *indention = string_repeat2(indent, "\t");
-	printf("%sblock %d start %d end %d\n", indention, temp_block->block_id, temp_block->table_id_start,
-	       temp_block->table_id_end);
-
-	if (temp_block->next_block != NULL) {
-		print_block(temp_block->next_block, indent);
-	}
-
-	if (temp_block->child_blocks != NULL) {
-		indent = indent + 1;
-		print_block(temp_block->child_blocks->head, indent);
-	}
-}
-// TODO Andras End
-
-struct mcc_cfg *generate_cfg(struct mcc_ir_table *ir, int log_level)
+struct mcc_cfg *generate_cfg(struct mcc_ir_table *ir, FILE *out, int log_level)
 {
 	assert(ir);
 
@@ -103,26 +60,29 @@ struct mcc_cfg *generate_cfg(struct mcc_ir_table *ir, int log_level)
 
 	cfg->current_block = NULL;
 
-	bool child = true;
-
 	while (ir != NULL) {
 		switch (ir->op_type) {
 		case MCC_IR_TABLE_JUMP:
-			if (cfg->current_block != NULL)
+			if (cfg->current_block != NULL) {
 				cfg->current_block->table_id_end = (ir->index);
-			generate_block(cfg, ir->next_table->index, child);
-			child = true;
+				cfg->current_block->target_id = ir->jump_target;
+			}
+			generate_block(cfg, ir->next_table->index);
 			break;
 		case MCC_IR_TABLE_JUMPFALSE:
-			if (cfg->current_block != NULL)
+			if (cfg->current_block != NULL) {
 				cfg->current_block->table_id_end = (ir->index);
-			generate_block(cfg, ir->next_table->index, true);
-			child = false;
+				cfg->current_block->target_id = ir->jump_target;
+				cfg->current_block->has_follower = true;
+			}
+			generate_block(cfg, ir->next_table->index);
 			break;
 		case MCC_IR_TABLE_LABEL:
-			if (cfg->current_block != NULL)
+			if (cfg->current_block != NULL) {
 				cfg->current_block->table_id_end = (ir->index);
-			generate_block(cfg, ir->next_table->index, child);
+				cfg->current_block->target_id = ir->jump_target;
+			}
+			generate_block(cfg, ir->next_table->index);
 			break;
 		default:
 			break;
@@ -130,14 +90,14 @@ struct mcc_cfg *generate_cfg(struct mcc_ir_table *ir, int log_level)
 
 		if (ir->next_table == NULL) {
 			cfg->current_block->table_id_end = ir->index;
+			cfg->current_block->target_id = 0;
 		}
 		ir = ir->next_table;
 	}
 
-	if (log_level > 0)
-		print_block(cfg->root_block, 0);
-
-	print_cfg(ir_cfg_print, cfg, stdout); //TODO change file out
+	if (log_level == 2)
+		print_basic_blocks(out, cfg->root_block);
+	// print_cfg(ir_cfg_print, cfg, stdout); // TODO change file out
 
 	return cfg;
 }

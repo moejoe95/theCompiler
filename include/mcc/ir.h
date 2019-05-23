@@ -31,7 +31,7 @@ struct mcc_ir_table {
 
 	char *arg1;
 	char *arg2;
-
+	int jump_target;
 	int index;
 
 	struct mcc_ast_node node;

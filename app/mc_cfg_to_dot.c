@@ -110,7 +110,7 @@ int main(int argc, char **argv)
 
 		// parsing phase
 		{
-			struct mcc_parser_result result = mcc_parse_file(in, argv[i], out, log_level_to_int(LOG_LEVEL));
+			struct mcc_parser_result result = mcc_parse_file(in, argv[i], out, log_level_to_int(0));
 
 			if (result.status != MCC_PARSER_STATUS_OK) {
 				fprintf(stdout, "...parsing failed...\n");
@@ -135,14 +135,14 @@ int main(int argc, char **argv)
 		}
 
 		// build symbol table
-		st = mcc_create_symbol_table(pro, out, log_level_to_int(LOG_LEVEL));
+		st = mcc_create_symbol_table(pro, out, log_level_to_int(0));
 		if (st == NULL) {
 			mcc_ast_delete_program(pro);
 			return EXIT_FAILURE;
 		}
 
 		// type checking
-		int error = mcc_check_types(pro, st, out, log_level_to_int(LOG_LEVEL));
+		int error = mcc_check_types(pro, st, out, log_level_to_int(0));
 
 		if (error) {
 			mcc_delete_symbol_table(st);
@@ -151,10 +151,10 @@ int main(int argc, char **argv)
 		}
 
 		// generate IR code
-		ir = mcc_create_ir(pro, out, log_level_to_int(LOG_LEVEL));
+		ir = mcc_create_ir(pro, out, log_level_to_int(1));
 
 		// cfg
-		generate_cfg(ir, log_level_to_int(LOG_LEVEL));
+		generate_cfg(ir, out, log_level_to_int(LOG_LEVEL));
 
 		// cleanup
 		mcc_delete_ir(ir);
