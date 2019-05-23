@@ -18,6 +18,7 @@ struct mcc_block {
 	int table_id_end;
 	int target_id;
 	bool has_follower;
+	bool printed;
 
 	struct mcc_block *next_block;
 

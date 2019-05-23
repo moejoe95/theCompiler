@@ -26,6 +26,7 @@ static void generate_block(struct mcc_cfg *cfg, int table_id_start)
 	block->child_first = NULL;
 	block->child_second = NULL;
 	block->target_id = 0;
+	block->printed = false;
 
 	if (cfg->current_block == NULL) {
 		cfg->root_block = block;

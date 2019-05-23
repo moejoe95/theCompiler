@@ -139,6 +139,15 @@ static void print_block_node(struct mcc_ir_table *ir, FILE *out, struct mcc_bloc
 	assert(out);
 	assert(temp_block);
 
+	if (temp_block->printed) {
+		if (parent != NULL) {
+			print_dot_edge(out, parent, temp_block, NULL);
+		}
+		return;
+	} else {
+		temp_block->printed = true;
+	}
+
 	print_dot_node(out, temp_block, get_ir_entries(ir, temp_block->table_id_start, temp_block->table_id_end));
 
 	if (parent != NULL) {

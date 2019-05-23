@@ -552,6 +552,7 @@ static void generate_ir_while(struct mcc_ast_statement *stmt, struct mcc_ir_head
 	jump_table->arg2 = NULL;
 	jump_table->op_type = MCC_IR_TABLE_JUMP;
 	jump_table->index = head->index;
+	jump_table->jump_target = head->current->index;
 
 	head->current->next_table = jump_table;
 	head->current = jump_table;
