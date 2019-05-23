@@ -522,6 +522,9 @@ static void generate_ir_while(struct mcc_ast_statement *stmt, struct mcc_ir_head
 	struct mcc_ir_table *cond_table = create_new_ir_table();
 	char *entity1;
 
+	sprintf(value, "(%d)", head->index + 2);
+	generate_ir_table_line(head, strdup(value), NULL, MCC_IR_TABLE_JUMP, head->index + 2);
+
 	// while condition
 	if (stmt->while_cond->type == MCC_AST_EXPRESSION_TYPE_IDENTIFIER ||
 	    stmt->while_cond->type == MCC_AST_EXPRESSION_TYPE_LITERAL) {
