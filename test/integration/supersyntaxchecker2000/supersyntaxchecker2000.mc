@@ -30,10 +30,10 @@ int main(){
 		}
 	}
 	if (c){
-		f = f * 2;
+		f = f * 2.0;
 	}
 	else{
-		f = f * 3;
+		f = f * 3.0;
 	}
 	return 0;
 }

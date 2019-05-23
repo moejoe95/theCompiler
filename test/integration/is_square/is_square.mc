@@ -27,6 +27,5 @@ int main()
 		print("No");
 	}
 	print_nl();
-	
 	return 0;
 }

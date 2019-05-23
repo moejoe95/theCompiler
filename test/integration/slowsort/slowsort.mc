@@ -148,5 +148,5 @@ int main(){
         print_f_array(f_arr, arr_size);
     }
 
-	return 0;
+    return 0;
 }
