@@ -22,6 +22,9 @@ struct mcc_block {
 
 	struct mcc_block *next_block;
 	struct mcc_block *next_block_cond;
+
+	struct mcc_block *child_first;
+	struct mcc_block *child_second;
 };
 
 struct child_blocks {

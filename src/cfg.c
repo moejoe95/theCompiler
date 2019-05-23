@@ -48,6 +48,36 @@ void print_basic_blocks(FILE *out, struct mcc_block *temp_block)
 	}
 }
 
+struct mcc_block *find_block(struct mcc_cfg *cfg, int line)
+{
+	struct mcc_block *current_block = cfg->root_block;
+
+	while (current_block != NULL) {
+		if (current_block->table_id_start == line) {
+			return current_block;
+		}
+
+		current_block = current_block->next_block;
+	}
+	return NULL;
+}
+
+void create_graph(struct mcc_cfg *cfg)
+{
+	struct mcc_block *current_block = cfg->root_block;
+
+	while (current_block != NULL) {
+		if (current_block->target_id == 0) {
+			return;
+		}
+		current_block->child_first = find_block(cfg, current_block->target_id);
+		if (current_block->has_follower) {
+			current_block->child_second = current_block->next_block;
+		}
+		current_block = current_block->next_block;
+	}
+}
+
 struct mcc_cfg *generate_cfg(struct mcc_ir_table *ir, FILE *out, int log_level)
 {
 	assert(ir);
@@ -95,9 +125,12 @@ struct mcc_cfg *generate_cfg(struct mcc_ir_table *ir, FILE *out, int log_level)
 		ir = ir->next_table;
 	}
 
+	create_graph(cfg);
+
 	if (log_level == 2)
 		print_basic_blocks(out, cfg->root_block);
-	// print_cfg(ir_cfg_print, cfg, stdout); // TODO change file out
+
+	print_cfg(ir_cfg_print, cfg, out);
 
 	return cfg;
 }
