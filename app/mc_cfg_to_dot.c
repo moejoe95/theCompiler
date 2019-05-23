@@ -163,7 +163,7 @@ int main(int argc, char **argv)
 		mcc_delete_symbol_table(st);
 		mcc_ast_delete_program(pro);
 
-		if (fclose(in) != 0) { // TODO segfaults
+		if (fclose(in) != 0) {
 			perror("fclose input");
 			return EXIT_FAILURE;
 		}

@@ -84,8 +84,6 @@ void NestedExpression_1(CuTest *tc)
 
 void MissingClosingParenthesis_1(CuTest *tc)
 {
-	// TODO: fix memory leak
-
 	const char input[] = "(42";
 	struct mcc_parser_result result = mcc_parse_string(input, 0);
 
