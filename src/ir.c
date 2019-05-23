@@ -87,7 +87,14 @@ generate_ir_identifier(struct mcc_ast_identifier *id, struct mcc_ir_head *head, 
 {
 	head->index++;
 	struct mcc_ir_table *new_table = create_new_ir_table();
-	char *entity = strdup(id->name);
+	char *entity;
+	if (id->type == MCC_AST_TYPE_ARRAY) {
+		char value[64] = {0};
+		sprintf(value, "%s[]", id->name);
+		entity = strdup(value);
+	} else {
+		entity = strdup(id->name);
+	}
 	new_table->arg1 = entity;
 	new_table->arg2 = NULL;
 	new_table->op_type = type;
@@ -374,8 +381,11 @@ generate_ir_expression(struct mcc_ast_expression *expr, struct mcc_ir_head *head
 		generate_ir_literal(expr->literal, head, type);
 		break;
 	case MCC_AST_EXPRESSION_TYPE_IDENTIFIER:
+		if (expr->expression_type == MCC_AST_TYPE_ARRAY)
+			expr->identifier->type = expr->expression_type;
 		generate_ir_identifier(expr->identifier, head, type);
 		break;
+
 	case MCC_AST_EXPRESSION_TYPE_FUNCTION_CALL:
 		generate_ir_function_call(expr, head);
 		break;
