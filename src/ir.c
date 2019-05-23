@@ -9,7 +9,7 @@
 
 // forward declarations
 static void generate_function_definition(struct mcc_ast_func_definition *func, struct mcc_ir_head *head);
-static void generate_built_in_function_call(struct mcc_ast_expression *expr_call, struct mcc_ir_head *head);
+static void generate_built_in_function_call(struct mcc_ast_expression *expr_call, struct mcc_ir_head *head, char *b);
 static void generate_ir_statement(struct mcc_ast_statement *stmt, struct mcc_ir_head *head);
 static void generate_ir_function_call(struct mcc_ast_expression *e, struct mcc_ir_head *head);
 static void
@@ -265,12 +265,11 @@ static void generate_ir_function_call(struct mcc_ast_expression *expr_call, stru
 	char *func_id = expr_call->function_call_identifier->identifier->name;
 
 	// built in functions
-	char *x[] = {"print_nl",    "read_int",   "print", "print_int",
-	             "print_float", "read_float", 0}; // TODO rest of built in functions
 	int i = 0;
-	while (x[i]) {
-		if (strcmp(x[i], func_id) == 0) {
-			generate_built_in_function_call(expr_call, head);
+	static char *built_ins[6] = {"print_nl", "read_int", "print", "print_int", "print_float", "read_float"};
+	while (built_ins[i]) {
+		if (strcmp(built_ins[i], func_id) == 0) {
+			generate_built_in_function_call(expr_call, head, built_ins[i]);
 			return;
 		}
 		i++;
@@ -312,34 +311,30 @@ static void generate_ir_args(struct mcc_ast_function_arguments *args, struct mcc
 	head->current = new_table;
 }
 
-static void generate_built_in_function_call(struct mcc_ast_expression *expr_call, struct mcc_ir_head *head)
+static void
+generate_built_in_function_call(struct mcc_ast_expression *expr_call, struct mcc_ir_head *head, char *built_in)
 {
 	assert(expr_call);
 	assert(head);
 
-	// args
-	if (expr_call->function_call_arguments)
-		generate_function_arguments(expr_call->function_call_arguments, head);
-
-	// func identifier
 	head->index++;
 	struct mcc_ir_table *new_table = create_new_ir_table();
-	char *id_entity = generate_ir_entity(head, expr_call->function_call_identifier);
+	char *entity = NULL;
 
-	new_table->arg1 = id_entity;
+	if (expr_call->function_call_arguments) {
+		struct mcc_ast_literal *lit = expr_call->function_call_arguments->expression->literal;
+		entity = generate_ir_literal_entity(lit);
+	} else {
+		entity = strdup("-");
+	}
+	new_table->arg1 = entity;
 	new_table->arg2 = NULL;
-	new_table->op_type = MCC_IR_TABLE_LABEL;
+	new_table->op_type = MCC_IR_TABLE_BUILT_IN;
 	new_table->index = head->index;
+	new_table->built_in = built_in;
 
 	head->current->next_table = new_table;
 	head->current = new_table;
-
-	// func parameter list
-	struct mcc_ast_function_arguments *arg = expr_call->function_call_arguments;
-	while (arg != NULL) {
-		generate_ir_args(arg, head);
-		arg = arg->next_argument;
-	}
 }
 
 static void generate_ir_array_access(struct mcc_ast_expression *id_expr,

@@ -28,6 +28,7 @@ struct mcc_ir_table {
 		enum mcc_ast_binary_op bin_op;
 		enum mcc_ast_unary_op un_op;
 	};
+	char *built_in;
 
 	char *arg1;
 	char *arg2;

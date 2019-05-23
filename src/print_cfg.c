@@ -21,9 +21,6 @@ static char *escape_string(const char *source_str, char *target_str)
 {
 	for (size_t i = 0; i < strlen(source_str); i++) {
 		switch (source_str[i]) {
-		case '\n':
-			target_str[i] = ' ';
-			break;
 		case '\"':
 			target_str[i] = '\'';
 			break;
