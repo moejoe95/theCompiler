@@ -1,6 +1,19 @@
 #include "mcc/print_cfg.h"
 
-#define LABEL_SIZE 64
+static char *escape_string(const char *source_str, char *target_str)
+{
+	for (size_t i = 0; i < strlen(source_str); i++) {
+		switch (source_str[i]) {
+		case '\"':
+			target_str[i] = '\'';
+			break;
+		default:
+			target_str[i] = source_str[i];
+			break;
+		}
+	}
+	return target_str;
+}
 
 static void print_dot_begin(FILE *out)
 {
@@ -23,8 +36,10 @@ static void print_dot_node(FILE *out, const void *node, char *label)
 	assert(node);
 	assert(label);
 
-	char *string_escaped = strndup(label + 1, strlen(label) - 2);
-	fprintf(out, "\t\"%p\" [shape=box, label=\\\"%s\\\"];\n", node, string_escaped);
+	char escaped_string[512] = {0};
+	escape_string(label, escaped_string);
+
+	fprintf(out, "\t\"%p\" [shape=box, label=\"%s\"];\n", node, escaped_string);
 	free(label);
 }
 
@@ -33,7 +48,6 @@ static void print_dot_edge(FILE *out, const void *src_node, const void *dst_node
 	assert(out);
 	assert(src_node);
 	assert(dst_node);
-	// assert(label);
 
 	if (label != NULL) {
 		fprintf(out, "\t\"%p\" -> \"%p\" [label=\"%s\"];\n", src_node, dst_node, label);
