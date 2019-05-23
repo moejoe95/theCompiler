@@ -78,7 +78,8 @@ enum mcc_ast_type {
 	MCC_AST_TYPE_FLOAT,
 	MCC_AST_TYPE_STRING,
 	MCC_AST_TYPE_VOID,
-	MCC_AST_TYPE_ARRAY
+	MCC_AST_TYPE_ARRAY,
+	MCC_AST_TYPE_NULL
 };
 
 char *get_type_string(enum mcc_ast_type type);

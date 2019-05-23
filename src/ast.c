@@ -212,6 +212,7 @@ struct mcc_ast_expression *mcc_ast_new_expression_identifier(char *identifier)
 
 	struct mcc_ast_identifier *id = mcc_ast_get_new_identifier_struct();
 	id->name = identifier;
+	id->type = MCC_AST_TYPE_NULL;
 
 	expr->identifier = id;
 	return expr;
@@ -782,9 +783,9 @@ char *get_type_string(enum mcc_ast_type type)
 		return "VOID";
 	case MCC_AST_TYPE_ARRAY:
 		return "ARRAY";
+	default:
+		return "";
 	}
-
-	return "";
 }
 
 char *get_literal_type_string(enum mcc_ast_literal_type type)
