@@ -62,7 +62,7 @@ void print_row(struct mcc_ir_table *table, FILE *out)
 		sprintf(operation, "%s", "store\t");
 		break;
 	case MCC_IR_TABLE_BUILT_IN:
-		sprintf(operation, "%s", "builtin\t");
+		sprintf(operation, "%-10.10s", table->built_in);
 		break;
 	default:
 		sprintf(operation, "%s", "undef op");

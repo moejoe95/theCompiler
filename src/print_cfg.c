@@ -21,9 +21,6 @@ static char *escape_string(const char *source_str, char *target_str)
 {
 	for (size_t i = 0; i < strlen(source_str); i++) {
 		switch (source_str[i]) {
-		case '\n':
-			target_str[i] = ' ';
-			break;
 		case '\"':
 			target_str[i] = '\'';
 			break;
@@ -41,7 +38,7 @@ static void print_dot_node(FILE *out, const void *node, const char *label)
 	assert(node);
 	assert(label);
 
-	char target[64] = {0};
+	char target[LABEL_SIZE] = {0};
 	escape_string(label, target);
 
 	fprintf(out, "\t\"%p\" [shape=box, label=\"%s\"];\n", node, target);
