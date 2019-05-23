@@ -9,7 +9,7 @@ __Main goals__
 
 __Testing the objective__
 
-To verify the correct behavious, please follow the [Build Instructions](../README.md#build-instructions) from above.
+To verify the correct behavious, please follow the [Build Instructions](../README.md#build-instructions).
 Afterwards the `mc_symbol_table` binary can produce the symbol table output and the `mc_type_check_trace` will perform semantic type checking.
 
 ```

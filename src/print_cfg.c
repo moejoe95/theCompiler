@@ -103,7 +103,6 @@ static char *get_table_line(struct mcc_ir_table *line)
 		break;
 
 	default:
-		sprintf(value, "TODO op:%d\n", line->op_type);
 		break;
 	}
 
