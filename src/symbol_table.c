@@ -487,6 +487,7 @@ static void symbol_table_function_call(struct mcc_ast_expression *expression, vo
 		print_semantic_error(error, tmp->out);
 		return;
 	}
+	expression->expression_type = sym->type;
 
 	int numArgs = 0;
 	if (expression->function_call_arguments) {
