@@ -37,79 +37,65 @@ __Example output__
 ```
 generate IR code...
 
+generate IR code...
+
 -------------------------------------------------------------------------------------------------------------
 | index | operation     | argument 1                              | argument 2                              |
 -------------------------------------------------------------------------------------------------------------
 | 1     | label         | main                                    | -                                       |
-| 2     | push          | "Please enter the first number: "       | -                                       |
-| 3     | label         | print                                   | -                                       |
-| 4     | pop           | "Please enter the first number: "       | -                                       |
-| 5     | label         | print_nl                                | -                                       |
-| 6     | label         | read_int                                | -                                       |
-| 7     | assign        | n                                       | (6)                                     |
-| 8     | push          | "Please enter the second number: "      | -                                       |
-| 9     | label         | (3)                                     | -                                       |
-| 10    | pop           | "Please enter the second number: "      | -                                       |
-| 11    | label         | (5)                                     | -                                       |
-| 12    | label         | (6)                                     | -                                       |
-| 13    | assign        | k                                       | (12)                                    |
-| 14    | label         | (5)                                     | -                                       |
-| 15    | push          | k                                       | -                                       |
-| 16    | push          | n                                       | -                                       |
-| 17    | label         | euclid                                  | -                                       |
-| 18    | pop           | (7)                                     | -                                       |
-| 19    | pop           | (13)                                    | -                                       |
-| 20    | ==            | (13)                                    | 0                                       |
-| 21    | jumpfalse     | (20)                                    | (26)                                    |
-| 22    | push          | n                                       | -                                       |
-| 23    | jump          | (24)                                    | -                                       |
-| 24    | pop           | (23)                                    | -                                       |
+| 2     | print         | "Please enter the first number: "       | -                                       |
+| 3     | print_nl      | -                                       | -                                       |
+| 4     | read_int      | -                                       | -                                       |
+| 5     | assign        | n                                       | (4)                                     |
+| 6     | print         | "Please enter the second number: "      | -                                       |
+| 7     | print_nl      | -                                       | -                                       |
+| 8     | read_int      | -                                       | -                                       |
+| 9     | assign        | k                                       | (8)                                     |
+| 10    | print_nl      | -                                       | -                                       |
+| 11    | push          | k                                       | -                                       |
+| 12    | push          | n                                       | -                                       |
+| 13    | label         | euclid                                  | -                                       |
+| 14    | pop           | (5)                                     | -                                       |
+| 15    | pop           | (9)                                     | -                                       |
+| 16    | ==            | (9)                                     | 0                                       |
+| 17    | jumpfalse     | (16)                                    | (22)                                    |
+| 18    | push          | n                                       | -                                       |
+| 19    | jump          | (20)                                    | -                                       |
+| 20    | pop           | (19)                                    | -                                       |
+| 21    | jump          | (22)                                    | -                                       |
+| 22    | ==            | (5)                                     | 0                                       |
+| 23    | jumpfalse     | (22)                                    | (28)                                    |
+| 24    | push          | k                                       | -                                       |
 | 25    | jump          | (26)                                    | -                                       |
-| 26    | ==            | (7)                                     | 0                                       |
-| 27    | jumpfalse     | (26)                                    | (32)                                    |
-| 28    | push          | k                                       | -                                       |
-| 29    | jump          | (30)                                    | -                                       |
-| 30    | pop           | (29)                                    | -                                       |
-| 31    | jump          | (32)                                    | -                                       |
-| 32    | >             | (7)                                     | (13)                                    |
-| 33    | jumpfalse     | (32)                                    | (41)                                    |
-| 34    | push          | k                                       | -                                       |
-| 35    | -             | (7)                                     | (13)                                    |
-| 36    | jump          | (17)                                    | -                                       |
-| 37    | push          | (35)                                    | -                                       |
-| 38    | jump          | (39)                                    | -                                       |
-| 39    | pop           | (38)                                    | -                                       |
-| 40    | jump          | (48)                                    | -                                       |
-| 41    | -             | (13)                                    | (7)                                     |
-| 42    | push          | n                                       | -                                       |
-| 43    | jump          | (17)                                    | -                                       |
-| 44    | push          | (42)                                    | -                                       |
-| 45    | jump          | (46)                                    | -                                       |
-| 46    | pop           | (45)                                    | -                                       |
-| 47    | jump          | (48)                                    | -                                       |
-| 48    | assign        | result                                  | (47)                                    |
-| 49    | push          | "euclid("                               | -                                       |
-| 50    | label         | (3)                                     | -                                       |
-| 51    | pop           | "euclid("                               | -                                       |
-| 52    | push          | n                                       | -                                       |
-| 53    | label         | print_int                               | -                                       |
-| 54    | pop           | (7)                                     | -                                       |
-| 55    | push          | ", "                                    | -                                       |
-| 56    | label         | (3)                                     | -                                       |
-| 57    | pop           | ", "                                    | -                                       |
-| 58    | push          | k                                       | -                                       |
-| 59    | label         | (53)                                    | -                                       |
-| 60    | pop           | (13)                                    | -                                       |
-| 61    | push          | ") = "                                  | -                                       |
-| 62    | label         | (3)                                     | -                                       |
-| 63    | pop           | ") = "                                  | -                                       |
-| 64    | push          | result                                  | -                                       |
-| 65    | label         | (53)                                    | -                                       |
-| 66    | pop           | (48)                                    | -                                       |
-| 67    | label         | (5)                                     | -                                       |
-| 68    | push          | 0                                       | -                                       |
-| 69    | jump          | (70)                                    | -                                       |
-| 70    | pop           | (69)                                    | -                                       |
+| 26    | pop           | (25)                                    | -                                       |
+| 27    | jump          | (28)                                    | -                                       |
+| 28    | >             | (5)                                     | (9)                                     |
+| 29    | jumpfalse     | (28)                                    | (37)                                    |
+| 30    | push          | k                                       | -                                       |
+| 31    | -             | (5)                                     | (9)                                     |
+| 32    | jump          | (13)                                    | -                                       |
+| 33    | push          | (31)                                    | -                                       |
+| 34    | jump          | (35)                                    | -                                       |
+| 35    | pop           | (34)                                    | -                                       |
+| 36    | jump          | (44)                                    | -                                       |
+| 37    | -             | (9)                                     | (5)                                     |
+| 38    | push          | n                                       | -                                       |
+| 39    | jump          | (13)                                    | -                                       |
+| 40    | push          | (38)                                    | -                                       |
+| 41    | jump          | (42)                                    | -                                       |
+| 42    | pop           | (41)                                    | -                                       |
+| 43    | jump          | (44)                                    | -                                       |
+| 44    | assign        | result                                  | (43)                                    |
+| 45    | print         | "euclid("                               | -                                       |
+| 46    | print_int     | -                                       | -                                       |
+| 47    | print         | ", "                                    | -                                       |
+| 48    | print_int     | -                                       | -                                       |
+| 49    | print         | ") = "                                  | -                                       |
+| 50    | print_int     | -                                       | -                                       |
+| 51    | print_nl      | -                                       | -                                       |
+| 52    | push          | 0                                       | -                                       |
+| 53    | jump          | (54)                                    | -                                       |
+| 54    | pop           | (53)                                    | -                                       |
 -------------------------------------------------------------------------------------------------------------
 ```
 
