@@ -14,7 +14,7 @@ Our IR was inspired by the concept of Triples presented in Lecture 6.
 
 __Testing the objective__
 
-To verify the correct behaviour, please follow the [Build Instructions](#build-instructions) from above.
+To verify the correct behaviour, please follow the [Build Instructions](../README.md#build-instructions) from above.
 Afterwards the `mc_ir` binary can produce the intermediate representation and the `mc_cfg_to_dot` will produce an output in the DOT format to visualize the CFG.
 
 ```
