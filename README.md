@@ -45,7 +45,7 @@ Taken from the [Meson Documentation](https://mesonbuild.com/Unit-tests.html#cove
 
 ## Known Issues
 
-* compiler leaks memory in IR generation (mc_ir.c and mcc.c)
+* currently none
 
 
 ## Milestones
