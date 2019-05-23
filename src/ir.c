@@ -22,8 +22,8 @@ static struct mcc_ir_table *create_new_ir_table()
 		return NULL;
 	}
 	table->index = 0;
-	table->arg1 = "-";
-	table->arg2 = "-";
+	table->arg1 = NULL;
+	table->arg2 = NULL;
 	table->next_table = NULL;
 	table->bin_op = MCC_AST_BINARY_OP_NULL;
 	table->op_type = MCC_IR_TABLE_NULL;
@@ -60,7 +60,7 @@ static char *lookup_table_args(struct mcc_ir_head *head, char *arg1, char *arg2)
 static char *generate_ir_literal_entity(struct mcc_ast_literal *lit)
 {
 	assert(lit);
-	char *entity = "-";
+	char *entity;
 	char value[12] = {0};
 	switch (lit->type) {
 	case MCC_AST_LITERAL_TYPE_BOOL:
@@ -81,6 +81,8 @@ static char *generate_ir_literal_entity(struct mcc_ast_literal *lit)
 	case MCC_AST_LITERAL_TYPE_STRING:
 		entity = strdup(lit->str_value);
 		break;
+	default:
+		entity = strdup("-");
 	}
 
 	return entity;
