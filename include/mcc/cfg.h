@@ -2,7 +2,6 @@
 #define MCC_CFG_H
 
 #include "mcc/ir.h"
-#include "mcc/print_cfg.h"
 #include <assert.h>
 #include <stdbool.h>
 #include <stdio.h>
