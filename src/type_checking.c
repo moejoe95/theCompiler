@@ -345,7 +345,7 @@ static void check_expression_literal(struct mcc_ast_expression *expr, void *data
 		set_type(expr, MCC_AST_TYPE_STRING);
 		break;
 
-	default: { // TODO test?
+	default: {
 		struct mcc_semantic_error *error = get_mcc_semantic_error_struct(MCC_SC_ERROR_LITERAL_VOID);
 		type_check->error = 1;
 		error->sloc = &expr->node.sloc;

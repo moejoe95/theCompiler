@@ -1,6 +1,19 @@
 #include "mcc/print_cfg.h"
 
-#define LABEL_SIZE 64
+static char *escape_string(const char *source_str, char *target_str)
+{
+	for (size_t i = 0; i < strlen(source_str); i++) {
+		switch (source_str[i]) {
+		case '\"':
+			target_str[i] = '\'';
+			break;
+		default:
+			target_str[i] = source_str[i];
+			break;
+		}
+	}
+	return target_str;
+}
 
 static void print_dot_begin(FILE *out)
 {
@@ -17,31 +30,17 @@ static void print_dot_end(FILE *out)
 	fprintf(out, "}\n");
 }
 
-static char *escape_string(const char *source_str, char *target_str)
-{
-	for (size_t i = 0; i < strlen(source_str); i++) {
-		switch (source_str[i]) {
-		case '\"':
-			target_str[i] = '\'';
-			break;
-		default:
-			target_str[i] = source_str[i];
-			break;
-		}
-	}
-	return target_str;
-}
-
-static void print_dot_node(FILE *out, const void *node, const char *label)
+static void print_dot_node(FILE *out, const void *node, char *label)
 {
 	assert(out);
 	assert(node);
 	assert(label);
 
-	char target[LABEL_SIZE] = {0};
-	escape_string(label, target);
+	char escaped_string[512] = {0};
+	escape_string(label, escaped_string);
 
-	fprintf(out, "\t\"%p\" [shape=box, label=\"%s\"];\n", node, target);
+	fprintf(out, "\t\"%p\" [shape=box, label=\"%s\"];\n", node, escaped_string);
+	free(label);
 }
 
 static void print_dot_edge(FILE *out, const void *src_node, const void *dst_node, const char *label)
@@ -49,7 +48,6 @@ static void print_dot_edge(FILE *out, const void *src_node, const void *dst_node
 	assert(out);
 	assert(src_node);
 	assert(dst_node);
-	// assert(label);
 
 	if (label != NULL) {
 		fprintf(out, "\t\"%p\" -> \"%p\" [label=\"%s\"];\n", src_node, dst_node, label);
@@ -119,7 +117,9 @@ static char *get_ir_entries(struct mcc_ir_table *ir, int start, int end)
 	while (ir != NULL) {
 		if (ir->index == start) {
 			while (ir != NULL && ir->index != end + 1) {
-				strcat(result, get_table_line(ir));
+				char *line = get_table_line(ir);
+				strcat(result, line);
+				free(line);
 				ir = ir->next_table;
 			}
 			break;
@@ -135,6 +135,15 @@ static void print_block_node(struct mcc_ir_table *ir, FILE *out, struct mcc_bloc
 	assert(ir);
 	assert(out);
 	assert(temp_block);
+
+	if (temp_block->printed) {
+		if (parent != NULL) {
+			print_dot_edge(out, parent, temp_block, NULL);
+		}
+		return;
+	} else {
+		temp_block->printed = true;
+	}
 
 	print_dot_node(out, temp_block, get_ir_entries(ir, temp_block->table_id_start, temp_block->table_id_end));
 

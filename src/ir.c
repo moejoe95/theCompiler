@@ -21,11 +21,13 @@ static struct mcc_ir_table *create_new_ir_table()
 	if (!table) {
 		return NULL;
 	}
+	table->index = 0;
 	table->arg1 = NULL;
 	table->arg2 = NULL;
 	table->next_table = NULL;
 	table->bin_op = MCC_AST_BINARY_OP_NULL;
 	table->op_type = MCC_IR_TABLE_NULL;
+	table->jump_target = 0;
 	return table;
 }
 
@@ -45,8 +47,10 @@ static char *lookup_table_args(struct mcc_ir_head *head, char *arg1, char *arg2)
 				char value[12] = {0};
 				sprintf(value, "(%d)", table->index);
 				result = strdup(value);
+				free(table_arg);
 				break;
 			}
+			free(table_arg);
 		}
 		table = table->next_table;
 	}
@@ -77,6 +81,8 @@ static char *generate_ir_literal_entity(struct mcc_ast_literal *lit)
 	case MCC_AST_LITERAL_TYPE_STRING:
 		entity = strdup(lit->str_value);
 		break;
+	default:
+		entity = strdup("-");
 	}
 
 	return entity;
@@ -292,23 +298,6 @@ static void generate_ir_function_call(struct mcc_ast_expression *expr_call, stru
 		}
 		list = list->next_function;
 	}
-}
-
-static void generate_ir_args(struct mcc_ast_function_arguments *args, struct mcc_ir_head *head)
-{
-	assert(args);
-	assert(head);
-
-	head->index++;
-	struct mcc_ir_table *new_table = create_new_ir_table();
-	char *entity = generate_ir_entity(head, args->expression);
-
-	new_table->arg1 = entity;
-	new_table->op_type = MCC_IR_TABLE_POP;
-	new_table->index = head->index;
-
-	head->current->next_table = new_table;
-	head->current = new_table;
 }
 
 static void
@@ -569,6 +558,7 @@ static void generate_ir_while(struct mcc_ast_statement *stmt, struct mcc_ir_head
 	jump_table->arg2 = NULL;
 	jump_table->op_type = MCC_IR_TABLE_JUMP;
 	jump_table->index = head->index;
+	jump_table->jump_target = head->current->index;
 
 	head->current->next_table = jump_table;
 	head->current = jump_table;

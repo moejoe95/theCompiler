@@ -107,6 +107,7 @@ int main(int argc, char **argv)
 		struct mcc_ast_program *pro = NULL;
 		struct mcc_symbol_table *st = NULL;
 		struct mcc_ir_table *ir = NULL;
+		struct mcc_cfg *cfg = NULL;
 
 		// parsing phase
 		{
@@ -154,14 +155,15 @@ int main(int argc, char **argv)
 		ir = mcc_create_ir(pro, out, log_level_to_int(LOG_LEVEL));
 
 		// cfg
-		generate_cfg(ir, out, log_level_to_int(LOG_LEVEL));
+		cfg = generate_cfg(ir, out, log_level_to_int(LOG_LEVEL));
 
 		// cleanup
+		mcc_delete_cfg(cfg);
 		mcc_delete_ir(ir);
 		mcc_delete_symbol_table(st);
 		mcc_ast_delete_program(pro);
 
-		if (fclose(in) != 0) { // TODO segfaults
+		if (fclose(in) != 0) {
 			perror("fclose input");
 			return EXIT_FAILURE;
 		}

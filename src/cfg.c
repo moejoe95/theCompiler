@@ -1,4 +1,5 @@
 #include "mcc/cfg.h"
+#include "mcc/print_cfg.h"
 
 #include <stdbool.h>
 #include <stdio.h>
@@ -22,6 +23,10 @@ static void generate_block(struct mcc_cfg *cfg, int table_id_start)
 	block->table_id_end = 0;
 	block->next_block = NULL;
 	block->has_follower = false;
+	block->child_first = NULL;
+	block->child_second = NULL;
+	block->target_id = 0;
+	block->printed = false;
 
 	if (cfg->current_block == NULL) {
 		cfg->root_block = block;
@@ -62,7 +67,7 @@ struct mcc_block *find_block(struct mcc_cfg *cfg, int line)
 	return NULL;
 }
 
-void create_graph(struct mcc_cfg *cfg)
+void create_cf_graph(struct mcc_cfg *cfg)
 {
 	if (cfg->root_block == NULL) {
 		return;
@@ -132,12 +137,25 @@ struct mcc_cfg *generate_cfg(struct mcc_ir_table *ir, FILE *out, int log_level)
 		ir = ir->next_table;
 	}
 
-	create_graph(cfg);
+	create_cf_graph(cfg);
 
 	if (log_level == 2)
 		print_basic_blocks(out, cfg->root_block);
-
 	print_cfg(ir_cfg_print, cfg, out);
 
 	return cfg;
+}
+
+void mcc_delete_cfg(struct mcc_cfg *cfg)
+{
+	struct mcc_block *current_block = cfg->root_block;
+	struct mcc_block *temp;
+
+	while (current_block != NULL) {
+		temp = current_block->next_block;
+		free(current_block);
+		current_block = temp;
+	}
+
+	free(cfg);
 }
