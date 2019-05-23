@@ -26,5 +26,6 @@ struct mcc_block {
 };
 
 struct mcc_cfg *generate_cfg(struct mcc_ir_table *ir, FILE *out, int log_level);
+void mcc_delete_cfg(struct mcc_cfg *cfg);
 
 #endif // MCC_CFG_H

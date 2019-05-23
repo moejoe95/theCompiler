@@ -297,23 +297,6 @@ static void generate_ir_function_call(struct mcc_ast_expression *expr_call, stru
 	}
 }
 
-static void generate_ir_args(struct mcc_ast_function_arguments *args, struct mcc_ir_head *head)
-{
-	assert(args);
-	assert(head);
-
-	head->index++;
-	struct mcc_ir_table *new_table = create_new_ir_table();
-	char *entity = generate_ir_entity(head, args->expression);
-
-	new_table->arg1 = entity;
-	new_table->op_type = MCC_IR_TABLE_POP;
-	new_table->index = head->index;
-
-	head->current->next_table = new_table;
-	head->current = new_table;
-}
-
 static void
 generate_built_in_function_call(struct mcc_ast_expression *expr_call, struct mcc_ir_head *head, char *built_in)
 {
