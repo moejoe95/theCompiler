@@ -146,7 +146,6 @@ static char *generate_ir_entity(struct mcc_ir_head *head, struct mcc_ast_express
 		entity = strdup(value);
 		break;
 	default:
-		printf("todo");
 		break;
 	}
 	return entity;
@@ -380,9 +379,6 @@ generate_ir_expression(struct mcc_ast_expression *expr, struct mcc_ir_head *head
 	case MCC_AST_EXPRESSION_TYPE_ARRAY_ACCESS:
 		generate_ir_array_access(expr->array_access_id, expr->array_access_exp, head);
 		break;
-	default:
-		printf("todo\n");
-		break;
 	}
 }
 
@@ -600,9 +596,6 @@ static void generate_ir_statement(struct mcc_ast_statement *stmt, struct mcc_ir_
 			list = list->next_statement;
 		}
 	} break;
-	default:
-		printf("todo\n");
-		break;
 	}
 }
 
