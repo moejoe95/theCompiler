@@ -534,9 +534,9 @@ static void generate_ir_while(struct mcc_ast_statement *stmt, struct mcc_ir_head
 		sprintf(value, "(%d)", head->current->index);
 		entity1 = strdup(value);
 	}
+
 	head->index++;
 	cond_table->arg1 = entity1;
-	cond_table->arg2 = jump_false_loc;
 	cond_table->op_type = MCC_IR_TABLE_JUMPFALSE;
 	cond_table->index = head->index;
 
@@ -566,8 +566,8 @@ static void generate_ir_while(struct mcc_ast_statement *stmt, struct mcc_ir_head
 	// set jump false
 	sprintf(value, "(%d)", head->current->index + 1);
 	jump_false_loc = strdup(value);
-	jump_table->arg2 = jump_false_loc;
-	jump_table->jump_target = head->current->index + 1;
+	cond_table->arg2 = jump_false_loc;
+	cond_table->jump_target = head->current->index + 1;
 }
 
 static void generate_ir_statement(struct mcc_ast_statement *stmt, struct mcc_ir_head *head)
