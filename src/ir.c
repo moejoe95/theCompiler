@@ -240,6 +240,8 @@ static void generate_ir_unary_expression(struct mcc_ast_expression *un_expr,
 
 static struct mcc_ast_function_arguments *reverse_recursive(struct mcc_ast_function_arguments *args)
 {
+	return args;
+
 	if (args == NULL || args->next_argument == NULL) {
 		return args;
 	}
@@ -251,11 +253,13 @@ static struct mcc_ast_function_arguments *reverse_recursive(struct mcc_ast_funct
 	return reversed_list;
 }
 
-static void generate_function_arguments(struct mcc_ast_function_arguments *args, struct mcc_ir_head *head)
+static void generate_function_arguments(struct mcc_ast_expression *expr, struct mcc_ir_head *head)
 {
 	assert(head);
 
-	struct mcc_ast_function_arguments *list = reverse_recursive(args);
+	struct mcc_ast_function_arguments *list = reverse_recursive(expr->function_call_arguments);
+	expr->function_call_arguments = list;
+
 	while (list != NULL) {
 		generate_ir_expression(list->expression, head, MCC_IR_TABLE_PUSH);
 		list = list->next_argument;
@@ -281,7 +285,7 @@ static void generate_ir_function_call(struct mcc_ast_expression *expr_call, stru
 	}
 
 	// normal functions
-	generate_function_arguments(expr_call->function_call_arguments, head);
+	generate_function_arguments(expr_call, head);
 
 	char *label = lookup_table_args(head, func_id, NULL);
 	if (label) {
