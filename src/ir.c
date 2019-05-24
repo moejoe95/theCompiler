@@ -127,7 +127,7 @@ generate_ir_literal(struct mcc_ast_literal *lit, struct mcc_ir_head *head, enum 
 
 static char *generate_ir_entity(struct mcc_ir_head *head, struct mcc_ast_expression *expr)
 {
-	char *entity;
+	char *entity = NULL;
 	char value[64] = {0};
 	switch (expr->type) {
 	case MCC_AST_EXPRESSION_TYPE_LITERAL:
