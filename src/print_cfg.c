@@ -104,7 +104,7 @@ static void get_table_line(struct mcc_ir_table *line, char *target)
 	default:
 		break;
 	}
-	strcpy(target, value);
+	strcat(target, value);
 }
 
 static char *get_ir_entries(struct mcc_ir_table *ir, int start, int end, char *target)
