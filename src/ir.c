@@ -410,6 +410,7 @@ static void generate_ir_assignment(struct mcc_ast_declare_assign *assign, struct
 		} else {
 			char *lit = generate_ir_literal_entity(assign->assign_lhs->array_access_exp->literal);
 			sprintf(value, "%s[%s]", id, lit);
+			free(lit);
 		}
 		entity1 = strdup(value);
 		type = MCC_IR_TABLE_STORE;

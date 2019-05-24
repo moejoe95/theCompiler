@@ -145,6 +145,7 @@ FILE *out;
 %destructor { mcc_ast_delete_statement_list($$); }      statement_list
 %destructor { mcc_ast_delete_expression($$); }          expression id function_call
 %destructor { mcc_ast_delete_declare_assign($$); }      declaration assignment
+%destructor { mcc_ast_delete_function_arguments($$); }  argument_list
 %destructor { free($$); }                               STRING_LITERAL IDENTIFIER
 
 

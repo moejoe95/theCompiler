@@ -390,20 +390,19 @@ static void check_logical_ops(struct mcc_ast_expression *bin_expr, void *data)
 	assert(data);
 	struct mcc_type_checking *type_check = data;
 
-	struct mcc_semantic_error *error = get_mcc_semantic_error_struct(MCC_SC_ERROR_INVALID_LOG_OPERATION);
-	error->sloc = &bin_expr->node.sloc;
-	error->expr_type = bin_expr->expression_type;
-
 	struct mcc_type_log *log = get_mcc_type_log_struct(MCC_TYPE_VALID);
 
 	if (bin_expr->expression_type != MCC_AST_TYPE_BOOL) {
+		struct mcc_semantic_error *error = get_mcc_semantic_error_struct(MCC_SC_ERROR_INVALID_LOG_OPERATION);
+		error->sloc = &bin_expr->node.sloc;
+		error->expr_type = bin_expr->expression_type;
 		type_check->error = 1;
 		print_semantic_error(error, type_check->out);
 		log->status = MCC_TYPE_INVALID;
 	}
 
 	if (type_check->tracing) {
-		log->sloc = error->sloc;
+		log->sloc = &bin_expr->node.sloc;
 		log->lhs_type = bin_expr->expression_type;
 		if (bin_expr->type == MCC_AST_EXPRESSION_TYPE_BINARY_OP) {
 			log->rhs_type = bin_expr->expression_type;
