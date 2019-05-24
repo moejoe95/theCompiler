@@ -61,10 +61,11 @@ static void get_table_line(struct mcc_ir_table *line, char *target)
 
 	switch (line->op_type) {
 	case MCC_IR_TABLE_UNARY_OP:
-		sprintf(value, "(%d): %s %d\n", line->index, line->arg1, line->un_op);
+		sprintf(value, "(%d): %s %s\n", line->index, line->arg1, get_un_op_string(line->un_op));
 		break;
 	case MCC_IR_TABLE_BINARY_OP:
-		sprintf(value, "(%d): %s %d %s\n", line->index, line->arg1, line->bin_op, line->arg2);
+		sprintf(value, "(%d): %s %s %s\n", line->index, line->arg1, get_bin_op_string(line->bin_op),
+		        line->arg2);
 		break;
 	case MCC_IR_TABLE_ASSIGNMENT:
 		sprintf(value, "(%d): %s %s %s\n", line->index, line->arg1, "=", line->arg2);
