@@ -550,7 +550,13 @@ static void generate_ir_while(struct mcc_ast_statement *stmt, struct mcc_ir_head
 
 	// set jump loc
 	int jump_target = head->current->index;
-	sprintf(value, "(%d)", head->current->index);
+	int index = head->current->index;
+	if (stmt->while_cond->type != MCC_AST_EXPRESSION_TYPE_IDENTIFIER &&
+	    stmt->while_cond->type != MCC_AST_EXPRESSION_TYPE_LITERAL) {
+		jump_target--;
+		index--;
+	}
+	sprintf(value, "(%d)", index);
 	jump_loc = strdup(value);
 
 	// while body
