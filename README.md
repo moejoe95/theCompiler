@@ -45,7 +45,7 @@ Taken from the [Meson Documentation](https://mesonbuild.com/Unit-tests.html#cove
 
 ## Known Issues
 
-* currently none
+* block size in CFG is fixed, on large blocks stack is smashed
 
 
 ## Milestones

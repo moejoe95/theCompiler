@@ -1,18 +1,20 @@
 #include "mcc/print_cfg.h"
 
-static char *escape_string(const char *source_str, char *target_str)
+#define LINE_SIZE 256
+#define BLOCK_SIZE 4096
+
+static char *escape_string(char *source_str)
 {
 	for (size_t i = 0; i < strlen(source_str); i++) {
 		switch (source_str[i]) {
 		case '\"':
-			target_str[i] = '\'';
+			source_str[i] = '\'';
 			break;
 		default:
-			target_str[i] = source_str[i];
 			break;
 		}
 	}
-	return target_str;
+	return source_str;
 }
 
 static void print_dot_begin(FILE *out)
@@ -36,10 +38,9 @@ static void print_dot_node(FILE *out, const void *node, char *label)
 	assert(node);
 	assert(label);
 
-	char escaped_string[512] = {0};
-	escape_string(label, escaped_string);
+	escape_string(label);
 
-	fprintf(out, "\t\"%p\" [shape=box, label=\"%s\"];\n", node, escaped_string);
+	fprintf(out, "\t\"%p\" [shape=box, label=\"%s\"];\n", node, label);
 }
 
 static void print_dot_edge(FILE *out, const void *src_node, const void *dst_node, const char *label)
@@ -57,7 +58,7 @@ static void print_dot_edge(FILE *out, const void *src_node, const void *dst_node
 
 static void get_table_line(struct mcc_ir_table *line, char *target)
 {
-	char value[256] = {0};
+	char value[LINE_SIZE] = {0};
 
 	switch (line->op_type) {
 	case MCC_IR_TABLE_UNARY_OP:
@@ -140,11 +141,9 @@ static void print_block_node(struct mcc_ir_table *ir, FILE *out, struct mcc_bloc
 		temp_block->printed = true;
 	}
 
-	char *target = (char *)malloc(256 * sizeof(char));
+	char target[BLOCK_SIZE] = {0};
 	char *entity = get_ir_entries(ir, temp_block->table_id_start, temp_block->table_id_end, target);
 	print_dot_node(out, temp_block, entity);
-	if (target)
-		free(target);
 
 	if (parent != NULL) {
 		print_dot_edge(out, parent, temp_block, NULL);
