@@ -568,7 +568,7 @@ static void generate_ir_while(struct mcc_ast_statement *stmt, struct mcc_ir_head
 	jump_false_loc = strdup(value);
 	cond_table->arg2 = jump_false_loc;
 	cond_table->jump_target = head->current->index + 1;
-	jump_table->arg2 = jump_false_loc;
+	jump_table->arg2 = strdup(jump_false_loc);
 }
 
 static void generate_ir_statement(struct mcc_ast_statement *stmt, struct mcc_ir_head *head)
