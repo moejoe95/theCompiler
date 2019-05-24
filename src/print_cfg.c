@@ -40,7 +40,6 @@ static void print_dot_node(FILE *out, const void *node, char *label)
 	escape_string(label, escaped_string);
 
 	fprintf(out, "\t\"%p\" [shape=box, label=\"%s\"];\n", node, escaped_string);
-	free(label);
 }
 
 static void print_dot_edge(FILE *out, const void *src_node, const void *dst_node, const char *label)
@@ -56,7 +55,7 @@ static void print_dot_edge(FILE *out, const void *src_node, const void *dst_node
 	}
 }
 
-static char *get_table_line(struct mcc_ir_table *line)
+static void get_table_line(struct mcc_ir_table *line, char *target)
 {
 	char value[256] = {0};
 
@@ -105,20 +104,16 @@ static char *get_table_line(struct mcc_ir_table *line)
 	default:
 		break;
 	}
-
-	return strdup(value);
+	strcpy(target, value);
 }
 
-static char *get_ir_entries(struct mcc_ir_table *ir, int start, int end)
+static char *get_ir_entries(struct mcc_ir_table *ir, int start, int end, char *target)
 {
-	char result[256] = {0};
 
 	while (ir != NULL) {
 		if (ir->index == start) {
 			while (ir != NULL && ir->index != end + 1) {
-				char *line = get_table_line(ir);
-				strcat(result, line);
-				free(line);
+				get_table_line(ir, target);
 				ir = ir->next_table;
 			}
 			break;
@@ -126,7 +121,7 @@ static char *get_ir_entries(struct mcc_ir_table *ir, int start, int end)
 		ir = ir->next_table;
 	}
 
-	return strdup(result);
+	return target;
 }
 
 static void print_block_node(struct mcc_ir_table *ir, FILE *out, struct mcc_block *temp_block, struct mcc_block *parent)
@@ -144,7 +139,11 @@ static void print_block_node(struct mcc_ir_table *ir, FILE *out, struct mcc_bloc
 		temp_block->printed = true;
 	}
 
-	print_dot_node(out, temp_block, get_ir_entries(ir, temp_block->table_id_start, temp_block->table_id_end));
+	char *target = (char *)malloc(256 * sizeof(char));
+	char *entity = get_ir_entries(ir, temp_block->table_id_start, temp_block->table_id_end, target);
+	print_dot_node(out, temp_block, entity);
+	if (target)
+		free(target);
 
 	if (parent != NULL) {
 		print_dot_edge(out, parent, temp_block, NULL);
