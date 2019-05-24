@@ -13,6 +13,8 @@ struct mcc_ast_expression *mcc_ast_get_new_expression_struct()
 		return NULL;
 	}
 
+	expr->array_access_exp = NULL;
+
 	return expr;
 }
 
