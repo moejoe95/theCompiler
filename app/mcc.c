@@ -139,15 +139,22 @@ int main(int argc, char *argv[])
 		st = mcc_create_symbol_table(pro, out, log_level_to_int(LOG_LEVEL));
 		if (st == NULL) {
 			mcc_ast_delete_program(pro);
+			fclose(in);
 			return EXIT_FAILURE;
 		}
 
 		// type checking
 		int error = mcc_check_types(pro, st, out, log_level_to_int(LOG_LEVEL));
 
+		if (error) {
+			mcc_delete_symbol_table(st);
+			mcc_ast_delete_program(pro);
+			fclose(in);
+			return EXIT_FAILURE;
+		}
+
 		// generate IR code
-		if (!error)
-			mcc_create_ir(pro, out, log_level_to_int(LOG_LEVEL));
+		mcc_create_ir(pro, out, log_level_to_int(LOG_LEVEL));
 
 		// cleanup
 		mcc_delete_symbol_table(st);
