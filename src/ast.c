@@ -268,7 +268,9 @@ struct mcc_ast_expression *mcc_ast_new_expression_array_access(struct mcc_ast_ex
 
 void mcc_ast_delete_expression(struct mcc_ast_expression *expression)
 {
-	assert(expression);
+	if (expression == NULL) {
+		return;
+	}
 
 	switch (expression->type) {
 	case MCC_AST_EXPRESSION_TYPE_LITERAL:
@@ -299,9 +301,7 @@ void mcc_ast_delete_expression(struct mcc_ast_expression *expression)
 
 	case MCC_AST_EXPRESSION_TYPE_FUNCTION_CALL:
 		mcc_ast_delete_expression(expression->function_call_identifier);
-		if (expression->function_call_arguments != NULL) {
-			mcc_ast_delete_function_arguments(expression->function_call_arguments);
-		}
+		mcc_ast_delete_function_arguments(expression->function_call_arguments);
 		break;
 	}
 
@@ -310,6 +310,10 @@ void mcc_ast_delete_expression(struct mcc_ast_expression *expression)
 
 void mcc_ast_delete_function_arguments(struct mcc_ast_function_arguments *arguments)
 {
+	if (arguments == NULL) {
+		return;
+	}
+
 	mcc_ast_delete_expression(arguments->expression);
 	if (arguments->next_argument != NULL) {
 		mcc_ast_delete_function_arguments(arguments->next_argument);
@@ -501,7 +505,9 @@ struct mcc_ast_statement *mcc_ast_new_while_stmt(struct mcc_ast_expression *expr
 
 void mcc_ast_delete_statement(struct mcc_ast_statement *statement)
 {
-	assert(statement);
+	if (statement == NULL) {
+		return;
+	}
 
 	switch (statement->type) {
 
@@ -509,9 +515,7 @@ void mcc_ast_delete_statement(struct mcc_ast_statement *statement)
 		mcc_ast_delete_expression(statement->expression);
 		break;
 	case MCC_AST_STATEMENT_RETURN:
-		if (statement->expression != NULL) {
-			mcc_ast_delete_expression(statement->expression);
-		}
+		mcc_ast_delete_expression(statement->expression);
 		break;
 
 	case MCC_AST_STATEMENT_DECLARATION:
@@ -522,9 +526,7 @@ void mcc_ast_delete_statement(struct mcc_ast_statement *statement)
 	case MCC_AST_STATEMENT_IF:
 		mcc_ast_delete_expression(statement->if_cond);
 		mcc_ast_delete_statement(statement->if_stat);
-		if (statement->else_stat != NULL) {
-			mcc_ast_delete_statement(statement->else_stat);
-		}
+		mcc_ast_delete_statement(statement->else_stat);
 		break;
 
 	case MCC_AST_STATEMENT_WHILE:
@@ -533,9 +535,7 @@ void mcc_ast_delete_statement(struct mcc_ast_statement *statement)
 		break;
 
 	case MCC_AST_STATEMENT_COMPOUND:
-		if (statement->compound != NULL) {
-			mcc_ast_delete_statement_list(statement->compound);
-		}
+		mcc_ast_delete_statement_list(statement->compound);
 		break;
 	}
 
@@ -569,7 +569,10 @@ struct mcc_ast_statement_list *mcc_ast_new_statement_compound_stmt(struct mcc_as
 
 void mcc_ast_delete_statement_list(struct mcc_ast_statement_list *statement_list)
 {
-	assert(statement_list);
+	if (statement_list == NULL) {
+		return;
+	}
+
 	if (statement_list->statement != NULL) {
 		mcc_ast_delete_statement(statement_list->statement);
 	}

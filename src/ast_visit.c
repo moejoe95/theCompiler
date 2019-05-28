@@ -61,6 +61,14 @@ void mcc_ast_visit_program(struct mcc_ast_program *program, struct mcc_ast_visit
 	}
 }
 
+void mcc_ast_visit_function_arg(struct mcc_ast_function_arguments *args, struct mcc_ast_visitor *visitor)
+{
+	while (args != NULL) {
+		mcc_ast_visit_expression(args->expression, visitor);
+		args = args->next_argument;
+	}
+}
+
 void mcc_ast_visit_expression(struct mcc_ast_expression *expression, struct mcc_ast_visitor *visitor)
 {
 	assert(expression);
@@ -106,13 +114,7 @@ void mcc_ast_visit_expression(struct mcc_ast_expression *expression, struct mcc_
 		break;
 	case MCC_AST_EXPRESSION_TYPE_FUNCTION_CALL:
 		visit_if_pre_order(expression, visitor->expression_call, visitor);
-
-		struct mcc_ast_function_arguments *args = expression->function_call_arguments;
-		while (args != NULL) {
-			mcc_ast_visit_expression(args->expression, visitor);
-			args = args->next_argument;
-		}
-
+		mcc_ast_visit_function_arg(expression->function_call_arguments, visitor);
 		break;
 	}
 

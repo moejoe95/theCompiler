@@ -535,25 +535,47 @@ static struct mcc_symbol *check_identifier(struct mcc_ast_source_location *sloc,
 	return previous_declaration;
 }
 
+static void set_expression_type(struct mcc_ast_expression *expr, struct mcc_symbol *sym)
+{
+	if (sym == NULL) {
+		return;
+	}
+	if (sym->array_size != NULL && expr->array_access_exp == NULL) {
+		expr->expression_type = MCC_AST_TYPE_ARRAY;
+	} else {
+		expr->expression_type = sym->type;
+	}
+}
+
+static void
+set_arr_expression_type(struct mcc_ast_expression *expr, struct mcc_symbol *sym, struct temp_create_symbol_table *temp)
+{
+	if (sym == NULL) {
+		return;
+	}
+	if (sym->array_size == NULL) {
+		temp->error_found = true;
+		struct mcc_semantic_error *error = get_mcc_semantic_error_struct(MCC_SC_ERROR_INVALID_ARRAY_ACCESS);
+		error->sloc = &expr->node.sloc;
+		error->lhs_type = sym->type;
+		print_semantic_error(error, temp->out);
+	} else {
+		expr->expression_type = sym->type;
+	}
+}
+
 static void symbol_table_expression(struct mcc_ast_expression *expr, void *data)
 {
 	assert(expr);
 	assert(data);
 	struct temp_create_symbol_table *temp = data;
-
 	struct mcc_symbol *sym;
 
 	switch (expr->type) {
-	case MCC_AST_EXPRESSION_TYPE_IDENTIFIER: {
+	case MCC_AST_EXPRESSION_TYPE_IDENTIFIER:
 		sym = check_identifier(&expr->node.sloc, temp, expr->identifier, true);
-		if (sym) {
-			if (sym->array_size != NULL && expr->array_access_exp == NULL) {
-				expr->expression_type = MCC_AST_TYPE_ARRAY;
-			} else {
-				expr->expression_type = sym->type;
-			}
-		}
-	} break;
+		set_expression_type(expr, sym);
+		break;
 	case MCC_AST_EXPRESSION_TYPE_UNARY_OP:
 		symbol_table_expression(expr->rhs, data);
 		break;
@@ -567,27 +589,13 @@ static void symbol_table_expression(struct mcc_ast_expression *expr, void *data)
 	case MCC_AST_EXPRESSION_TYPE_ARRAY_ACCESS:
 		sym =
 		    check_identifier(&expr->array_access_id->node.sloc, temp, expr->array_access_id->identifier, true);
-		if (sym) {
-			if (sym->array_size == NULL) {
-				temp->error_found = true;
-				struct mcc_semantic_error *error =
-				    get_mcc_semantic_error_struct(MCC_SC_ERROR_INVALID_ARRAY_ACCESS);
-				error->sloc = &expr->node.sloc;
-				error->lhs_type = sym->type;
-				print_semantic_error(error, temp->out);
-				return;
-			}
-			expr->expression_type = sym->type;
-		}
+		set_arr_expression_type(expr, sym, temp);
 		break;
 	case MCC_AST_EXPRESSION_TYPE_LITERAL:
-
 		break;
 	case MCC_AST_EXPRESSION_TYPE_FUNCTION_CALL:
 		sym = check_identifier(&expr->node.sloc, temp, expr->function_call_identifier->identifier, true);
-		if (sym) {
-			expr->expression_type = sym->type;
-		}
+		set_expression_type(expr, sym);
 		break;
 	}
 }
