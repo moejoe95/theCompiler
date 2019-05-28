@@ -16,7 +16,7 @@ void print_table_legend(FILE *out)
 	print_table_line(out);
 }
 
-void print_row(struct mcc_ir_table *table, FILE *out)
+void print_row(struct mcc_ir_line *table, FILE *out)
 {
 
 	if (!table->arg2) {
@@ -75,13 +75,14 @@ void print_row(struct mcc_ir_table *table, FILE *out)
 	fprintf(out, "| %d\t| %s\t| %-40.40s| %-40.40s|\n", table->index, operation, table->arg1, table->arg2);
 }
 
-void mcc_print_ir_table(struct mcc_ir_table *table, FILE *out)
+void mcc_print_ir_table(struct mcc_ir_line *table, FILE *out)
 {
 	print_table_legend(out);
-	struct mcc_ir_table *current_table = table->next_table;
+	struct mcc_ir_line *current_table = table->next_line;
 	while (current_table != NULL) {
 		print_row(current_table, out);
-		current_table = current_table->next_table;
+		current_table = current_table->next_line;
 	}
 	print_table_line(out);
+	fprintf(out, "\n");
 }

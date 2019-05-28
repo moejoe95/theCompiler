@@ -7,6 +7,6 @@
 #include <stdlib.h>
 #include <mcc/ast.h>
 
-void print_cfg(struct mcc_ir_table *ir, struct mcc_cfg *cfg, FILE *out);
+void print_cfg(struct mcc_ir_line *ir, struct mcc_cfg *cfg, FILE *out);
 
 #endif // MCC_PRINT_CFG_H
