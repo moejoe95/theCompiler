@@ -104,31 +104,30 @@ struct mcc_cfg *generate_cfg(struct mcc_ir_table *ir, FILE *out, int log_level)
 	cfg->current_block = NULL;
 
 	while (ir != NULL) {
-		switch (ir->op_type) {
-		case MCC_IR_TABLE_JUMP:
+
+		if (ir->op_type == MCC_IR_TABLE_JUMP) {
 			if (cfg->current_block != NULL) {
 				cfg->current_block->table_id_end = (ir->index);
 				cfg->current_block->target_id = ir->jump_target;
 			}
 			generate_block(cfg, ir->next_table->index);
-			break;
-		case MCC_IR_TABLE_JUMPFALSE:
+		}
+
+		if (ir->op_type == MCC_IR_TABLE_JUMPFALSE) {
 			if (cfg->current_block != NULL) {
 				cfg->current_block->table_id_end = (ir->index);
 				cfg->current_block->target_id = ir->jump_target;
 				cfg->current_block->has_follower = true;
 			}
 			generate_block(cfg, ir->next_table->index);
-			break;
-		case MCC_IR_TABLE_LABEL:
+		}
+
+		if (ir->op_type == MCC_IR_TABLE_LABEL) {
 			if (cfg->current_block != NULL) {
 				cfg->current_block->table_id_end = (ir->index - 1);
 				cfg->current_block->target_id = ir->jump_target;
 			}
 			generate_block(cfg, ir->index);
-			break;
-		default:
-			break;
 		}
 
 		if (ir->next_table == NULL) {
