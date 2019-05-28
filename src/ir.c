@@ -66,10 +66,7 @@ static char *generate_ir_literal_entity(struct mcc_ast_literal *lit)
 	char value[12] = {0};
 	switch (lit->type) {
 	case MCC_AST_LITERAL_TYPE_BOOL:
-		if (lit->b_value == 1)
-			sprintf(value, "%s", "true");
-		else
-			sprintf(value, "%s", "false");
+		sprintf(value, "%s", lit->b_value == 1 ? "true" : "false");
 		entity = strdup(value);
 		break;
 	case MCC_AST_LITERAL_TYPE_INT:
@@ -137,6 +134,7 @@ static char *generate_ir_entity(struct mcc_ir_head *head, struct mcc_ast_express
 		break;
 	case MCC_AST_EXPRESSION_TYPE_IDENTIFIER:
 		entity = lookup_table_args(head, expr->identifier->name, NULL);
+		// TODO
 		if (!entity)
 			entity = strdup(expr->identifier->name);
 		break;
@@ -374,6 +372,7 @@ generate_ir_expression(struct mcc_ast_expression *expr, struct mcc_ir_head *head
 		generate_ir_literal(expr->literal, head, type);
 		break;
 	case MCC_AST_EXPRESSION_TYPE_IDENTIFIER:
+		// TODO
 		if (expr->expression_type == MCC_AST_TYPE_ARRAY)
 			expr->identifier->type = expr->expression_type;
 		generate_ir_identifier(expr->identifier, head, type);
@@ -605,6 +604,7 @@ static void generate_ir_statement(struct mcc_ast_statement *stmt, struct mcc_ir_
 		break;
 	case MCC_AST_STATEMENT_COMPOUND: {
 		struct mcc_ast_statement_list *list = stmt->compound;
+		// TODO
 		while (list != NULL) {
 			generate_ir_statement(list->statement, head);
 			list = list->next_statement;
@@ -679,12 +679,11 @@ struct mcc_ir_table *mcc_create_ir(struct mcc_ast_program *program, FILE *out, i
 	head->index = 0;
 	head->program = program;
 
-	switch (program->type) {
-	case MCC_AST_PROGRAM_TYPE_FUNCTION:
+	if (program->type == MCC_AST_PROGRAM_TYPE_FUNCTION) {
 		generate_function_definition(program->function, head);
-		break;
+	}
 
-	case MCC_AST_PROGRAM_TYPE_FUNCTION_LIST: {
+	if (program->type == MCC_AST_PROGRAM_TYPE_FUNCTION_LIST) {
 		struct mcc_ast_func_list *list = program->function_list;
 		// search for main function
 		while (list != NULL) {
@@ -694,12 +693,9 @@ struct mcc_ir_table *mcc_create_ir(struct mcc_ast_program *program, FILE *out, i
 			}
 			list = list->next_function;
 		}
-	} break;
-	default:
-		break;
 	}
 
-	if (log_level >= 0)
+	if (log_level > 0)
 		mcc_print_ir_table(table, out);
 
 	free(head);

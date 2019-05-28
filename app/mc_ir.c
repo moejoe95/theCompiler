@@ -151,7 +151,7 @@ int main(int argc, char **argv)
 		}
 
 		// generate IR code
-		ir = mcc_create_ir(pro, out, log_level_to_int(LOG_LEVEL));
+		ir = mcc_create_ir(pro, out, log_level_to_int(1));
 
 		// cleanup
 		mcc_delete_ir(ir);
