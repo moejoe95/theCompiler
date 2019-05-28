@@ -697,7 +697,7 @@ struct mcc_ir_table *mcc_create_ir(struct mcc_ast_program *program, FILE *out, i
 		break;
 	}
 
-	if (log_level > 0)
+	if (log_level >= 0)
 		mcc_print_ir_table(table, out);
 
 	free(head);
