@@ -636,10 +636,6 @@ static void generate_function_definition(struct mcc_ast_func_definition *func, s
 	assert(head);
 
 	// func identifier
-	char value[12];
-	sprintf(value, "(%d)", head->index + 2);
-	generate_ir_table_line(head, strdup(value), NULL, MCC_IR_TABLE_CALL, -1);
-
 	char *id_entity = generate_ir_entity(head, func->func_identifier);
 	generate_ir_table_line(head, id_entity, NULL, MCC_IR_TABLE_LABEL, -1);
 
