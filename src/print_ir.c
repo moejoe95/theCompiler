@@ -64,6 +64,9 @@ void print_row(struct mcc_ir_table *table, FILE *out)
 	case MCC_IR_TABLE_BUILT_IN:
 		sprintf(operation, "%-10.10s", table->built_in);
 		break;
+	case MCC_IR_TABLE_CALL:
+		sprintf(operation, "%s", "call\t");
+		break;
 	default:
 		sprintf(operation, "%s", "undef op");
 		break;

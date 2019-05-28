@@ -289,7 +289,7 @@ static void generate_ir_function_call(struct mcc_ast_expression *expr_call, stru
 
 	char *label = lookup_table_args(head, func_id, NULL);
 	if (label) {
-		generate_ir_table_line(head, label, NULL, MCC_IR_TABLE_JUMP, -1);
+		generate_ir_table_line(head, label, NULL, MCC_IR_TABLE_CALL, -1);
 		return;
 	}
 
@@ -634,17 +634,12 @@ static void generate_function_definition(struct mcc_ast_func_definition *func, s
 	assert(head);
 
 	// func identifier
-	head->index++;
-	struct mcc_ir_table *new_table = create_new_ir_table();
+	char value[12];
+	sprintf(value, "(%d)", head->index + 2);
+	generate_ir_table_line(head, strdup(value), NULL, MCC_IR_TABLE_CALL, -1);
+
 	char *id_entity = generate_ir_entity(head, func->func_identifier);
-
-	new_table->arg1 = id_entity;
-	new_table->arg2 = NULL;
-	new_table->op_type = MCC_IR_TABLE_LABEL;
-	new_table->index = head->index;
-
-	head->current->next_table = new_table;
-	head->current = new_table;
+	generate_ir_table_line(head, id_entity, NULL, MCC_IR_TABLE_LABEL, -1);
 
 	// func parameter list
 	struct mcc_ast_parameter *param = func->parameter_list;
