@@ -637,7 +637,11 @@ static void generate_function_definition(struct mcc_ast_func_definition *func, s
 
 	// func identifier
 	char *id_entity = generate_ir_entity(head, func->func_identifier);
-	generate_ir_table_line(head, id_entity, NULL, MCC_IR_TABLE_LABEL, -1);
+	if (head->index != 1) {
+		generate_ir_table_line(head, id_entity, NULL, MCC_IR_TABLE_LABEL, -1);
+	} else {
+		generate_ir_table_line(head, id_entity, NULL, MCC_IR_TABLE_CALL, -1);
+	}
 
 	// func parameter list
 	struct mcc_ast_parameter *param = func->parameter_list;
