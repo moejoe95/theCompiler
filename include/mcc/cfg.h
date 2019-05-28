@@ -1,11 +1,12 @@
 #ifndef MCC_CFG_H
 #define MCC_CFG_H
 
-#include "mcc/ir.h"
 #include <assert.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+
+#include "mcc/ir.h"
 
 struct mcc_cfg {
 	struct mcc_block *root_block;

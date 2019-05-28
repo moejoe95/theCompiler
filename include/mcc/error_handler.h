@@ -1,11 +1,12 @@
 #ifndef MCC_ERROR_HANDLER_H
 #define MCC_ERROR_HANDLER_H
 
-#include "mcc/ast.h"
-#include "mcc/symbol_table.h"
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
+
+#include "mcc/ast.h"
+#include "mcc/symbol_table.h"
 
 enum semantic_error_type {
 	MCC_SC_ERROR_NO_MAIN,

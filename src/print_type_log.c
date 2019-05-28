@@ -1,4 +1,5 @@
 #include "mcc/print_type_log.h"
+
 #include "mcc/error_handler.h"
 
 char *get_status_string(enum mcc_type_status status)

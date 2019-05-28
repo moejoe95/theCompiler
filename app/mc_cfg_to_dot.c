@@ -1,5 +1,7 @@
+#include <getopt.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "mcc/ast.h"
 #include "mcc/ast_print.h"
@@ -9,8 +11,6 @@
 #include "mcc/print_ir.h"
 #include "mcc/symbol_table.h"
 #include "mcc/type_checking.h"
-#include <getopt.h>
-#include <string.h>
 
 enum log_level { LOG_DEFAULT, LOG_INFO, LOG_DEBUG };
 

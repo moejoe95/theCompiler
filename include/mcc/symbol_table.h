@@ -5,13 +5,14 @@
 #ifndef MCC_SYMBOL_TABLE_H
 #define MCC_SYMBOL_TABLE_H
 
-#include "mcc/ast.h"
-#include "mcc/ast_visit.h"
-#include "mcc/error_handler.h"
 #include <assert.h>
 #include <mcc/ast_print.h>
 #include <stdbool.h>
 #include <stdio.h>
+
+#include "mcc/ast.h"
+#include "mcc/ast_visit.h"
+#include "mcc/error_handler.h"
 
 struct temp_create_symbol_table {
 	FILE *out;

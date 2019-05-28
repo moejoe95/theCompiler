@@ -1,7 +1,9 @@
 #include "mcc/type_checking.h"
+
+#include <stdlib.h>
+
 #include "mcc/print_type_log.h"
 #include "mcc/symbol_table.h"
-#include <stdlib.h>
 
 static void check_expression_array(struct mcc_ast_expression *expr, void *data)
 {

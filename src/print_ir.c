@@ -1,4 +1,5 @@
 #include "mcc/print_ir.h"
+
 #include <string.h>
 
 void print_table_line(FILE *out)

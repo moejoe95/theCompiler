@@ -1,11 +1,12 @@
 #include "mcc/symbol_table.h"
-#include "mcc/ast.h"
-#include "mcc/error_handler.h"
 
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "mcc/ast.h"
+#include "mcc/error_handler.h"
 
 static struct argument_type_list *create_argument_type_list()
 {

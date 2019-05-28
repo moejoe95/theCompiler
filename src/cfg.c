@@ -1,10 +1,11 @@
 #include "mcc/cfg.h"
-#include "mcc/print_cfg.h"
 
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "mcc/print_cfg.h"
 
 static void generate_block(struct mcc_cfg *cfg, int table_id_start)
 {

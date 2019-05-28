@@ -1,4 +1,5 @@
 #include "mcc/error_handler.h"
+
 #include "mcc/ast.h"
 
 void print_lexer_error(char *filename, int last_line, int last_column, const char *msg, FILE *out)

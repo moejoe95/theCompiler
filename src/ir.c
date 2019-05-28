@@ -1,11 +1,13 @@
 #include "mcc/ir.h"
+
 #include "assert.h"
-#include "mcc/ast.h"
-#include "mcc/ast_visit.h"
-#include "mcc/print_ir.h"
 #include "stdio.h"
 #include "stdlib.h"
 #include "string.h"
+
+#include "mcc/ast.h"
+#include "mcc/ast_visit.h"
+#include "mcc/print_ir.h"
 
 // forward declarations
 static void generate_function_definition(struct mcc_ast_func_definition *func, struct mcc_ir_head *head);
