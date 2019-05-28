@@ -695,7 +695,8 @@ struct mcc_ir_table_head *mcc_create_ir(struct mcc_ast_program *program, FILE *o
 		}
 
 		if (log_level > 0)
-			mcc_print_ir_table(table->line_head->root, out);
+			mcc_print_ir_table(table->line_head->root, list->function->func_identifier->identifier->name,
+			                   out);
 
 		list = list->next_function;
 		i++;
