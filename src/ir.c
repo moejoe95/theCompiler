@@ -431,24 +431,14 @@ static void generate_ir_return(struct mcc_ast_expression *expr, struct mcc_ir_he
 
 	char value[14] = {0};
 
-	// push
-	if (expr) {
-		generate_ir_expression(expr, head, MCC_IR_TABLE_PUSH);
+	if (expr) { // needed if function returns void (nothing)
+		generate_ir_expression(expr, head, MCC_IR_TABLE_RETURN);
 
 		// insert additional line in IR table
 		if (expr->type != MCC_AST_EXPRESSION_TYPE_LITERAL && expr->type != MCC_AST_EXPRESSION_TYPE_IDENTIFIER) {
 			sprintf(value, "(%d)", head->index - 1);
 			generate_ir_table_line(head, strdup(value), NULL, MCC_IR_TABLE_PUSH, -1);
 		}
-	}
-	// jump
-	sprintf(value, "(%d)", head->index + 2);
-	generate_ir_table_line(head, strdup(value), NULL, MCC_IR_TABLE_JUMP, head->index + 2);
-
-	// pop
-	if (expr) {
-		sprintf(value, "(%d)", head->index);
-		generate_ir_table_line(head, strdup(value), NULL, MCC_IR_TABLE_POP, -1);
 	}
 }
 
