@@ -24,7 +24,18 @@ enum ir_table_operation_type {
 	MCC_IR_TABLE_RETURN
 };
 
+struct mcc_ir_table_head {
+	struct mcc_ir_table *current;
+	struct mcc_ir_table *root;
+};
+
 struct mcc_ir_table {
+	char *func_name;
+	struct mcc_ir_table *next_table;
+	struct mcc_ir_line_head *line_head;
+};
+
+struct mcc_ir_line {
 	enum ir_table_operation_type op_type;
 	union {
 		enum mcc_ast_binary_op bin_op;
@@ -39,20 +50,20 @@ struct mcc_ir_table {
 
 	struct mcc_ast_node node;
 
-	struct mcc_ir_table *next_table;
+	struct mcc_ir_line *next_line;
 };
 
-struct mcc_ir_head {
-	struct mcc_ir_table *root;
-	struct mcc_ir_table *current;
+struct mcc_ir_line_head {
+	struct mcc_ir_line *root;
+	struct mcc_ir_line *current;
 
 	struct mcc_ast_program *program;
 
 	int index;
 };
 
-struct mcc_ast_visitor generate_ir_visitor(struct mcc_ir_head *head);
-struct mcc_ir_table *mcc_create_ir(struct mcc_ast_program *program, FILE *out, int log_level);
-void mcc_delete_ir(struct mcc_ir_table *head);
+struct mcc_ast_visitor generate_ir_visitor(struct mcc_ir_line_head *head);
+struct mcc_ir_table_head *mcc_create_ir(struct mcc_ast_program *program, FILE *out, int log_level);
+void mcc_delete_ir(struct mcc_ir_table_head *table_head);
 
 #endif

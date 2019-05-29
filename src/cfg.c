@@ -91,11 +91,11 @@ void create_cf_graph(struct mcc_cfg *cfg)
 	} while (current_block != NULL);
 }
 
-struct mcc_cfg *generate_cfg(struct mcc_ir_table *ir, FILE *out, int log_level)
+struct mcc_cfg *generate_cfg(struct mcc_ir_line *ir, FILE *out, int log_level)
 {
 	assert(ir);
 
-	struct mcc_ir_table *ir_cfg_print = ir;
+	struct mcc_ir_line *ir_cfg_print = ir;
 
 	struct mcc_cfg *cfg = malloc(sizeof(*cfg));
 	if (!cfg)
@@ -110,7 +110,7 @@ struct mcc_cfg *generate_cfg(struct mcc_ir_table *ir, FILE *out, int log_level)
 				cfg->current_block->table_id_end = (ir->index);
 				cfg->current_block->target_id = ir->jump_target;
 			}
-			generate_block(cfg, ir->next_table->index);
+			generate_block(cfg, ir->next_line->index);
 			break;
 		case MCC_IR_TABLE_JUMPFALSE:
 			if (cfg->current_block != NULL) {
@@ -118,7 +118,7 @@ struct mcc_cfg *generate_cfg(struct mcc_ir_table *ir, FILE *out, int log_level)
 				cfg->current_block->target_id = ir->jump_target;
 				cfg->current_block->has_follower = true;
 			}
-			generate_block(cfg, ir->next_table->index);
+			generate_block(cfg, ir->next_line->index);
 			break;
 		case MCC_IR_TABLE_LABEL:
 			if (cfg->current_block != NULL) {
@@ -131,11 +131,11 @@ struct mcc_cfg *generate_cfg(struct mcc_ir_table *ir, FILE *out, int log_level)
 			break;
 		}
 
-		if (ir->next_table == NULL) {
+		if (ir->next_line == NULL) {
 			cfg->current_block->table_id_end = ir->index;
 			cfg->current_block->target_id = 0;
 		}
-		ir = ir->next_table;
+		ir = ir->next_line;
 	}
 
 	create_cf_graph(cfg);

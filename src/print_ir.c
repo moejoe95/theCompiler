@@ -9,15 +9,15 @@ void print_table_line(FILE *out)
 	fprintf(out, "\n");
 }
 
-void print_table_legend(FILE *out)
+void print_table_legend(FILE *out, char *name)
 {
-	fprintf(out, "generate IR code...\n\n");
+	fprintf(out, "IR code: %s\n\n", name);
 	print_table_line(out);
 	fprintf(out, "| %s\t| %s\t| %-40s| %-40s|\n", "index", "operation", "argument 1", "argument 2");
 	print_table_line(out);
 }
 
-void print_row(struct mcc_ir_table *table, FILE *out)
+void print_row(struct mcc_ir_line *table, FILE *out)
 {
 
 	if (!table->arg2) {
@@ -68,6 +68,9 @@ void print_row(struct mcc_ir_table *table, FILE *out)
 	case MCC_IR_TABLE_BUILT_IN:
 		sprintf(operation, "%-10.10s", table->built_in);
 		break;
+	case MCC_IR_TABLE_CALL:
+		sprintf(operation, "%s", "call\t");
+		break;
 	default:
 		sprintf(operation, "%s", "undef op");
 		break;
@@ -76,13 +79,14 @@ void print_row(struct mcc_ir_table *table, FILE *out)
 	fprintf(out, "| %d\t| %s\t| %-40.40s| %-40.40s|\n", table->index, operation, table->arg1, table->arg2);
 }
 
-void mcc_print_ir_table(struct mcc_ir_table *table, FILE *out)
+void mcc_print_ir_table(struct mcc_ir_line *table, char *name, FILE *out)
 {
-	print_table_legend(out);
-	struct mcc_ir_table *current_table = table->next_table;
+	print_table_legend(out, name);
+	struct mcc_ir_line *current_table = table->next_line;
 	while (current_table != NULL) {
 		print_row(current_table, out);
-		current_table = current_table->next_table;
+		current_table = current_table->next_line;
 	}
 	print_table_line(out);
+	fprintf(out, "\n");
 }

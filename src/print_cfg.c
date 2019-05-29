@@ -56,7 +56,7 @@ static void print_dot_edge(FILE *out, const void *src_node, const void *dst_node
 	}
 }
 
-static void get_table_line(struct mcc_ir_table *line, char *target)
+static void get_table_line(struct mcc_ir_line *line, char *target)
 {
 	char value[LINE_SIZE] = {0};
 
@@ -109,24 +109,24 @@ static void get_table_line(struct mcc_ir_table *line, char *target)
 	strcat(target, value);
 }
 
-static char *get_ir_entries(struct mcc_ir_table *ir, int start, int end, char *target)
+static char *get_ir_entries(struct mcc_ir_line *ir, int start, int end, char *target)
 {
 
 	while (ir != NULL) {
 		if (ir->index == start) {
 			while (ir != NULL && ir->index != end + 1) {
 				get_table_line(ir, target);
-				ir = ir->next_table;
+				ir = ir->next_line;
 			}
 			break;
 		}
-		ir = ir->next_table;
+		ir = ir->next_line;
 	}
 
 	return target;
 }
 
-static void print_block_node(struct mcc_ir_table *ir, FILE *out, struct mcc_block *temp_block, struct mcc_block *parent)
+static void print_block_node(struct mcc_ir_line *ir, FILE *out, struct mcc_block *temp_block, struct mcc_block *parent)
 {
 	assert(ir);
 	assert(out);
@@ -158,7 +158,7 @@ static void print_block_node(struct mcc_ir_table *ir, FILE *out, struct mcc_bloc
 	}
 }
 
-void print_cfg(struct mcc_ir_table *ir, struct mcc_cfg *cfg, FILE *out)
+void print_cfg(struct mcc_ir_line *ir, struct mcc_cfg *cfg, FILE *out)
 {
 	assert(ir);
 	assert(cfg);
