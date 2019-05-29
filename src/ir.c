@@ -291,20 +291,8 @@ static void generate_ir_function_call(struct mcc_ast_expression *expr_call, stru
 	// normal functions
 	generate_function_arguments(expr_call, head);
 
-	char *label = lookup_table_args(head, func_id, NULL);
-	if (label) {
-		generate_ir_table_line(head, label, NULL, MCC_IR_TABLE_CALL, -1);
-		return;
-	}
-
-	struct mcc_ast_func_list *list = head->program->function_list;
-	while (list != NULL) {
-		if (strcmp(list->function->func_identifier->identifier->name, func_id) == 0) {
-			generate_function_definition(list->function, head);
-			break;
-		}
-		list = list->next_function;
-	}
+	// call function line
+	generate_ir_table_line(head, func_id, NULL, MCC_IR_TABLE_CALL, -1);
 }
 
 static void
