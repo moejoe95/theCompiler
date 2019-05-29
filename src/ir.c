@@ -262,9 +262,13 @@ static void generate_function_arguments(struct mcc_ast_expression *expr, struct 
 
 	struct mcc_ast_function_arguments *list = reverse_recursive(expr->function_call_arguments);
 	expr->function_call_arguments = list;
-
 	while (list != NULL) {
 		generate_ir_expression(list->expression, head, MCC_IR_TABLE_PUSH);
+		// insert additional line in IR table
+		if (expr->type != MCC_AST_EXPRESSION_TYPE_LITERAL && expr->type != MCC_AST_EXPRESSION_TYPE_IDENTIFIER) {
+			char *value = generate_ir_entity(head, expr);
+			generate_ir_table_line(head, strdup(value), NULL, MCC_IR_TABLE_PUSH, -1);
+		}
 		list = list->next_argument;
 	}
 }
@@ -718,6 +722,7 @@ void mcc_delete_line(struct mcc_ir_line *line)
 void mcc_delete_line_head(struct mcc_ir_line_head *line_head)
 {
 	mcc_delete_line(line_head->root);
+	free(line_head);
 }
 
 void mcc_delete_table(struct mcc_ir_table *table)
@@ -732,4 +737,5 @@ void mcc_delete_table(struct mcc_ir_table *table)
 void mcc_delete_ir(struct mcc_ir_table_head *table_head)
 {
 	mcc_delete_table(table_head->root);
+	free(table_head);
 }
