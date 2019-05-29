@@ -81,7 +81,10 @@ static void get_table_line(struct mcc_ir_line *line, char *target)
 		sprintf(value, "(%d): %s %s\n", line->index, "builtin", line->arg1);
 		break;
 	case MCC_IR_TABLE_CALL:
-		sprintf(value, "(%d): %s %s %s\n", line->index, "call", line->arg1, line->arg2);
+		sprintf(value, "(%d): %s %s\n", line->index, "call", line->arg1);
+		break;
+	case MCC_IR_TABLE_RETURN:
+		sprintf(value, "(%d): %s %s\n", line->index, "return", line->arg1);
 		break;
 	case MCC_IR_TABLE_COPY:
 		sprintf(value, "(%d): %s %s %s\n", line->index, "copy", line->arg1, line->arg2);
@@ -101,6 +104,9 @@ static void get_table_line(struct mcc_ir_line *line, char *target)
 		break;
 	case MCC_IR_TABLE_LABEL:
 		sprintf(value, "(%d): %s %s\n", line->index, "label", line->arg1);
+		break;
+	case MCC_IR_TABLE_NULL:
+		sprintf(value, "(%d): %s \n", line->index, "null"); //TODO delete
 		break;
 
 	default:
@@ -158,15 +164,21 @@ static void print_block_node(struct mcc_ir_line *ir, FILE *out, struct mcc_block
 	}
 }
 
-void print_cfg(struct mcc_ir_line *ir, struct mcc_cfg *cfg, FILE *out)
+void print_cfg(struct mcc_ir_table_head *ir_table_head, struct mcc_cfg *cfg, FILE *out)
 {
-	assert(ir);
+	assert(ir_table_head);
 	assert(cfg);
 	assert(out);
 
+	struct mcc_ir_table *ir_table = ir_table_head->root;
+
 	print_dot_begin(out);
 
-	print_block_node(ir, out, cfg->root_block, NULL);
+	while (ir_table != NULL) {
+		print_block_node(ir_table->line_head->root, out, cfg->root_block, NULL);
+		ir_table = ir_table->next_table;
+	}
 
 	print_dot_end(out);
+
 }

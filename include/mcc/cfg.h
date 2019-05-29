@@ -27,7 +27,7 @@ struct mcc_block {
 	struct mcc_block *child_second;
 };
 
-struct mcc_cfg *generate_cfg(struct mcc_ir_line *ir, FILE *out, int log_level);
+struct mcc_cfg *generate_cfg(struct mcc_ir_table_head *ir_table_head, FILE *out, int log_level);
 void mcc_delete_cfg(struct mcc_cfg *cfg);
 
 #endif // MCC_CFG_H

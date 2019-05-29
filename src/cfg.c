@@ -91,11 +91,11 @@ void create_cf_graph(struct mcc_cfg *cfg)
 	} while (current_block != NULL);
 }
 
-struct mcc_cfg *generate_cfg(struct mcc_ir_line *ir, FILE *out, int log_level)
+struct mcc_cfg *generate_cfg(struct mcc_ir_table_head *ir_table_head, FILE *out, int log_level)
 {
-	assert(ir);
+	assert(ir_table_head);
 
-	struct mcc_ir_line *ir_cfg_print = ir;
+	struct mcc_ir_table *ir_table = ir_table_head->root;
 
 	struct mcc_cfg *cfg = malloc(sizeof(*cfg));
 	if (!cfg)
@@ -103,46 +103,55 @@ struct mcc_cfg *generate_cfg(struct mcc_ir_line *ir, FILE *out, int log_level)
 
 	cfg->current_block = NULL;
 
-	while (ir != NULL) {
-		switch (ir->op_type) {
-		case MCC_IR_TABLE_JUMP:
-			if (cfg->current_block != NULL) {
-				cfg->current_block->table_id_end = (ir->index);
-				cfg->current_block->target_id = ir->jump_target;
+	while (ir_table != NULL) {
+		struct mcc_ir_line *ir_line = ir_table ->line_head->root;
+
+		while(ir_line != NULL){
+			switch (ir_line->op_type) {
+				case MCC_IR_TABLE_JUMP:
+					if (cfg->current_block != NULL) {
+						cfg->current_block->table_id_end = (ir_line->index);
+						cfg->current_block->target_id = ir_line->jump_target;
+					}
+					generate_block(cfg, ir_line->next_line->index);
+					break;
+				case MCC_IR_TABLE_JUMPFALSE:
+					if (cfg->current_block != NULL) {
+						cfg->current_block->table_id_end = (ir_line->index);
+						cfg->current_block->target_id = ir_line->jump_target;
+						cfg->current_block->has_follower = true;
+					}
+					generate_block(cfg, ir_line->next_line->index);
+					break;
+				case MCC_IR_TABLE_LABEL:
+					if (cfg->current_block != NULL) {
+						cfg->current_block->table_id_end = (ir_line->index - 1);
+						cfg->current_block->target_id = ir_line->jump_target;
+					}
+					generate_block(cfg, ir_line->index);
+					break;
+				default:
+					break;
+				}
+
+			if (ir_line->next_line == NULL) {
+				cfg->current_block->table_id_end = ir_line->index;
+				cfg->current_block->target_id = 0;
 			}
-			generate_block(cfg, ir->next_line->index);
-			break;
-		case MCC_IR_TABLE_JUMPFALSE:
-			if (cfg->current_block != NULL) {
-				cfg->current_block->table_id_end = (ir->index);
-				cfg->current_block->target_id = ir->jump_target;
-				cfg->current_block->has_follower = true;
-			}
-			generate_block(cfg, ir->next_line->index);
-			break;
-		case MCC_IR_TABLE_LABEL:
-			if (cfg->current_block != NULL) {
-				cfg->current_block->table_id_end = (ir->index - 1);
-				cfg->current_block->target_id = ir->jump_target;
-			}
-			generate_block(cfg, ir->index);
-			break;
-		default:
-			break;
+
+			ir_line = ir_line->next_line;
+
 		}
 
-		if (ir->next_line == NULL) {
-			cfg->current_block->table_id_end = ir->index;
-			cfg->current_block->target_id = 0;
-		}
-		ir = ir->next_line;
+		ir_table = ir_table->next_table;
+		
 	}
 
 	create_cf_graph(cfg);
 
 	if (log_level == 2)
 		print_basic_blocks(out, cfg->root_block);
-	print_cfg(ir_cfg_print, cfg, out);
+	print_cfg(ir_table_head, cfg, out);
 
 	return cfg;
 }
