@@ -62,6 +62,6 @@ struct mcc_ir_line_head {
 
 struct mcc_ast_visitor generate_ir_visitor(struct mcc_ir_line_head *head);
 struct mcc_ir_table_head *mcc_create_ir(struct mcc_ast_program *program, FILE *out, int log_level);
-void mcc_delete_ir(struct mcc_ir_table *table);
+void mcc_delete_ir(struct mcc_ir_table_head *table_head);
 
 #endif

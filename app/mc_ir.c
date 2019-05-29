@@ -154,7 +154,7 @@ int main(int argc, char **argv)
 		table_head = mcc_create_ir(pro, out, log_level_to_int(LOG_LEVEL));
 
 		// cleanup
-		mcc_delete_ir(table_head->root);
+		mcc_delete_ir(table_head);
 		mcc_delete_symbol_table(st);
 		mcc_ast_delete_program(pro);
 

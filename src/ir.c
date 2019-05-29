@@ -684,11 +684,16 @@ struct mcc_ir_table_head *mcc_create_ir(struct mcc_ast_program *program, FILE *o
 	int i = 0;
 	struct mcc_ast_func_list *list = program->function_list;
 	while (list != NULL) {
+		char *func_id = list->function->func_identifier->identifier->name;
+
 		struct mcc_ir_line_head *line_head = create_line_head(program);
 		generate_function_definition(list->function, line_head);
+		line_head->current->next_line = NULL;
 
 		struct mcc_ir_table *table = malloc(sizeof(*table));
 		table->line_head = line_head;
+		table->func_name = func_id;
+		table->next_table = NULL;
 
 		if (i == 0) {
 			table_head->root = table;
@@ -699,8 +704,7 @@ struct mcc_ir_table_head *mcc_create_ir(struct mcc_ast_program *program, FILE *o
 		}
 
 		if (log_level > 0)
-			mcc_print_ir_table(table->line_head->root, list->function->func_identifier->identifier->name,
-			                   out);
+			mcc_print_ir_table(table->line_head->root, func_id, out);
 
 		list = list->next_function;
 		i++;
@@ -711,8 +715,7 @@ struct mcc_ir_table_head *mcc_create_ir(struct mcc_ast_program *program, FILE *o
 void mcc_delete_line(struct mcc_ir_line *line)
 {
 	if (line->next_line != NULL) {
-		mcc_delete_ir(line->next_line);
-		line = line->next_line;
+		mcc_delete_line(line->next_line);
 	}
 
 	free(line->arg1);
@@ -720,13 +723,21 @@ void mcc_delete_line(struct mcc_ir_line *line)
 	free(line);
 }
 
-void mcc_delete_ir(struct mcc_ir_table *table)
+void mcc_delete_line_head(struct mcc_ir_line_head *line_head)
 {
+	mcc_delete_line(line_head->root);
+}
 
+void mcc_delete_table(struct mcc_ir_table *table)
+{
 	if (table->next_table != NULL) {
-		mcc_delete_ir(table->next_table);
-		table = table->next_table;
+		mcc_delete_table(table->next_table);
 	}
 
-	mcc_delete_line(table->line_head->root);
+	mcc_delete_line_head(table->line_head);
+}
+
+void mcc_delete_ir(struct mcc_ir_table_head *table_head)
+{
+	mcc_delete_table(table_head->root);
 }
