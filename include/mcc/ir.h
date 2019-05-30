@@ -33,6 +33,7 @@ struct mcc_ir_table {
 	char *func_name;
 	struct mcc_ir_table *next_table;
 	struct mcc_ir_line_head *line_head;
+	int id;
 };
 
 struct mcc_ir_line {

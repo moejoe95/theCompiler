@@ -690,6 +690,7 @@ struct mcc_ir_table_head *mcc_create_ir(struct mcc_ast_program *program, FILE *o
 		table->line_head = line_head;
 		table->func_name = func_id;
 		table->next_table = NULL;
+		table->id = i;
 
 		if (i == 0) {
 			table_head->root = table;

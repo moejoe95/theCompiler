@@ -106,7 +106,7 @@ static void get_table_line(struct mcc_ir_line *line, char *target)
 		sprintf(value, "(%d): %s %s\n", line->index, "label", line->arg1);
 		break;
 	case MCC_IR_TABLE_NULL:
-		sprintf(value, "(%d): %s \n", line->index, "null"); //TODO delete
+		sprintf(value, "(%d): %s \n", line->index, "null"); // TODO delete
 		break;
 
 	default:
@@ -164,6 +164,20 @@ static void print_block_node(struct mcc_ir_line *ir, FILE *out, struct mcc_block
 	}
 }
 
+struct mcc_block *find_start_block(struct mcc_cfg *cfg, int table_id)
+{
+	struct mcc_block *current_block = cfg->root_block;
+
+	while (current_block != NULL) {
+		if (current_block->is_start_of == table_id) {
+			return current_block;
+		}
+
+		current_block = current_block->next_block;
+	}
+	return NULL;
+}
+
 void print_cfg(struct mcc_ir_table_head *ir_table_head, struct mcc_cfg *cfg, FILE *out)
 {
 	assert(ir_table_head);
@@ -175,10 +189,12 @@ void print_cfg(struct mcc_ir_table_head *ir_table_head, struct mcc_cfg *cfg, FIL
 	print_dot_begin(out);
 
 	while (ir_table != NULL) {
-		print_block_node(ir_table->line_head->root, out, cfg->root_block, NULL);
+		struct mcc_block *start_block = find_start_block(cfg, ir_table->id);
+		if (start_block != NULL) {
+			print_block_node(ir_table->line_head->root, out, start_block, NULL);
+		}
 		ir_table = ir_table->next_table;
 	}
 
 	print_dot_end(out);
-
 }

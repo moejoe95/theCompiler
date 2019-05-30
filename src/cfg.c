@@ -28,6 +28,7 @@ static void generate_block(struct mcc_cfg *cfg, int table_id_start)
 	block->child_second = NULL;
 	block->target_id = 0;
 	block->printed = false;
+	block->is_start_of = -1;
 
 	if (cfg->current_block == NULL) {
 		cfg->root_block = block;
@@ -102,7 +103,7 @@ struct mcc_cfg *generate_cfg(struct mcc_ir_table_head *ir_table_head, FILE *out,
 		return NULL;
 
 	cfg->current_block = NULL;
-	cfg->new_function = true;
+	cfg->new_function = false;
 
 	while (ir_table != NULL) {
 		struct mcc_ir_line *ir_line = ir_table->line_head->root;
@@ -133,9 +134,12 @@ struct mcc_cfg *generate_cfg(struct mcc_ir_table_head *ir_table_head, FILE *out,
 					cfg->current_block->target_id = ir_line->jump_target;
 				}
 				generate_block(cfg, ir_line->index);
+				if (cfg->new_function) {
+					cfg->current_block->is_start_of = ir_table->id;
+					cfg->new_function = false;
+				}
 			}
 
-			cfg->new_function = false;
 			if (ir_line->next_line == NULL) {
 				cfg->current_block->table_id_end = ir_line->index;
 				cfg->current_block->target_id = -1;
