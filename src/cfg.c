@@ -41,6 +41,7 @@ static void generate_block(struct mcc_cfg *cfg, int table_id_start)
 	}
 
 	cfg->current_block = block;
+	cfg->new_function = false;
 }
 
 void print_basic_blocks(FILE *out, struct mcc_block *temp_block)
@@ -127,16 +128,24 @@ struct mcc_cfg *generate_cfg(struct mcc_ir_table_head *ir_table_head, FILE *out,
 				generate_block(cfg, ir_line->next_line->index);
 			}
 
+			if (ir_line->op_type == MCC_IR_TABLE_RETURN) {
+				if (!cfg->new_function && cfg->current_block != NULL) {
+					cfg->current_block->table_id_end = (ir_line->index);
+					cfg->current_block->target_id = -1;
+					cfg->new_function = true;
+				}
+			}
+
 			if (ir_line->op_type == MCC_IR_TABLE_LABEL) {
 				cfg->new_function = true;
 				if (!cfg->new_function && cfg->current_block != NULL) {
 					cfg->current_block->table_id_end = (ir_line->index - 1);
 					cfg->current_block->target_id = ir_line->jump_target;
 				}
+				bool set_start = cfg->new_function;
 				generate_block(cfg, ir_line->index);
-				if (cfg->new_function) {
+				if (set_start) {
 					cfg->current_block->is_start_of = ir_table->id;
-					cfg->new_function = false;
 				}
 			}
 
