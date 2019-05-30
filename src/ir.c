@@ -264,6 +264,7 @@ static void generate_function_arguments(struct mcc_ast_expression *expr, struct 
 		if (expr->type != MCC_AST_EXPRESSION_TYPE_LITERAL && expr->type != MCC_AST_EXPRESSION_TYPE_IDENTIFIER) {
 			char *value = generate_ir_entity(head, expr);
 			generate_ir_table_line(head, strdup(value), NULL, MCC_IR_TABLE_PUSH, -1);
+			free(value);
 		}
 		list = list->next_argument;
 	}
@@ -733,6 +734,7 @@ void mcc_delete_table(struct mcc_ir_table *table)
 	}
 
 	mcc_delete_line_head(table->line_head);
+	free(table);
 }
 
 void mcc_delete_ir(struct mcc_ir_table_head *table_head)
