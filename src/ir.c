@@ -573,7 +573,7 @@ static void generate_ir_while(struct mcc_ast_statement *stmt, struct mcc_ir_line
 	jump_table->arg2 = strdup(jump_false_loc);
 }
 
-static void generate_ir_compound(struct mcc_ast_statement_list *list, struct mcc_ir_head *head)
+static void generate_ir_compound(struct mcc_ast_statement_list *list, struct mcc_ir_line_head *head)
 {
 	while (list != NULL) {
 		generate_ir_statement(list->statement, head);
