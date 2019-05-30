@@ -550,14 +550,13 @@ int mcc_check_types(struct mcc_ast_program *program, struct mcc_symbol_table *sy
 	if (tracing)
 		mcc_print_type_log_header(out); // print logging header
 
-	switch (program->type) {
-	case MCC_AST_PROGRAM_TYPE_FUNCTION:
+	if (program->type == MCC_AST_PROGRAM_TYPE_FUNCTION) {
 		type_checking->current_function = program->function;
 		struct mcc_ast_visitor visitor = type_checking_visitor(type_checking);
 		mcc_ast_visit_function(program->function, &visitor);
-		break;
+	}
 
-	case MCC_AST_PROGRAM_TYPE_FUNCTION_LIST: {
+	if (program->type == MCC_AST_PROGRAM_TYPE_FUNCTION_LIST) {
 		struct mcc_ast_func_list *list = program->function_list;
 		while (list != NULL) {
 			type_checking->current_function = list->function;
@@ -565,9 +564,6 @@ int mcc_check_types(struct mcc_ast_program *program, struct mcc_symbol_table *sy
 			mcc_ast_visit_function(type_checking->current_function, &visitor);
 			list = list->next_function;
 		}
-	} break;
-	default: {
-	}
 	}
 	int error = type_checking->error;
 
