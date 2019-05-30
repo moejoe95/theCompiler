@@ -106,7 +106,7 @@ int main(int argc, char **argv)
 
 		struct mcc_ast_program *pro = NULL;
 		struct mcc_symbol_table *st = NULL;
-		struct mcc_ir_table *ir = NULL;
+		struct mcc_ir_line *ir = NULL;
 		struct mcc_cfg *cfg = NULL;
 
 		// parsing phase
