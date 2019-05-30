@@ -78,14 +78,14 @@ void create_cf_graph(struct mcc_cfg *cfg)
 
 	do {
 		struct mcc_block *next_block;
-		if (current_block->target_id == 0) {
+		if (current_block->target_id == -1) {
 			next_block = current_block->next_block;
 		} else {
 			next_block = find_block(cfg, current_block->target_id);
-		}
-		current_block->child_first = next_block;
-		if (current_block->has_follower) {
-			current_block->child_second = current_block->next_block;
+			current_block->child_first = next_block;
+			if (current_block->has_follower) {
+				current_block->child_second = current_block->next_block;
+			}
 		}
 		current_block = current_block->next_block;
 	} while (current_block != NULL);
@@ -102,6 +102,7 @@ struct mcc_cfg *generate_cfg(struct mcc_ir_table_head *ir_table_head, FILE *out,
 		return NULL;
 
 	cfg->current_block = NULL;
+	cfg->new_function = true;
 
 	while (ir_table != NULL) {
 		struct mcc_ir_line *ir_line = ir_table->line_head->root;
@@ -109,7 +110,7 @@ struct mcc_cfg *generate_cfg(struct mcc_ir_table_head *ir_table_head, FILE *out,
 		while (ir_line != NULL) {
 
 			if (ir_line->op_type == MCC_IR_TABLE_JUMP) {
-				if (cfg->current_block != NULL) {
+				if (!cfg->new_function && cfg->current_block != NULL) {
 					cfg->current_block->table_id_end = (ir_line->index);
 					cfg->current_block->target_id = ir_line->jump_target;
 				}
@@ -117,7 +118,7 @@ struct mcc_cfg *generate_cfg(struct mcc_ir_table_head *ir_table_head, FILE *out,
 			}
 
 			if (ir_line->op_type == MCC_IR_TABLE_JUMPFALSE) {
-				if (cfg->current_block != NULL) {
+				if (!cfg->new_function && cfg->current_block != NULL) {
 					cfg->current_block->table_id_end = (ir_line->index);
 					cfg->current_block->target_id = ir_line->jump_target;
 					cfg->current_block->has_follower = true;
@@ -126,16 +127,18 @@ struct mcc_cfg *generate_cfg(struct mcc_ir_table_head *ir_table_head, FILE *out,
 			}
 
 			if (ir_line->op_type == MCC_IR_TABLE_LABEL) {
-				if (cfg->current_block != NULL) {
+				cfg->new_function = true;
+				if (!cfg->new_function && cfg->current_block != NULL) {
 					cfg->current_block->table_id_end = (ir_line->index - 1);
 					cfg->current_block->target_id = ir_line->jump_target;
 				}
 				generate_block(cfg, ir_line->index);
 			}
 
+			cfg->new_function = false;
 			if (ir_line->next_line == NULL) {
 				cfg->current_block->table_id_end = ir_line->index;
-				cfg->current_block->target_id = 0;
+				cfg->current_block->target_id = -1;
 			}
 
 			ir_line = ir_line->next_line;

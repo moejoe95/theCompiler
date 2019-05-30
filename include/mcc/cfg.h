@@ -11,6 +11,7 @@
 struct mcc_cfg {
 	struct mcc_block *root_block;
 	struct mcc_block *current_block;
+	bool new_function;
 };
 
 struct mcc_block {
