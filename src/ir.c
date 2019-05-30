@@ -739,6 +739,7 @@ void mcc_delete_table(struct mcc_ir_table *table)
 
 void mcc_delete_ir(struct mcc_ir_table_head *table_head)
 {
-	mcc_delete_table(table_head->root);
+	if (table_head->root != NULL)
+		mcc_delete_table(table_head->root);
 	free(table_head);
 }

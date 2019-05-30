@@ -17,7 +17,7 @@ int log_level_to_int(enum log_level level)
 {
 	switch (level) {
 	case LOG_DEFAULT:
-		return 0;
+		return 1;
 	case LOG_INFO:
 		return 1;
 	case LOG_DEBUG:
@@ -29,16 +29,17 @@ int log_level_to_int(enum log_level level)
 void print_help(const char *prg_name)
 {
 	printf("usage: %s [OPTIONS] file...\n", prg_name);
-	printf("\nThe mc compiler. \n");
+	printf("\nUtility for printing the generated assembly code. Errors are reported on invalid inputs.\n");
 	printf("\nUse '-' as input file to read from stdin.\n");
 	printf("OPTIONS:\n");
-	printf("\t-h,--help \t\tdisplays this help message\n");
+	printf("\t-h,--help \tdisplays this help message\n");
 	printf("\t-o,--output <file> \twrite the output to <file> (defaults to stdout)\n");
 	printf("\t-f, --function <name> \tlimit scope to the given function\n");
 }
 
-int main(int argc, char *argv[])
+int main(int argc, char **argv)
 {
+
 	enum log_level LOG_LEVEL = LOG_DEFAULT;
 	if (getenv("MCC_LOG_LEVEL")) {
 		char *log_level_env = getenv("MCC_LOG_LEVEL");
@@ -57,12 +58,7 @@ int main(int argc, char *argv[])
 	char func_name_scope[64] = {0};
 	int isScoped = 0;
 	char outfile[64] = {0};
-	char *outfile_env = getenv("MCC_LOG_FILE");
-	if (outfile_env == NULL || strcmp(outfile_env, "") == 0) {
-		snprintf(outfile, sizeof(outfile), "%s", "-");
-	} else {
-		snprintf(outfile, sizeof(outfile), "%s", outfile_env);
-	}
+	snprintf(outfile, sizeof(outfile), "%s", "-");
 	int c;
 	while ((c = getopt_long(argc, argv, "ho:f:", long_options, NULL)) != -1)
 		switch (c) {
@@ -160,11 +156,10 @@ int main(int argc, char *argv[])
 		ir = mcc_create_ir(pro, out, log_level_to_int(LOG_LEVEL));
 
 		// generate ASM code
-		asm_table = mcc_create_asm(ir, out, log_level_to_int(LOG_LEVEL));
-
-		// TODO run GCC with code from asm_table
+		asm_table = mcc_create_asm(ir, out, log_level_to_int(1));
 
 		// cleanup
+		mcc_delete_asm(asm_table);
 		mcc_delete_ir(ir);
 		mcc_delete_symbol_table(st);
 		mcc_ast_delete_program(pro);

@@ -722,7 +722,6 @@ void mcc_ast_delete_program(struct mcc_ast_program *program)
 
 void mcc_ast_delete_string(char *id)
 {
-	printf("clean string\n");
 	assert(id);
 	free(id);
 }
