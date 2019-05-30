@@ -133,10 +133,8 @@ static char *generate_ir_entity(struct mcc_ir_head *head, struct mcc_ast_express
 		entity = generate_ir_literal_entity(expr->literal);
 		break;
 	case MCC_AST_EXPRESSION_TYPE_IDENTIFIER:
-		entity = lookup_table_args(head, expr->identifier->name, NULL);
-		// TODO
-		if (!entity)
-			entity = strdup(expr->identifier->name);
+		entity =
+		    !entity ? strdup(expr->identifier->name) : lookup_table_args(head, expr->identifier->name, NULL);
 		break;
 	case MCC_AST_EXPRESSION_TYPE_ARRAY_ACCESS:
 	case MCC_AST_EXPRESSION_TYPE_BINARY_OP:
@@ -358,6 +356,9 @@ generate_ir_expression(struct mcc_ast_expression *expr, struct mcc_ir_head *head
 	assert(expr);
 	assert(head);
 
+	if (expr->type == MCC_AST_EXPRESSION_TYPE_IDENTIFIER && expr->expression_type == MCC_AST_TYPE_ARRAY)
+		expr->identifier->type = expr->expression_type;
+
 	switch (expr->type) {
 	case MCC_AST_EXPRESSION_TYPE_BINARY_OP:
 		generate_ir_binary_expression(expr, head, MCC_IR_TABLE_BINARY_OP);
@@ -372,12 +373,8 @@ generate_ir_expression(struct mcc_ast_expression *expr, struct mcc_ir_head *head
 		generate_ir_literal(expr->literal, head, type);
 		break;
 	case MCC_AST_EXPRESSION_TYPE_IDENTIFIER:
-		// TODO
-		if (expr->expression_type == MCC_AST_TYPE_ARRAY)
-			expr->identifier->type = expr->expression_type;
 		generate_ir_identifier(expr->identifier, head, type);
 		break;
-
 	case MCC_AST_EXPRESSION_TYPE_FUNCTION_CALL:
 		generate_ir_function_call(expr, head);
 		break;
@@ -579,6 +576,14 @@ static void generate_ir_while(struct mcc_ast_statement *stmt, struct mcc_ir_head
 	jump_table->arg2 = strdup(jump_false_loc);
 }
 
+static void generate_ir_compound(struct mcc_ast_statement_list *list, struct mcc_ir_head *head)
+{
+	while (list != NULL) {
+		generate_ir_statement(list->statement, head);
+		list = list->next_statement;
+	}
+}
+
 static void generate_ir_statement(struct mcc_ast_statement *stmt, struct mcc_ir_head *head)
 {
 	assert(stmt);
@@ -602,14 +607,9 @@ static void generate_ir_statement(struct mcc_ast_statement *stmt, struct mcc_ir_
 	case MCC_AST_STATEMENT_WHILE:
 		generate_ir_while(stmt, head);
 		break;
-	case MCC_AST_STATEMENT_COMPOUND: {
-		struct mcc_ast_statement_list *list = stmt->compound;
-		// TODO
-		while (list != NULL) {
-			generate_ir_statement(list->statement, head);
-			list = list->next_statement;
-		}
-	} break;
+	case MCC_AST_STATEMENT_COMPOUND:
+		generate_ir_compound(stmt->compound, head);
+		break;
 	}
 }
 
