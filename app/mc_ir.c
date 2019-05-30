@@ -104,6 +104,7 @@ int main(int argc, char **argv)
 
 		struct mcc_ast_program *pro = NULL;
 		struct mcc_symbol_table *st = NULL;
+		struct mcc_ir_table_head *ir = NULL;
 
 		// parsing phase
 		{
@@ -150,11 +151,10 @@ int main(int argc, char **argv)
 		}
 
 		// generate IR code
-		struct mcc_ir_table_head *table_head = NULL;
-		table_head = mcc_create_ir(pro, out, log_level_to_int(1));
+		ir = mcc_create_ir(pro, out, log_level_to_int(1));
 
 		// cleanup
-		mcc_delete_ir(table_head);
+		mcc_delete_ir(ir);
 		mcc_delete_symbol_table(st);
 		mcc_ast_delete_program(pro);
 
