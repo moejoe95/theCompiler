@@ -261,7 +261,8 @@ static void generate_function_arguments(struct mcc_ast_expression *expr, struct 
 	while (list != NULL) {
 		generate_ir_expression(list->expression, head, MCC_IR_TABLE_PUSH);
 		// insert additional line in IR table
-		if (expr->type != MCC_AST_EXPRESSION_TYPE_LITERAL && expr->type != MCC_AST_EXPRESSION_TYPE_IDENTIFIER) {
+		if (expr->type != MCC_AST_EXPRESSION_TYPE_LITERAL && expr->type != MCC_AST_EXPRESSION_TYPE_IDENTIFIER &&
+		    expr->type != MCC_AST_EXPRESSION_TYPE_FUNCTION_CALL) {
 			char *value = generate_ir_entity(head, expr);
 			generate_ir_table_line(head, strdup(value), NULL, MCC_IR_TABLE_PUSH, -1);
 			free(value);
@@ -292,7 +293,7 @@ static void generate_ir_function_call(struct mcc_ast_expression *expr_call, stru
 	generate_function_arguments(expr_call, head);
 
 	// call function line
-	generate_ir_table_line(head, func_id, NULL, MCC_IR_TABLE_CALL, -1);
+	generate_ir_table_line(head, strdup(func_id), NULL, MCC_IR_TABLE_CALL, -1);
 }
 
 static void
@@ -429,6 +430,9 @@ static void generate_ir_return(struct mcc_ast_expression *expr, struct mcc_ir_li
 		if (expr->type != MCC_AST_EXPRESSION_TYPE_LITERAL && expr->type != MCC_AST_EXPRESSION_TYPE_IDENTIFIER) {
 			sprintf(value, "(%d)", head->index - 1);
 			generate_ir_table_line(head, strdup(value), NULL, MCC_IR_TABLE_PUSH, -1);
+
+			sprintf(value, "(%d)", head->index);
+			generate_ir_table_line(head, strdup(value), NULL, MCC_IR_TABLE_RETURN, -1);
 		}
 	}
 }
