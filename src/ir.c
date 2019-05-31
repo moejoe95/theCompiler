@@ -140,8 +140,11 @@ static char *generate_ir_entity(struct mcc_ir_line_head *head, struct mcc_ast_ex
 	case MCC_AST_EXPRESSION_TYPE_ARRAY_ACCESS:
 	case MCC_AST_EXPRESSION_TYPE_BINARY_OP:
 	case MCC_AST_EXPRESSION_TYPE_PARENTH:
-	case MCC_AST_EXPRESSION_TYPE_FUNCTION_CALL:
 		sprintf(value, "(%d)", head->index - 1);
+		entity = strdup(value);
+		break;
+	case MCC_AST_EXPRESSION_TYPE_FUNCTION_CALL:
+		sprintf(value, "(%d)", head->index);
 		entity = strdup(value);
 		break;
 	default:
@@ -261,8 +264,9 @@ static void generate_function_arguments(struct mcc_ast_expression *expr, struct 
 	while (list != NULL) {
 		generate_ir_expression(list->expression, head, MCC_IR_TABLE_PUSH);
 		// insert additional line in IR table
+
 		if (expr->type != MCC_AST_EXPRESSION_TYPE_LITERAL && expr->type != MCC_AST_EXPRESSION_TYPE_IDENTIFIER &&
-		    expr->type != MCC_AST_EXPRESSION_TYPE_FUNCTION_CALL) {
+		    head->current->op_type != MCC_IR_TABLE_PUSH) {
 			char *value = generate_ir_entity(head, expr);
 			generate_ir_table_line(head, strdup(value), NULL, MCC_IR_TABLE_PUSH, -1);
 			free(value);
