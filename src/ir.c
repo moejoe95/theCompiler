@@ -398,8 +398,12 @@ static void generate_ir_assignment(struct mcc_ast_declare_assign *assign, struct
 	char *entity2;
 	char value[64] = {0};
 	if (assign->assign_rhs->type != MCC_AST_EXPRESSION_TYPE_LITERAL) {
-		generate_ir_expression(assign->assign_rhs, head, -1);
-		sprintf(value, "(%d)", head->index);
+		if (assign->assign_rhs->type != MCC_AST_EXPRESSION_TYPE_IDENTIFIER) {
+			generate_ir_expression(assign->assign_rhs, head, -1);
+			sprintf(value, "(%d)", head->index);
+		} else {
+			sprintf(value, lookup_table_args(head, assign->assign_rhs->identifier->name, NULL));
+		}
 		entity2 = strdup(value);
 	} else {
 		entity2 = generate_ir_literal_entity(assign->assign_rhs->literal);
