@@ -201,7 +201,11 @@ static void generate_ir_binary_expression(struct mcc_ast_expression *bin_expr,
 			entity1 = lookup_table_args(head, bin_expr->lhs->identifier->name, NULL);
 		} else {
 			char value[14];
-			sprintf(value, "(%d)", head->index - 1);
+			if (bin_expr->rhs->type == MCC_AST_EXPRESSION_TYPE_IDENTIFIER) {
+				sprintf(value, "(%d)", head->index - 1);
+			} else {
+				sprintf(value, "(%d)", head->index - 2);
+			}
 			entity1 = strdup(value);
 		}
 
@@ -478,7 +482,7 @@ static void generate_ir_if(struct mcc_ast_statement *stmt, struct mcc_ir_line_he
 
 	// generate jump table
 	struct mcc_ir_line *jump_table = create_new_ir_line();
-	if(!hasStatementReturn(stmt->if_stat) && !isLastStatement){
+	if (!hasStatementReturn(stmt->if_stat) && !isLastStatement) {
 		head->index++;
 		jump_table->arg1 = jump_loc;
 		jump_table->arg2 = NULL;
@@ -488,7 +492,7 @@ static void generate_ir_if(struct mcc_ast_statement *stmt, struct mcc_ir_line_he
 		head->current->next_line = jump_table;
 		head->current = jump_table;
 	}
-	
+
 	// set jumpfalse
 	sprintf(value, "(%d)", head->current->index + 1);
 	jump_false_loc = strdup(value);
@@ -499,12 +503,12 @@ static void generate_ir_if(struct mcc_ast_statement *stmt, struct mcc_ir_line_he
 	if (stmt->else_stat) {
 		generate_ir_statement(stmt->else_stat, head, 0);
 		sprintf(value, "(%d)", head->current->index + 2);
-		if(!isLastStatement)
+		if (!isLastStatement)
 			generate_ir_table_line(head, strdup(value), NULL, MCC_IR_TABLE_JUMP, head->current->index + 2);
 	}
 
 	// set jump loc
-	if(!isLastStatement){
+	if (!isLastStatement) {
 		sprintf(value, "(%d)", head->current->index + 1);
 		jump_loc = strdup(value);
 		jump_table->arg1 = jump_loc;
@@ -580,7 +584,7 @@ static void generate_ir_compound(struct mcc_ast_statement_list *list, struct mcc
 {
 	while (list != NULL) {
 		generate_ir_statement(list->statement, head, 0);
-		if(list->statement->type == MCC_AST_STATEMENT_RETURN)
+		if (list->statement->type == MCC_AST_STATEMENT_RETURN)
 			break;
 		list = list->next_statement;
 	}
@@ -615,27 +619,30 @@ static void generate_ir_statement(struct mcc_ast_statement *stmt, struct mcc_ir_
 	}
 }
 
-static int hasStatementReturn(struct mcc_ast_statement *stmt){
+static int hasStatementReturn(struct mcc_ast_statement *stmt)
+{
 	switch (stmt->type) {
-		case MCC_AST_STATEMENT_RETURN:
-			return 1;
-		case MCC_AST_STATEMENT_COMPOUND:
-			{
-				int result;
-				while (stmt->compound != NULL) {
-					result = hasStatementReturn(stmt->compound->statement);
-					stmt->compound = stmt->compound->next_statement;
-					if(result > 0)
-						return result;
-				}			
-			}
-			
+	case MCC_AST_STATEMENT_RETURN:
+		return 1;
+	case MCC_AST_STATEMENT_COMPOUND: {
+		int result;
+		while (stmt->compound != NULL) {
+			result = hasStatementReturn(stmt->compound->statement);
+			stmt->compound = stmt->compound->next_statement;
+			if (result > 0)
+				return result;
 		}
+	}
+
+	default:
+		break;
+	}
 	return 0;
 }
 
-static int isLastStatement(struct mcc_ast_statement_list *list){
-	if(list->next_statement){
+static int isLastStatement(struct mcc_ast_statement_list *list)
+{
+	if (list->next_statement) {
 		return 0;
 	}
 	return 1;
