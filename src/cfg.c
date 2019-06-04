@@ -7,7 +7,7 @@
 
 #include "mcc/print_cfg.h"
 
-static void generate_block(struct mcc_cfg *cfg, int table_id_start)
+static void generate_block(struct mcc_cfg *cfg, int table_id_start, int ir_table_id)
 {
 	assert(cfg);
 
@@ -29,6 +29,7 @@ static void generate_block(struct mcc_cfg *cfg, int table_id_start)
 	block->target_id = 0;
 	block->printed = false;
 	block->is_start_of = -1;
+	block->ir_table_id = ir_table_id;
 
 	if (cfg->current_block == NULL) {
 		cfg->root_block = block;
@@ -56,12 +57,12 @@ void print_basic_blocks(FILE *out, struct mcc_block *temp_block)
 	}
 }
 
-struct mcc_block *find_block(struct mcc_cfg *cfg, int line)
+struct mcc_block *find_block(struct mcc_cfg *cfg, int line, int ir_table_id)
 {
 	struct mcc_block *current_block = cfg->root_block;
 
 	while (current_block != NULL) {
-		if (current_block->table_id_start == line) {
+		if (current_block->table_id_start == line && current_block->ir_table_id == ir_table_id) {
 			return current_block;
 		}
 
@@ -83,7 +84,7 @@ void create_cf_graph(struct mcc_cfg *cfg)
 		if (current_block->target_id == -1) {
 			next_block = current_block->next_block;
 		} else {
-			next_block = find_block(cfg, current_block->target_id);
+			next_block = find_block(cfg, current_block->target_id, current_block->ir_table_id);
 			current_block->child_first = next_block;
 			if (current_block->has_follower) {
 				current_block->child_second = current_block->next_block;
@@ -116,7 +117,7 @@ struct mcc_cfg *generate_cfg(struct mcc_ir_table_head *ir_table_head, FILE *out,
 					cfg->current_block->table_id_end = (ir_line->index);
 					cfg->current_block->target_id = ir_line->jump_target;
 				}
-				generate_block(cfg, ir_line->next_line->index);
+				generate_block(cfg, ir_line->next_line->index, ir_table->id);
 			}
 
 			if (ir_line->op_type == MCC_IR_TABLE_JUMPFALSE) {
@@ -125,7 +126,7 @@ struct mcc_cfg *generate_cfg(struct mcc_ir_table_head *ir_table_head, FILE *out,
 					cfg->current_block->target_id = ir_line->jump_target;
 					cfg->current_block->has_follower = true;
 				}
-				generate_block(cfg, ir_line->next_line->index);
+				generate_block(cfg, ir_line->next_line->index, ir_table->id);
 			}
 
 			if (ir_line->op_type == MCC_IR_TABLE_RETURN) {
@@ -143,7 +144,7 @@ struct mcc_cfg *generate_cfg(struct mcc_ir_table_head *ir_table_head, FILE *out,
 					cfg->current_block->target_id = ir_line->jump_target;
 				}
 				bool set_start = cfg->new_function;
-				generate_block(cfg, ir_line->index);
+				generate_block(cfg, ir_line->index, ir_table->id);
 				if (set_start) {
 					cfg->current_block->is_start_of = ir_table->id;
 				}

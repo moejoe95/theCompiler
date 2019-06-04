@@ -22,6 +22,7 @@ struct mcc_block {
 	bool has_follower;
 	bool printed;
 	int is_start_of;
+	int ir_table_id;
 
 	struct mcc_block *next_block;
 
