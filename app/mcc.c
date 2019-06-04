@@ -160,7 +160,7 @@ int main(int argc, char *argv[])
 		ir = mcc_create_ir(pro, out, log_level_to_int(LOG_LEVEL));
 
 		// generate ASM code
-		asm_table = mcc_create_asm(ir, out, log_level_to_int(LOG_LEVEL));
+		mcc_create_asm(ir, out);
 
 		// TODO run GCC with code from asm_table
 

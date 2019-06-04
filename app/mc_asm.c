@@ -106,7 +106,6 @@ int main(int argc, char **argv)
 		struct mcc_ast_program *pro = NULL;
 		struct mcc_symbol_table *st = NULL;
 		struct mcc_ir_table_head *ir = NULL;
-		struct mcc_asm_table *asm_table = NULL;
 
 		// parsing phase
 		{
@@ -156,10 +155,9 @@ int main(int argc, char **argv)
 		ir = mcc_create_ir(pro, out, log_level_to_int(LOG_LEVEL));
 
 		// generate ASM code
-		asm_table = mcc_create_asm(ir, out, log_level_to_int(1));
+		mcc_create_asm(ir, out);
 
 		// cleanup
-		mcc_delete_asm(asm_table);
 		mcc_delete_ir(ir);
 		mcc_delete_symbol_table(st);
 		mcc_ast_delete_program(pro);
