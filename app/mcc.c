@@ -110,7 +110,6 @@ int main(int argc, char *argv[])
 		struct mcc_ast_program *pro = NULL;
 		struct mcc_symbol_table *st = NULL;
 		struct mcc_ir_table_head *ir = NULL;
-		struct mcc_asm_table *asm_table = NULL;
 
 		// parsing phase
 		{

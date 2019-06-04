@@ -20,6 +20,42 @@ generate_ir_expression(struct mcc_ast_expression *e, struct mcc_ir_line_head *he
 static int hasStatementReturn(struct mcc_ast_statement *stmt);
 static int isLastStatement(struct mcc_ast_statement_list *list);
 
+static int get_memory_size_literal_type(enum mcc_ast_literal_type type)
+{
+	int mem_size = 0;
+	switch (type) {
+	case MCC_AST_LITERAL_TYPE_BOOL:
+	case MCC_AST_LITERAL_TYPE_INT:
+	case MCC_AST_LITERAL_TYPE_STRING:
+		mem_size = 1;
+		break;
+	case MCC_AST_LITERAL_TYPE_FLOAT:
+		mem_size = 2;
+
+	default:
+		break;
+	}
+	return mem_size;
+}
+
+static int get_memory_size_type(enum mcc_ast_type type)
+{
+	int mem_size = 0;
+	switch (type) {
+	case MCC_AST_TYPE_BOOL:
+	case MCC_AST_TYPE_INT:
+	case MCC_AST_TYPE_STRING:
+		mem_size = 1;
+		break;
+	case MCC_AST_TYPE_FLOAT:
+		mem_size = 2;
+
+	default:
+		break;
+	}
+	return mem_size;
+}
+
 static struct mcc_ir_line *create_new_ir_line()
 {
 	struct mcc_ir_line *table = malloc(sizeof(*table));
@@ -90,8 +126,10 @@ static char *generate_ir_literal_entity(struct mcc_ast_literal *lit)
 	return entity;
 }
 
-static void
-generate_ir_identifier(struct mcc_ast_identifier *id, struct mcc_ir_line_head *head, enum ir_table_operation_type type)
+static void generate_ir_identifier(struct mcc_ast_identifier *id,
+                                   enum mcc_ast_type id_type,
+                                   struct mcc_ir_line_head *head,
+                                   enum ir_table_operation_type type)
 {
 	head->index++;
 	struct mcc_ir_line *new_table = create_new_ir_line();
@@ -106,7 +144,7 @@ generate_ir_identifier(struct mcc_ast_identifier *id, struct mcc_ir_line_head *h
 	new_table->arg1 = entity;
 	new_table->arg2 = NULL;
 	new_table->op_type = type;
-	new_table->index = head->index;
+	new_table->memory_size = get_memory_size_type(id_type);
 
 	head->current->next_line = new_table;
 	head->current = new_table;
@@ -122,6 +160,7 @@ generate_ir_literal(struct mcc_ast_literal *lit, struct mcc_ir_line_head *head, 
 	new_table->arg2 = NULL;
 	new_table->op_type = type;
 	new_table->index = head->index;
+	new_table->memory_size = get_memory_size_literal_type(lit->type);
 
 	head->current->next_line = new_table;
 	head->current = new_table;
@@ -155,8 +194,12 @@ static char *generate_ir_entity(struct mcc_ir_line_head *head, struct mcc_ast_ex
 	return entity;
 }
 
-static void generate_ir_table_line(
-    struct mcc_ir_line_head *head, char *arg1, char *arg2, enum ir_table_operation_type type, int jump_loc)
+static void generate_ir_table_line(struct mcc_ir_line_head *head,
+                                   char *arg1,
+                                   char *arg2,
+                                   enum ir_table_operation_type type,
+                                   int jump_loc,
+                                   enum mcc_ast_literal_type lit_type)
 {
 	assert(head);
 
@@ -170,6 +213,11 @@ static void generate_ir_table_line(
 	new_table->index = head->index;
 	if (jump_loc >= 0) {
 		new_table->jump_target = jump_loc;
+	}
+	if (lit_type >= 0) {
+		new_table->memory_size = get_memory_size_literal_type(lit_type);
+	} else {
+		new_table->memory_size = -1;
 	}
 
 	head->current->next_line = new_table;
@@ -219,6 +267,7 @@ static void generate_ir_binary_expression(struct mcc_ast_expression *bin_expr,
 	new_table->op_type = type;
 	new_table->bin_op = bin_expr->op;
 	new_table->index = head->index;
+	new_table->memory_size = get_memory_size_type(bin_expr->rhs->expression_type);
 
 	head->current->next_line = new_table;
 	head->current = new_table;
@@ -241,6 +290,7 @@ static void generate_ir_unary_expression(struct mcc_ast_expression *un_expr,
 	new_table->op_type = type;
 	new_table->un_op = un_expr->u_op;
 	new_table->index = head->index;
+	new_table->memory_size = get_memory_size_type(un_expr->expression_type);
 
 	head->current->next_line = new_table;
 	head->current = new_table;
@@ -274,7 +324,7 @@ static void generate_function_arguments(struct mcc_ast_expression *expr, struct 
 		if (expr->type != MCC_AST_EXPRESSION_TYPE_LITERAL && expr->type != MCC_AST_EXPRESSION_TYPE_IDENTIFIER &&
 		    head->current->op_type != MCC_IR_TABLE_PUSH) {
 			char *value = generate_ir_entity(head, expr);
-			generate_ir_table_line(head, strdup(value), NULL, MCC_IR_TABLE_PUSH, -1);
+			generate_ir_table_line(head, strdup(value), NULL, MCC_IR_TABLE_PUSH, -1, -1);
 			free(value);
 		}
 		list = list->next_argument;
@@ -303,7 +353,7 @@ static void generate_ir_function_call(struct mcc_ast_expression *expr_call, stru
 	generate_function_arguments(expr_call, head);
 
 	// call function line
-	generate_ir_table_line(head, strdup(func_id), NULL, MCC_IR_TABLE_CALL, -1);
+	generate_ir_table_line(head, strdup(func_id), NULL, MCC_IR_TABLE_CALL, -1, -1);
 }
 
 static void
@@ -319,6 +369,7 @@ generate_built_in_function_call(struct mcc_ast_expression *expr_call, struct mcc
 	if (expr_call->function_call_arguments) {
 		struct mcc_ast_literal *lit = expr_call->function_call_arguments->expression->literal;
 		entity = generate_ir_literal_entity(lit);
+		new_table->memory_size = get_memory_size_literal_type(lit->type);
 	} else {
 		entity = strdup("-");
 	}
@@ -344,15 +395,17 @@ static void generate_ir_array_access(struct mcc_ast_expression *id_expr,
 	char value[128] = {0};
 
 	char *id = id_expr->identifier->name;
+	enum mcc_ast_literal_type type = -1;
 	if (array_expr->type != MCC_AST_EXPRESSION_TYPE_LITERAL) {
 		generate_ir_expression(array_expr, head, -1);
 		sprintf(value, "%s[(%d)]", id, head->index);
 	} else {
 		char *lit = generate_ir_literal_entity(array_expr->literal);
 		sprintf(value, "%s[%s]", id, lit);
+		type = array_expr->literal->type;
 	}
 
-	generate_ir_table_line(head, strdup(value), NULL, MCC_IR_TABLE_LOAD, -1);
+	generate_ir_table_line(head, strdup(value), NULL, MCC_IR_TABLE_LOAD, -1, type);
 }
 
 static void generate_ir_expression(struct mcc_ast_expression *expr,
@@ -379,7 +432,7 @@ static void generate_ir_expression(struct mcc_ast_expression *expr,
 		generate_ir_literal(expr->literal, head, type);
 		break;
 	case MCC_AST_EXPRESSION_TYPE_IDENTIFIER:
-		generate_ir_identifier(expr->identifier, head, type);
+		generate_ir_identifier(expr->identifier, expr->expression_type, head, type);
 		break;
 	case MCC_AST_EXPRESSION_TYPE_FUNCTION_CALL:
 		generate_ir_function_call(expr, head);
@@ -395,6 +448,7 @@ static void generate_ir_assignment(struct mcc_ast_declare_assign *assign, struct
 	assert(assign);
 	assert(head);
 
+	enum mcc_ast_literal_type lit_type = -1;
 	char *entity2;
 	char value[64] = {0};
 	if (assign->assign_rhs->type != MCC_AST_EXPRESSION_TYPE_LITERAL) {
@@ -407,6 +461,7 @@ static void generate_ir_assignment(struct mcc_ast_declare_assign *assign, struct
 		entity2 = strdup(value);
 	} else {
 		entity2 = generate_ir_literal_entity(assign->assign_rhs->literal);
+		lit_type = assign->assign_rhs->literal->type;
 	}
 
 	enum ir_table_operation_type type;
@@ -423,12 +478,13 @@ static void generate_ir_assignment(struct mcc_ast_declare_assign *assign, struct
 			char *lit = generate_ir_literal_entity(assign->assign_lhs->array_access_exp->literal);
 			sprintf(value, "%s[%s]", id, lit);
 			free(lit);
+			lit_type = assign->assign_lhs->array_access_exp->literal->type;
 		}
 		entity1 = strdup(value);
 		type = MCC_IR_TABLE_STORE;
 	}
 
-	generate_ir_table_line(head, entity1, entity2, type, -1);
+	generate_ir_table_line(head, entity1, entity2, type, -1, lit_type);
 }
 
 static void generate_ir_return(struct mcc_ast_expression *expr, struct mcc_ir_line_head *head)
@@ -443,10 +499,10 @@ static void generate_ir_return(struct mcc_ast_expression *expr, struct mcc_ir_li
 		// insert additional line in IR table
 		if (expr->type != MCC_AST_EXPRESSION_TYPE_LITERAL && expr->type != MCC_AST_EXPRESSION_TYPE_IDENTIFIER) {
 			sprintf(value, "(%d)", head->index - 1);
-			generate_ir_table_line(head, strdup(value), NULL, MCC_IR_TABLE_PUSH, -1);
+			generate_ir_table_line(head, strdup(value), NULL, MCC_IR_TABLE_PUSH, -1, -1);
 
 			sprintf(value, "(%d)", head->index);
-			generate_ir_table_line(head, strdup(value), NULL, MCC_IR_TABLE_RETURN, -1);
+			generate_ir_table_line(head, strdup(value), NULL, MCC_IR_TABLE_RETURN, -1, -1);
 		}
 	}
 }
@@ -508,7 +564,8 @@ static void generate_ir_if(struct mcc_ast_statement *stmt, struct mcc_ir_line_he
 		generate_ir_statement(stmt->else_stat, head, 0);
 		sprintf(value, "(%d)", head->current->index + 2);
 		if (!isLastStatement)
-			generate_ir_table_line(head, strdup(value), NULL, MCC_IR_TABLE_JUMP, head->current->index + 2);
+			generate_ir_table_line(head, strdup(value), NULL, MCC_IR_TABLE_JUMP, head->current->index + 2,
+			                       -1);
 	}
 
 	// set jump loc
@@ -534,7 +591,7 @@ static void generate_ir_while(struct mcc_ast_statement *stmt, struct mcc_ir_line
 	char *entity1;
 
 	sprintf(value, "(%d)", head->index + 2);
-	generate_ir_table_line(head, strdup(value), NULL, MCC_IR_TABLE_JUMP, head->index + 2);
+	generate_ir_table_line(head, strdup(value), NULL, MCC_IR_TABLE_JUMP, head->index + 2, -1);
 
 	int index = head->index + 1;
 	int jump_target = head->current->index + 1;
@@ -566,7 +623,7 @@ static void generate_ir_while(struct mcc_ast_statement *stmt, struct mcc_ir_line
 
 	// generate jump table
 	struct mcc_ir_line *jump_table = create_new_ir_line();
-	if (!hasStatementReturn(stmt->while_stat) && !isLastStatement) {	
+	if (!hasStatementReturn(stmt->while_stat) && !isLastStatement) {
 		head->index++;
 		jump_table->arg1 = jump_loc;
 		jump_table->arg2 = NULL;
@@ -679,9 +736,9 @@ static void generate_function_definition(struct mcc_ast_func_definition *func, s
 	// func identifier
 	char *id_entity = generate_ir_entity(head, func->func_identifier);
 	if (head->index == 0) {
-		generate_ir_table_line(head, id_entity, NULL, MCC_IR_TABLE_LABEL, -1);
+		generate_ir_table_line(head, id_entity, NULL, MCC_IR_TABLE_LABEL, -1, -1);
 	} else {
-		generate_ir_table_line(head, id_entity, NULL, MCC_IR_TABLE_CALL, -1);
+		generate_ir_table_line(head, id_entity, NULL, MCC_IR_TABLE_CALL, -1, -1);
 	}
 
 	// func parameter list

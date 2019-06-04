@@ -4,7 +4,7 @@
 
 void print_table_line(FILE *out)
 {
-	for (int i = 0; i < 109; i++)
+	for (int i = 0; i < 120; i++)
 		fprintf(out, "-");
 	fprintf(out, "\n");
 }
@@ -13,7 +13,8 @@ void print_table_legend(FILE *out, char *name)
 {
 	fprintf(out, "IR code: %s\n\n", name);
 	print_table_line(out);
-	fprintf(out, "| %s\t| %s\t| %-40s| %-40s|\n", "index", "operation", "argument 1", "argument 2");
+	fprintf(out, "| %s\t| %s\t| %-40s| %-40s| %s |\n", "index", "operation", "argument 1", "argument 2",
+	        "mem size");
 	print_table_line(out);
 }
 
@@ -76,7 +77,8 @@ void print_row(struct mcc_ir_line *table, FILE *out)
 		break;
 	}
 
-	fprintf(out, "| %d\t| %s\t| %-40.40s| %-40.40s|\n", table->index, operation, table->arg1, table->arg2);
+	fprintf(out, "| %d\t| %s\t| %-40.40s| %-40.40s| %d%-8.8s|\n", table->index, operation, table->arg1, table->arg2,
+	        table->memory_size, " ");
 }
 
 void mcc_print_ir_table(struct mcc_ir_line *table, char *name, FILE *out)

@@ -42,6 +42,7 @@ static void check_assignment(struct mcc_ast_declare_assign *declare_assign, void
 
 	struct mcc_ast_expression *lhs = declare_assign->assign_lhs;
 	struct mcc_ast_expression *rhs = declare_assign->assign_rhs;
+	lhs->identifier->type = rhs->expression_type;
 
 	struct mcc_type_log *log = get_mcc_type_log_struct(MCC_TYPE_VALID);
 	log->sloc = &declare_assign->node.sloc;

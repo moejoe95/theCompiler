@@ -48,6 +48,7 @@ struct mcc_ir_line {
 	char *arg2;
 	int jump_target;
 	int index;
+	int memory_size;
 
 	struct mcc_ast_node node;
 
