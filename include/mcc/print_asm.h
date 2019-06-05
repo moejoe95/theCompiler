@@ -4,8 +4,14 @@
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "mcc/asm.h"
 
 
-void print_asm_instruction(FILE *out, char *op, char *arg1, char *arg2);
+void print_asm_instruction(FILE *out,
+                           enum mcc_asm_instruction in,
+                           enum mcc_asm_operand op1,
+                           int op1_offset,
+                           enum mcc_asm_operand op2,
+                           int op2_offset);
 
 #endif // MCC_PRINT_ASM

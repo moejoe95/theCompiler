@@ -12,15 +12,15 @@ void create_function_label(FILE *out, char *func_name)
 {
 	assert(out);
 	fprintf(out, "%s:\n", func_name);
-	print_asm_instruction(out, "pushl", "%ebp", NULL);
-	print_asm_instruction(out, "movl", "%esp", "%ebp");
+	print_asm_instruction(out, MCC_ASM_INSTRUCTION_PUSHL, MCC_ASM_REGISTER_EBP, 0, -1, 0);
+	print_asm_instruction(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_ESP, 0, MCC_ASM_REGISTER_EBP, 0);
 }
 
 void create_asm_return(FILE *out, struct mcc_ir_line *line)
 {
 	assert(out);
 	assert(line);
-	print_asm_instruction(out, "movl", "%eax", "-0(%ebp)");
+	print_asm_instruction(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EAX, 0, MCC_ASM_REGISTER_EBP, 0);
 }
 
 void create_asm_line(FILE *out, struct mcc_ir_line *line)
@@ -50,8 +50,8 @@ void mcc_create_asm(struct mcc_ir_table_head *ir, FILE *out)
 			current_line = current_line->next_line;
 		}
 		if (strcmp(current_func->func_name, "main") == 0) {
-			print_asm_instruction(out, "leave", NULL, NULL);
-			print_asm_instruction(out, "retl", NULL, NULL);
+			print_asm_instruction(out, MCC_ASM_INSTRUCTION_LEAVE, -1, 0, -1, 0);
+			print_asm_instruction(out, MCC_ASM_INSTRUCTION_RETL, -1, 0, -1, 0);
 		}
 		current_func = current_func->next_table;
 	}
