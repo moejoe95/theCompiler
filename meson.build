@@ -39,6 +39,7 @@ mcc_src = [ 'src/ast.c',
             'src/cfg.c',
             'src/print_cfg.c',
             'src/asm.c',
+            'src/print_asm.c',
             lgen.process('src/scanner.l'),
             pgen.process('src/parser.y') ]
 
