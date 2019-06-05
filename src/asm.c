@@ -90,6 +90,14 @@ void create_asm_unary(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *
 	                          head->offset);
 }
 
+void create_asm_assignment(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *head)
+{
+	head->offset = head->offset - 4;
+	print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, line->arg2, MCC_ASM_REGISTER_EAX, 0);
+	print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EAX, 0, MCC_ASM_REGISTER_EBP,
+	                          head->offset);
+}
+
 void create_asm_line(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *asm_head)
 {
 	assert(out);
@@ -101,6 +109,9 @@ void create_asm_line(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *a
 		break;
 	case MCC_IR_TABLE_UNARY_OP:
 		create_asm_unary(out, line, asm_head);
+		break;
+	case MCC_IR_TABLE_ASSIGNMENT:
+		create_asm_assignment(out, line, asm_head);
 		break;
 	case MCC_IR_TABLE_RETURN:
 		create_asm_return(out, line);
