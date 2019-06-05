@@ -5,5 +5,7 @@ int main() {
     4*5;
     8/2;
     true && false;
+    false || true;
+    !true;
     return 0;
 }

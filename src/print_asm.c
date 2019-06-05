@@ -39,6 +39,9 @@ void getAssemblyInstruction(enum mcc_asm_instruction in, char *in_string)
 	case MCC_ASM_INSTRUCTION_ORL:
 		strcpy(in_string, "orl");
 		break;
+	case MCC_ASM_INSTRUCTION_NOTL:
+		strcpy(in_string, "notl");
+		break;
 	default:
 		strcpy(in_string, "UNDEF");
 		break;
