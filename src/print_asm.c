@@ -18,6 +18,12 @@ void getAssemblyInstruction(enum mcc_asm_instruction in, char *in_string)
 	case MCC_ASM_INSTRUCTION_RETL:
 		strcpy(in_string, "retl");
 		break;
+	case MCC_ASM_INSTRUCTION_SUBL:
+		strcpy(in_string, "subl");
+		break;
+	case MCC_ASM_INSTRUCTION_ADDL:
+		strcpy(in_string, "addl");
+		break;
 	default:
 		strcpy(in_string, "UNDEF");
 		break;
@@ -48,12 +54,12 @@ void getAssemblyOperand(enum mcc_asm_operand op, int offset, char *arg)
 	}
 }
 
-void print_asm_instruction(FILE *out,
-                           enum mcc_asm_instruction in,
-                           enum mcc_asm_operand op1,
-                           int op1_offset,
-                           enum mcc_asm_operand op2,
-                           int op2_offset)
+void print_asm_instruction_reg(FILE *out,
+                               enum mcc_asm_instruction in,
+                               enum mcc_asm_operand op1,
+                               int op1_offset,
+                               enum mcc_asm_operand op2,
+                               int op2_offset)
 {
 
 	char op[INSTRUCTION_SIZE] = {0};
@@ -62,6 +68,24 @@ void print_asm_instruction(FILE *out,
 
 	getAssemblyInstruction(in, op);
 	getAssemblyOperand(op1, op1_offset, arg1);
+	getAssemblyOperand(op2, op2_offset, arg2);
+
+	if (strcmp(arg1, "") == 0)
+		fprintf(out, "\t%s\n", op);
+	else
+		fprintf(out, "\t%s\t%s, %s\n", op, arg1, arg2);
+}
+
+void print_asm_instruction_lit(
+    FILE *out, enum mcc_asm_instruction in, int literal, enum mcc_asm_operand op2, int op2_offset)
+{
+
+	char op[INSTRUCTION_SIZE] = {0};
+	char arg1[OPERAND_SIZE] = {0};
+	char arg2[OPERAND_SIZE] = {0};
+
+	getAssemblyInstruction(in, op);
+	sprintf(arg1, "$%d", literal);
 	getAssemblyOperand(op2, op2_offset, arg2);
 
 	if (strcmp(arg1, "") == 0)

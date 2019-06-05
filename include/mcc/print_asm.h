@@ -7,10 +7,16 @@
 #include "mcc/asm.h"
 
 
-void print_asm_instruction(FILE *out,
+void print_asm_instruction_reg(FILE *out,
                            enum mcc_asm_instruction in,
                            enum mcc_asm_operand op1,
                            int op1_offset,
+                           enum mcc_asm_operand op2,
+                           int op2_offset);
+
+void print_asm_instruction_lit(FILE *out,
+                           enum mcc_asm_instruction in,
+                           int literal,
                            enum mcc_asm_operand op2,
                            int op2_offset);
 
