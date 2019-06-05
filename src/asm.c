@@ -21,7 +21,7 @@ void create_function_label(FILE *out, char *func_name)
 	fprintf(out, "%s:\n", func_name);
 	print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_PUSHL, MCC_ASM_REGISTER_EBP, 0, -1, 0);
 	print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_ESP, 0, MCC_ASM_REGISTER_EBP, 0);
-	print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_SUBL, 8, MCC_ASM_REGISTER_ESP, 0);
+	print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_SUBL, "8", MCC_ASM_REGISTER_ESP, 0);
 }
 
 /*
@@ -32,7 +32,22 @@ void create_asm_return(FILE *out, struct mcc_ir_line *line)
 {
 	assert(out);
 	assert(line);
-	print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, 0, MCC_ASM_REGISTER_EAX, 0);
+	print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, line->arg1, MCC_ASM_REGISTER_EAX, 0);
+}
+
+void create_asm_binary_op(FILE *out, struct mcc_ir_line *line)
+{
+	switch (line->bin_op) {
+	case MCC_AST_BINARY_OP_ADD:
+		print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, line->arg1, MCC_ASM_REGISTER_EAX, 0);
+		print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_ADDL, line->arg2, MCC_ASM_REGISTER_EAX, 0);
+		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EAX, 0, MCC_ASM_REGISTER_EBP,
+		                          -4);
+		break;
+
+	default:
+		break;
+	}
 }
 
 void create_asm_line(FILE *out, struct mcc_ir_line *line)
@@ -41,6 +56,9 @@ void create_asm_line(FILE *out, struct mcc_ir_line *line)
 	assert(line);
 
 	switch (line->op_type) {
+	case MCC_IR_TABLE_BINARY_OP:
+		create_asm_binary_op(out, line);
+		break;
 	case MCC_IR_TABLE_RETURN:
 		create_asm_return(out, line);
 		break;

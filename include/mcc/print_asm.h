@@ -16,7 +16,7 @@ void print_asm_instruction_reg(FILE *out,
 
 void print_asm_instruction_lit(FILE *out,
                            enum mcc_asm_instruction in,
-                           int literal,
+                           char *lit,
                            enum mcc_asm_operand op2,
                            int op2_offset);
 
