@@ -11,6 +11,7 @@
 void create_function_label(FILE *out, char *func_name)
 {
 	assert(out);
+	fprintf(out, "\t.globl %s\n\n", func_name);
 	fprintf(out, "%s:\n", func_name);
 	print_asm_instruction(out, MCC_ASM_INSTRUCTION_PUSHL, MCC_ASM_REGISTER_EBP, 0, -1, 0);
 	print_asm_instruction(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_ESP, 0, MCC_ASM_REGISTER_EBP, 0);
@@ -40,6 +41,8 @@ void create_asm_line(FILE *out, struct mcc_ir_line *line)
 void mcc_create_asm(struct mcc_ir_table_head *ir, FILE *out)
 {
 	assert(ir);
+
+	create_asm_header(out);
 
 	struct mcc_ir_table *current_func = ir->root;
 	while (current_func != NULL) {

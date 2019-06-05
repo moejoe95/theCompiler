@@ -24,11 +24,6 @@ void getAssemblyInstruction(enum mcc_asm_instruction in, char *in_string)
 	}
 }
 
-void createRegisterOffsetAccess(char *reg, char *off_reg, int offset)
-{
-	sprintf(off_reg, "%d(%s)", offset, reg);
-}
-
 void getAssemblyOperand(enum mcc_asm_operand op, int offset, char *arg)
 {
 	switch (op) {
@@ -48,7 +43,7 @@ void getAssemblyOperand(enum mcc_asm_operand op, int offset, char *arg)
 
 	if (offset != 0) {
 		char reg_off[OPERAND_SIZE];
-		createRegisterOffsetAccess(arg, reg_off, offset);
+		sprintf(reg_off, "%d(%s)", offset, arg);
 		strcpy(arg, reg_off);
 	}
 }
@@ -73,4 +68,9 @@ void print_asm_instruction(FILE *out,
 		fprintf(out, "\t%s\n", op);
 	else
 		fprintf(out, "\t%s\t%s, %s\n", op, arg1, arg2);
+}
+
+void create_asm_header(FILE *out)
+{
+	fprintf(out, "\t.text\n");
 }

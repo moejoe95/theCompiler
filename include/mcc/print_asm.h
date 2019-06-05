@@ -14,4 +14,7 @@ void print_asm_instruction(FILE *out,
                            enum mcc_asm_operand op2,
                            int op2_offset);
 
+        
+void create_asm_header(FILE *out);
+
 #endif // MCC_PRINT_ASM
