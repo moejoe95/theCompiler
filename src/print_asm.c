@@ -24,6 +24,9 @@ void getAssemblyInstruction(enum mcc_asm_instruction in, char *in_string)
 	case MCC_ASM_INSTRUCTION_ADDL:
 		strcpy(in_string, "addl");
 		break;
+	case MCC_ASM_INSTRUCTION_CALL:
+		strcpy(in_string, "call");
+		break;
 	default:
 		strcpy(in_string, "UNDEF");
 		break;
@@ -62,6 +65,17 @@ void print_asm_line(FILE *out, char *op, char *arg1, char *arg2)
 		fprintf(out, "\t%s\t%s\n", op, arg1);
 	else
 		fprintf(out, "\t%s\t%s, %s\n", op, arg1, arg2);
+}
+
+void print_asm_instruction_call(FILE *out, enum mcc_asm_instruction in, char *lit)
+{
+	char op[INSTRUCTION_SIZE] = {0};
+	char arg1[OPERAND_SIZE] = {0};
+
+	getAssemblyInstruction(in, op);
+	sprintf(arg1, "%s", lit);
+
+	print_asm_line(out, op, arg1, "");
 }
 
 void print_asm_instruction_reg(FILE *out,

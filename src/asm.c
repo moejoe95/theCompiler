@@ -17,7 +17,7 @@ by the appropriate length.
 void create_function_label(FILE *out, struct mcc_ir_table *current_func)
 {
 	assert(out);
-	fprintf(out, "\t.globl %s\n\n", current_func->func_name);
+	fprintf(out, ".globl %s\n\n", current_func->func_name);
 	fprintf(out, "%s:\n", current_func->func_name);
 	int memory_size = 0;
 	struct mcc_ir_line *current_line = current_func->line_head->root;
@@ -42,6 +42,26 @@ void create_asm_return(FILE *out, struct mcc_ir_line *line)
 	assert(line);
 	print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, line->arg1, MCC_ASM_REGISTER_EAX, 0);
 }
+
+void create_asm_function_call(FILE *out, struct mcc_ir_line *line)
+{
+	assert(out);
+	assert(line);
+	print_asm_instruction_call(out, MCC_ASM_INSTRUCTION_CALL, line->arg1);
+}
+
+void create_asm_push(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *asm_head)
+{
+	assert(out);
+	assert(line);
+	assert(asm_head);
+
+	if(strncmp(line->arg1, "(", 1) == 0)
+		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_PUSHL, MCC_ASM_REGISTER_EBP, asm_head->offset, -1, 0);
+	else
+		print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_PUSHL, line->arg1, -1, 0);
+}
+
 
 void create_asm_binary_op(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *asm_head)
 {
@@ -74,6 +94,12 @@ void create_asm_line(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *a
 		break;
 	case MCC_IR_TABLE_RETURN:
 		create_asm_return(out, line);
+		break;
+	case MCC_IR_TABLE_PUSH:
+		create_asm_push(out, line, asm_head);
+		break;
+	case MCC_IR_TABLE_CALL:
+		create_asm_function_call(out, line);
 		break;
 	default:
 		break;
@@ -115,5 +141,9 @@ void mcc_create_asm(struct mcc_ir_table_head *ir, FILE *out)
 	/* compile assembly with
 	        gcc -c file.s -o file.o
 	        gcc -o file file.o
+
+		other way:
+			gcc -S -m32 hello.c
+			gcc -o hello_asm -m32 hello.s
 	*/
 }

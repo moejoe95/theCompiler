@@ -13,6 +13,7 @@ enum mcc_asm_instruction {
     MCC_ASM_INSTRUCTION_RETL,
     MCC_ASM_INSTRUCTION_SUBL,
     MCC_ASM_INSTRUCTION_ADDL,
+    MCC_ASM_INSTRUCTION_CALL,
 };
 
 enum mcc_asm_operand {
