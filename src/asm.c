@@ -189,24 +189,5 @@ void mcc_create_asm(struct mcc_ir_table_head *ir, FILE *out, int destination)
 		current_func = current_func->next_table;
 	}
 
-	/* compile assembly with
-	        gcc -c file.s -o file.o
-	        gcc -o file file.o
-
-	        other way:
-	                gcc -S -m32 hello.c
-	                gcc -o hello_asm -m32 hello.s
-
-	        for debugging with gdb:
-	                as --gstabs+ test.s -o test.o --32
-	                ld -m elf_i386 test.o -o test
-	                gdb test
-	                b main
-	                run
-	                si and to repeat ENTER
-	                q for quitting gdb
-
-	*/
-
 	fclose(tmpfile);
 }

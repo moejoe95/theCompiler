@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "mcc/asm.h"
 #include "mcc/ast.h"
@@ -159,9 +160,9 @@ int main(int argc, char *argv[])
 		ir = mcc_create_ir(pro, out, log_level_to_int(LOG_LEVEL));
 
 		// generate ASM code
-		mcc_create_asm(ir, out, 1);
+		// mcc_create_asm(ir, out, 1);
 
-		// TODO run GCC with code from asm_table
+		mcc_invoke_backend("asm_tmp.s", "output.o");
 
 		// cleanup
 		mcc_delete_ir(ir);
@@ -178,4 +179,40 @@ int main(int argc, char *argv[])
 		return EXIT_FAILURE;
 	}
 	return EXIT_SUCCESS;
+}
+
+/* compile assembly with
+        gcc -c file.s -o file.o
+        gcc -o file file.o
+
+        other way:
+                gcc -S -m32 hello.c
+                gcc -o hello_asm -m32 hello.s
+
+        for debugging with gdb:
+                as --gstabs+ test.s -o test.o --32
+                ld -m elf_i386 test.o -o test
+                gdb test
+                b main
+                run
+                si and to repeat ENTER
+                q for quitting gdb
+
+*/
+void mcc_invoke_backend(char *file_name, char *output_name)
+{
+	assert(file_name);
+
+	char file_name_built_in[] = "../resources/mc_builtins.c";
+
+	char *argument[7];
+	argument[0] = "gcc";
+	argument[1] = "-m32";
+	argument[2] = file_name_built_in;
+	argument[3] = file_name;
+	argument[4] = "-o";
+	argument[5] = output_name;
+	argument[6] = NULL;
+
+	execvp("gcc", argument);
 }
