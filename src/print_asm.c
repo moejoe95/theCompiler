@@ -44,6 +44,7 @@ void getAssemblyInstruction(enum mcc_asm_instruction in, char *in_string)
 		break;
 	case MCC_ASM_INSTRUCTION_CALL:
 		strcpy(in_string, "call");
+		break;
 	default:
 		strcpy(in_string, "UNDEF");
 		break;
