@@ -30,8 +30,8 @@ enum mcc_asm_instruction {
 	MCC_ASM_INSTRUCTION_ORL,
 	MCC_ASM_INSTRUCTION_NOTL,
 
-    //calls
-    MCC_ASM_INSTRUCTION_CALL
+	// calls
+	MCC_ASM_INSTRUCTION_CALL
 };
 
 enum mcc_asm_operand {
@@ -54,6 +54,6 @@ struct mcc_asm_head {
 	int offset;
 };
 
-void mcc_create_asm(struct mcc_ir_table_head *ir, FILE *out);
+void mcc_create_asm(struct mcc_ir_table_head *ir, FILE *out, int destination);
 
 #endif

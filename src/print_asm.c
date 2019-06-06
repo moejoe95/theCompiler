@@ -140,3 +140,13 @@ void create_asm_header(FILE *out)
 {
 	fprintf(out, "\t.text\n");
 }
+
+FILE *open_tmp_file()
+{
+	FILE *tmp_file = fopen("asm_tmp.s", "w");
+	if (!tmp_file) {
+		perror("fopen");
+		return NULL;
+	}
+	return tmp_file;
+}
