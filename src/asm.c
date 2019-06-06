@@ -66,21 +66,56 @@ void create_asm_push(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *a
 void create_asm_binary_op(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *asm_head)
 {
 	asm_head->offset = asm_head->offset - 4;
+	print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, line->arg1, MCC_ASM_REGISTER_EAX, 0);
 	switch (line->bin_op) {
 	case MCC_AST_BINARY_OP_ADD:
-		print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, line->arg1, MCC_ASM_REGISTER_EAX, 0);
 		print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_ADDL, line->arg2, MCC_ASM_REGISTER_EAX, 0);
-		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EAX, 0, MCC_ASM_REGISTER_EBP,
-		                          asm_head->offset);
 		break;
 	case MCC_AST_BINARY_OP_SUB:
-		print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, line->arg1, MCC_ASM_REGISTER_EAX, 0);
 		print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_SUBL, line->arg2, MCC_ASM_REGISTER_EAX, 0);
-		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EAX, 0, MCC_ASM_REGISTER_EBP,
-		                          asm_head->offset);
+		break;
+	case MCC_AST_BINARY_OP_MUL:
+		print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MULL, line->arg2, MCC_ASM_REGISTER_EAX, 0);
+		break;
+	case MCC_AST_BINARY_OP_DIV:
+		print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, "0", MCC_ASM_REGISTER_EDX, 0);
+		print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, line->arg2, MCC_ASM_REGISTER_ECX, 0);
+		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_DIVL, MCC_ASM_REGISTER_ECX, 0, -1, 0);
+		break;
+	case MCC_AST_BINARY_OP_LAND:
+		print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_ANDL, line->arg2, MCC_ASM_REGISTER_EAX, 0);
+		break;
+	case MCC_AST_BINARY_OP_LOR:
+		print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_ORL, line->arg2, MCC_ASM_REGISTER_EAX, 0);
+		break;
 	default:
 		break;
 	}
+	print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EAX, 0, MCC_ASM_REGISTER_EBP,
+	                          asm_head->offset);
+}
+
+void create_asm_unary(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *head)
+{
+	head->offset = head->offset - 4;
+	print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, line->arg1, MCC_ASM_REGISTER_EAX, 0);
+	switch (line->un_op) {
+	case MCC_AST_UNARY_OP_NOT:
+		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_NOTL, MCC_ASM_REGISTER_EAX, 0, -1, 0);
+		break;
+	default:
+		break;
+	}
+	print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EAX, 0, MCC_ASM_REGISTER_EBP,
+	                          head->offset);
+}
+
+void create_asm_assignment(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *head)
+{
+	head->offset = head->offset - 4;
+	print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, line->arg2, MCC_ASM_REGISTER_EAX, 0);
+	print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EAX, 0, MCC_ASM_REGISTER_EBP,
+	                          head->offset);
 }
 
 void create_asm_line(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *asm_head)
@@ -91,6 +126,12 @@ void create_asm_line(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *a
 	switch (line->op_type) {
 	case MCC_IR_TABLE_BINARY_OP:
 		create_asm_binary_op(out, line, asm_head);
+		break;
+	case MCC_IR_TABLE_UNARY_OP:
+		create_asm_unary(out, line, asm_head);
+		break;
+	case MCC_IR_TABLE_ASSIGNMENT:
+		create_asm_assignment(out, line, asm_head);
 		break;
 	case MCC_IR_TABLE_RETURN:
 		create_asm_return(out, line);
