@@ -186,5 +186,15 @@ void mcc_create_asm(struct mcc_ir_table_head *ir, FILE *out)
 		other way:
 			gcc -S -m32 hello.c
 			gcc -o hello_asm -m32 hello.s
+
+		for debugging with gdb:
+			as --gstabs+ test.s -o test.o --32
+			ld -m elf_i386 test.o -o test
+			gdb test
+			b main
+			run
+			si and to repeat ENTER
+			q for quitting gdb
+
 	*/
 }
