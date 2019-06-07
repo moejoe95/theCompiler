@@ -192,4 +192,11 @@ void mcc_create_asm(struct mcc_ir_table_head *ir, FILE *out, int destination)
 	if (destination != 0) {
 		fclose(tmpfile);
 	}
+
+	mcc_delete_asm(asm_head);
+}
+
+void mcc_delete_asm(struct mcc_asm_head *asm_head)
+{
+	free(asm_head);
 }

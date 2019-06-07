@@ -55,5 +55,6 @@ struct mcc_asm_head {
 };
 
 void mcc_create_asm(struct mcc_ir_table_head *ir, FILE *out, int destination);
+void mcc_delete_asm(struct mcc_asm_head *asm_head);
 
 #endif

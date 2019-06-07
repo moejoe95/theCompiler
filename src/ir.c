@@ -541,8 +541,9 @@ static void generate_ir_if(struct mcc_ast_statement *stmt, struct mcc_ir_line_he
 	generate_ir_statement(stmt->if_stat, head, 0);
 
 	// generate jump table
-	struct mcc_ir_line *jump_table = create_new_ir_line();
+	struct mcc_ir_line *jump_table = NULL;
 	if (!hasStatementReturn(stmt->if_stat) && !isLastStatement) {
+		jump_table = create_new_ir_line();
 		head->index++;
 		jump_table->arg1 = jump_loc;
 		jump_table->arg2 = NULL;
@@ -569,7 +570,7 @@ static void generate_ir_if(struct mcc_ast_statement *stmt, struct mcc_ir_line_he
 	}
 
 	// set jump loc
-	if (!isLastStatement) {
+	if (jump_table != NULL && !isLastStatement) {
 		sprintf(value, "(%d)", head->current->index + 1);
 		jump_loc = strdup(value);
 		jump_table->arg1 = jump_loc;
