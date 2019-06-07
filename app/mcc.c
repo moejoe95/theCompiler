@@ -196,9 +196,9 @@ int main(int argc, char *argv[])
 		ir = mcc_create_ir(pro, out, log_level_to_int(LOG_LEVEL));
 
 		// generate ASM code
-		// mcc_create_asm(ir, out, 1);
+		mcc_create_asm(ir, out, 1);
 
-		mcc_invoke_backend("asm_tmp.s", "output.o");
+		mcc_invoke_backend("asm_tmp.s", "out");
 
 		// cleanup
 		mcc_delete_ir(ir);
