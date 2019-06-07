@@ -69,6 +69,7 @@ static struct mcc_ir_line *create_new_ir_line()
 	table->bin_op = MCC_AST_BINARY_OP_NULL;
 	table->op_type = MCC_IR_TABLE_NULL;
 	table->jump_target = 0;
+	table->memory_size = 0;
 	return table;
 }
 
