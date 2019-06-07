@@ -189,5 +189,7 @@ void mcc_create_asm(struct mcc_ir_table_head *ir, FILE *out, int destination)
 		current_func = current_func->next_table;
 	}
 
-	fclose(tmpfile);
+	if (destination != 0) {
+		fclose(tmpfile);
+	}
 }
