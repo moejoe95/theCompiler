@@ -62,16 +62,14 @@ void mcc_invoke_backend(char *file_name, char *output_name)
 
 	char file_name_built_in[] = "../resources/mc_builtins.c";
 
-	char *argument[7];
-	argument[0] = "gcc";
-	argument[1] = "-m32";
-	argument[2] = file_name_built_in;
-	argument[3] = file_name;
-	argument[4] = "-o";
-	argument[5] = output_name;
-	argument[6] = NULL;
-
-	execvp("gcc", argument);
+	char command[128];
+	strcpy(command, "gcc -m32 ");
+	strcat(command, file_name_built_in);
+	strcat(command, " ");
+	strcat(command, file_name);
+	strcat(command, " -o ");
+	strcat(command, output_name);
+	system(command);
 }
 
 int main(int argc, char *argv[])
@@ -198,6 +196,7 @@ int main(int argc, char *argv[])
 		// generate ASM code
 		mcc_create_asm(ir, out, 1);
 
+		// generate binary from ASM
 		mcc_invoke_backend("asm_tmp.s", "out");
 
 		// cleanup

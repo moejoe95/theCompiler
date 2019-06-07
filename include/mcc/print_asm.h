@@ -13,6 +13,7 @@ void print_asm_instruction_reg(FILE *out,
                                enum mcc_asm_operand op2,
                                int op2_offset);
 
+void print_asm_instruction_call(FILE *out, enum mcc_asm_instruction in, char *lit);
 void print_asm_instruction_lit(
     FILE *out, enum mcc_asm_instruction in, char *lit, enum mcc_asm_operand op2, int op2_offset);
 
