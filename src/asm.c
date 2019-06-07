@@ -17,7 +17,9 @@ by the appropriate length.
 void create_function_label(FILE *out, struct mcc_ir_table *current_func)
 {
 	assert(out);
-	fprintf(out, ".globl %s\n\n", current_func->func_name);
+	if(strcmp(current_func->func_name, "main") != 0)
+		fprintf(out, ".globl %s\n\n", current_func->func_name);
+
 	fprintf(out, "%s:\n", current_func->func_name);
 	int memory_size = 0;
 	struct mcc_ir_line *current_line = current_func->line_head->root;
@@ -42,11 +44,13 @@ void create_asm_return(FILE *out, struct mcc_ir_line *line, struct mcc_ir_table 
 	assert(line);
 	assert(current_func);
 
+	print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, line->arg1, MCC_ASM_REGISTER_EAX, 0);
+	print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_POPL, MCC_ASM_REGISTER_EBP, 0, -1, 0);
+
 	if(strcmp(current_func->func_name, "main") == 0){ //main has own return procedure
 		return;
 	}
-
-	print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, line->arg1, MCC_ASM_REGISTER_EAX, 0);
+	
 	print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_RETL, -1, 0, -1, 0);
 }
 
@@ -68,7 +72,9 @@ void create_asm_function_call(FILE *out, struct mcc_ir_line *line, struct mcc_ir
 	sprintf(memory_size_str, "%d", used_stack_size);
 
 	print_asm_instruction_call(out, MCC_ASM_INSTRUCTION_CALL, line->arg1);
-	print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_ADDL, memory_size_str, MCC_ASM_REGISTER_ESP, 0); //TODO wrong memory?
+
+	if(used_stack_size > 0)
+		print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_ADDL, memory_size_str, MCC_ASM_REGISTER_ESP, 0); //TODO wrong memory?
 }
 
 void create_asm_push(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *asm_head)
