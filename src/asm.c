@@ -246,6 +246,7 @@ void mcc_create_asm(struct mcc_ir_table_head *ir, FILE *out, int destination)
 
 	struct mcc_asm_data_section *data_root = malloc(sizeof(*data_root));
 	data_root->id = strdup("\n.data\n");
+	data_root->array = NULL;
 
 	asm_head->data_section = data_root;
 
