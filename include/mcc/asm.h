@@ -47,8 +47,15 @@ enum mcc_asm_operand {
 	MCC_ASM_REGISTER_ESP,
 };
 
+struct mcc_asm_data_section {
+	char *id;
+	char *array;
+	struct mcc_asm_data_section *next_data_section;
+};
+
 struct mcc_asm_head {
 	int offset;
+	struct mcc_asm_data_section *data_section;
 };
 
 void mcc_create_asm(struct mcc_ir_table_head *ir, FILE *out);

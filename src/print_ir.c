@@ -39,6 +39,9 @@ void print_row(struct mcc_ir_line *table, FILE *out)
 	case MCC_IR_TABLE_ASSIGNMENT:
 		sprintf(operation, "%s", "assign");
 		break;
+	case MCC_IR_TABLE_ARRAY:
+		sprintf(operation, "%s", "array\t");
+		break;
 	case MCC_IR_TABLE_JUMPFALSE:
 		sprintf(operation, "%s", "jumpfalse");
 		break;

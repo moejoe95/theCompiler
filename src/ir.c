@@ -443,6 +443,17 @@ static void generate_ir_expression(struct mcc_ast_expression *expr,
 	}
 }
 
+static void generate_ir_declaration_array(struct mcc_ast_declare_assign *decl, struct mcc_ir_line_head *head)
+{
+	assert(decl);
+	assert(head);
+
+	char value[64] = {0};
+	sprintf(value, "%ld", *decl->declare_array_size);
+	generate_ir_table_line(head, strdup(decl->declare_id->identifier->name), strdup(value), MCC_IR_TABLE_ARRAY, -1,
+	                       -1);
+}
+
 static void generate_ir_assignment(struct mcc_ast_declare_assign *assign, struct mcc_ir_line_head *head)
 {
 	assert(assign);
@@ -662,10 +673,12 @@ static void generate_ir_statement(struct mcc_ast_statement *stmt, struct mcc_ir_
 	case MCC_AST_STATEMENT_EXPRESSION:
 		generate_ir_expression(stmt->expression, head, MCC_IR_TABLE_COPY);
 		break;
-	case MCC_AST_STATEMENT_DECLARATION:
-		break;
 	case MCC_AST_STATEMENT_ASSIGNMENT:
 		generate_ir_assignment(stmt->declare_assign, head);
+		break;
+	case MCC_AST_STATEMENT_DECLARATION:
+		if (*stmt->declare_assign->declare_array_size > 0)
+			generate_ir_declaration_array(stmt->declare_assign, head);
 		break;
 	case MCC_AST_STATEMENT_RETURN:
 		generate_ir_return(stmt->expression, head);

@@ -98,6 +98,47 @@ void create_asm_assignment(FILE *out, struct mcc_ir_line *line, struct mcc_asm_h
 	                          head->offset);
 }
 
+void create_asm_array(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *head)
+{
+	assert(out);
+	assert(line);
+	assert(head);
+
+	char var[64];
+	sprintf(var, "%s:\n\n", line->arg1);
+
+	struct mcc_asm_data_section *current = head->data_section;
+	while (current->next_data_section != NULL) {
+		current = current->next_data_section;
+	}
+	struct mcc_asm_data_section *new_data_section = malloc(sizeof(*new_data_section));
+	sprintf(new_data_section->id, var);
+	new_data_section->array = NULL;
+	new_data_section->next_data_section = NULL;
+	current->next_data_section = new_data_section;
+}
+
+void create_asm_store(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *head)
+{
+	assert(out);
+	assert(line);
+	assert(head);
+
+	struct mcc_asm_data_section *current = head->data_section;
+	while (current->next_data_section != NULL) {
+		current = current->next_data_section;
+	}
+
+	if (current->array == NULL) {
+		current->array = strdup(".long ");
+		strcat(current->array, line->arg2);
+	} else {
+		char value[64];
+		sprintf(value, ", %s", line->arg2);
+		strcat(current->array, value);
+	}
+}
+
 void create_asm_line(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *asm_head)
 {
 	assert(out);
@@ -112,6 +153,12 @@ void create_asm_line(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *a
 		break;
 	case MCC_IR_TABLE_ASSIGNMENT:
 		create_asm_assignment(out, line, asm_head);
+		break;
+	case MCC_IR_TABLE_ARRAY:
+		create_asm_array(out, line, asm_head);
+		break;
+	case MCC_IR_TABLE_STORE:
+		create_asm_store(out, line, asm_head);
 		break;
 	case MCC_IR_TABLE_RETURN:
 		create_asm_return(out, line);
@@ -129,6 +176,11 @@ void mcc_create_asm(struct mcc_ir_table_head *ir, FILE *out)
 
 	struct mcc_asm_head *asm_head = malloc(sizeof(*asm_head));
 	asm_head->offset = 0;
+
+	struct mcc_asm_data_section *data_root = malloc(sizeof(*data_root));
+	data_root->id = strdup("\n.data\n");
+
+	asm_head->data_section = data_root;
 
 	struct mcc_ir_table *current_func = ir->root;
 	while (current_func != NULL) {
@@ -152,6 +204,8 @@ void mcc_create_asm(struct mcc_ir_table_head *ir, FILE *out)
 		}
 		current_func = current_func->next_table;
 	}
+
+	print_asm_data_section(out, data_root);
 
 	/* compile assembly with
 	        gcc -c file.s -o file.o

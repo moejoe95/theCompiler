@@ -23,4 +23,6 @@ void print_asm_instruction_lit(FILE *out,
         
 void create_asm_header(FILE *out);
 
+void print_asm_data_section(FILE *out, struct mcc_asm_data_section *data);
+
 #endif // MCC_PRINT_ASM

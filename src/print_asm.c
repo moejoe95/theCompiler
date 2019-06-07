@@ -126,3 +126,13 @@ void create_asm_header(FILE *out)
 {
 	fprintf(out, "\t.text\n");
 }
+
+void print_asm_data_section(FILE *out, struct mcc_asm_data_section *data)
+{
+	struct mcc_asm_data_section *current = data;
+	while (current != NULL) {
+		fprintf(out, "%s\n", current->id);
+		fprintf(out, "\t%s\n", current->array);
+		current = current->next_data_section;
+	}
+}

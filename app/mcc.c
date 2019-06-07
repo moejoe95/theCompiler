@@ -164,6 +164,7 @@ int main(int argc, char *argv[])
 		// TODO run GCC with code from asm_table
 
 		// cleanup
+		// TODO delete asm data
 		mcc_delete_ir(ir);
 		mcc_delete_symbol_table(st);
 		mcc_ast_delete_program(pro);
