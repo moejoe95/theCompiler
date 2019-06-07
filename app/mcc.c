@@ -71,7 +71,7 @@ void mcc_invoke_backend(char *file_name, char *output_name)
 	argument[5] = output_name;
 	argument[6] = NULL;
 
-	execvp("/usr/bin/gcc", argument);
+	execvp("gcc", argument);
 }
 
 int main(int argc, char *argv[])
