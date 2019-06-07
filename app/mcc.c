@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "mcc/asm.h"
 #include "mcc/ast.h"
@@ -35,6 +36,40 @@ void print_help(const char *prg_name)
 	printf("\t-h,--help \t\tdisplays this help message\n");
 	printf("\t-o,--output <file> \twrite the output to <file> (defaults to stdout)\n");
 	printf("\t-f, --function <name> \tlimit scope to the given function\n");
+}
+
+/* compile assembly with
+        gcc -c file.s -o file.o
+        gcc -o file file.o
+
+        other way:
+                gcc -S -m32 hello.c
+                gcc -o hello_asm -m32 hello.s
+
+        for debugging with gdb:
+                as --gstabs+ test.s -o test.o --32
+                ld -m elf_i386 test.o -o test
+                gdb test
+                b main
+                run
+                si and to repeat ENTER
+                q for quitting gdb
+
+*/
+void mcc_invoke_backend(char *file_name, char *output_name)
+{
+	assert(file_name);
+
+	char file_name_built_in[] = "../resources/mc_builtins.c";
+
+	char command[128];
+	strcpy(command, "gcc -m32 ");
+	strcat(command, file_name_built_in);
+	strcat(command, " ");
+	strcat(command, file_name);
+	strcat(command, " -o ");
+	strcat(command, output_name);
+	system(command);
 }
 
 int main(int argc, char *argv[])
@@ -159,9 +194,10 @@ int main(int argc, char *argv[])
 		ir = mcc_create_ir(pro, out, log_level_to_int(LOG_LEVEL));
 
 		// generate ASM code
-		mcc_create_asm(ir, out);
+		mcc_create_asm(ir, out, 1);
 
-		// TODO run GCC with code from asm_table
+		// generate binary from ASM
+		mcc_invoke_backend("asm_tmp.s", "out");
 
 		// cleanup
 		// TODO delete asm data

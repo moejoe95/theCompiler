@@ -69,6 +69,7 @@ static struct mcc_ir_line *create_new_ir_line()
 	table->bin_op = MCC_AST_BINARY_OP_NULL;
 	table->op_type = MCC_IR_TABLE_NULL;
 	table->jump_target = 0;
+	table->memory_size = 0;
 	return table;
 }
 
@@ -467,7 +468,7 @@ static void generate_ir_assignment(struct mcc_ast_declare_assign *assign, struct
 			generate_ir_expression(assign->assign_rhs, head, -1);
 			sprintf(value, "(%d)", head->index);
 		} else {
-			sprintf(value, lookup_table_args(head, assign->assign_rhs->identifier->name, NULL));
+			sprintf(value, "%s", lookup_table_args(head, assign->assign_rhs->identifier->name, NULL));
 		}
 		entity2 = strdup(value);
 	} else {
@@ -552,8 +553,9 @@ static void generate_ir_if(struct mcc_ast_statement *stmt, struct mcc_ir_line_he
 	generate_ir_statement(stmt->if_stat, head, 0);
 
 	// generate jump table
-	struct mcc_ir_line *jump_table = create_new_ir_line();
+	struct mcc_ir_line *jump_table = NULL;
 	if (!hasStatementReturn(stmt->if_stat) && !isLastStatement) {
+		jump_table = create_new_ir_line();
 		head->index++;
 		jump_table->arg1 = jump_loc;
 		jump_table->arg2 = NULL;
@@ -580,7 +582,7 @@ static void generate_ir_if(struct mcc_ast_statement *stmt, struct mcc_ir_line_he
 	}
 
 	// set jump loc
-	if (!isLastStatement) {
+	if (jump_table != NULL && !isLastStatement) {
 		sprintf(value, "(%d)", head->current->index + 1);
 		jump_loc = strdup(value);
 		jump_table->arg1 = jump_loc;
@@ -656,11 +658,12 @@ static void generate_ir_while(struct mcc_ast_statement *stmt, struct mcc_ir_line
 
 static void generate_ir_compound(struct mcc_ast_statement_list *list, struct mcc_ir_line_head *head)
 {
-	while (list != NULL) {
-		generate_ir_statement(list->statement, head, 0);
-		if (list->statement->type == MCC_AST_STATEMENT_RETURN)
+	struct mcc_ast_statement_list *temp_list = list;
+	while (temp_list != NULL) {
+		generate_ir_statement(temp_list->statement, head, 0);
+		if (temp_list->statement->type == MCC_AST_STATEMENT_RETURN)
 			break;
-		list = list->next_statement;
+		temp_list = temp_list->next_statement;
 	}
 }
 
@@ -697,14 +700,16 @@ static void generate_ir_statement(struct mcc_ast_statement *stmt, struct mcc_ir_
 
 static int hasStatementReturn(struct mcc_ast_statement *stmt)
 {
+	struct mcc_ast_statement_list *tmp_list = stmt->compound;
+
 	switch (stmt->type) {
 	case MCC_AST_STATEMENT_RETURN:
 		return 1;
 	case MCC_AST_STATEMENT_COMPOUND: {
 		int result;
-		while (stmt->compound != NULL) {
-			result = hasStatementReturn(stmt->compound->statement);
-			stmt->compound = stmt->compound->next_statement;
+		while (tmp_list != NULL) {
+			result = hasStatementReturn(tmp_list->statement);
+			tmp_list = tmp_list->next_statement;
 			if (result > 0)
 				return result;
 		}

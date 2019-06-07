@@ -29,6 +29,9 @@ enum mcc_asm_instruction {
 	MCC_ASM_INSTRUCTION_ANDL,
 	MCC_ASM_INSTRUCTION_ORL,
 	MCC_ASM_INSTRUCTION_NOTL,
+
+	// calls
+	MCC_ASM_INSTRUCTION_CALL
 };
 
 enum mcc_asm_operand {
@@ -58,6 +61,7 @@ struct mcc_asm_head {
 	struct mcc_asm_data_section *data_section;
 };
 
-void mcc_create_asm(struct mcc_ir_table_head *ir, FILE *out);
+void mcc_create_asm(struct mcc_ir_table_head *ir, FILE *out, int destination);
+void mcc_delete_asm(struct mcc_asm_head *asm_head);
 
 #endif

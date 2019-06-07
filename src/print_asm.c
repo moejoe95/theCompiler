@@ -42,10 +42,34 @@ void getAssemblyInstruction(enum mcc_asm_instruction in, char *in_string)
 	case MCC_ASM_INSTRUCTION_NOTL:
 		strcpy(in_string, "notl");
 		break;
+	case MCC_ASM_INSTRUCTION_CALL:
+		strcpy(in_string, "calll");
+		break;
 	default:
 		strcpy(in_string, "UNDEF");
 		break;
 	}
+}
+
+void print_asm_line(FILE *out, char *op, char *arg1, char *arg2)
+{
+	if (strcmp(arg1, "") == 0)
+		fprintf(out, "\t%s\n", op);
+	else if (strcmp(arg2, "") == 0)
+		fprintf(out, "\t%s\t%s\n", op, arg1);
+	else
+		fprintf(out, "\t%s\t%s, %s\n", op, arg1, arg2);
+}
+
+void print_asm_instruction_call(FILE *out, enum mcc_asm_instruction in, char *lit)
+{
+	char op[INSTRUCTION_SIZE] = {0};
+	char arg1[OPERAND_SIZE] = {0};
+
+	getAssemblyInstruction(in, op);
+	sprintf(arg1, "%s", lit);
+
+	print_asm_line(out, op, arg1, "");
 }
 
 void getAssemblyOperand(enum mcc_asm_operand op, int offset, char *arg)
@@ -76,16 +100,6 @@ void getAssemblyOperand(enum mcc_asm_operand op, int offset, char *arg)
 		sprintf(reg_off, "%d(%s)", offset, arg);
 		strcpy(arg, reg_off);
 	}
-}
-
-void print_asm_line(FILE *out, char *op, char *arg1, char *arg2)
-{
-	if (strcmp(arg1, "") == 0)
-		fprintf(out, "\t%s\n", op);
-	else if (strcmp(arg2, "") == 0)
-		fprintf(out, "\t%s\t%s\n", op, arg1);
-	else
-		fprintf(out, "\t%s\t%s, %s\n", op, arg1, arg2);
 }
 
 void print_asm_instruction_reg(FILE *out,
@@ -135,4 +149,13 @@ void print_asm_data_section(FILE *out, struct mcc_asm_data_section *data)
 		fprintf(out, "\t%s\n", current->array);
 		current = current->next_data_section;
 	}
+}
+FILE *open_tmp_file()
+{
+	FILE *tmp_file = fopen("asm_tmp.s", "w");
+	if (!tmp_file) {
+		perror("fopen");
+		return NULL;
+	}
+	return tmp_file;
 }

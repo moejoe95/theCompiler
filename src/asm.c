@@ -17,7 +17,9 @@ by the appropriate length.
 void create_function_label(FILE *out, struct mcc_ir_table *current_func)
 {
 	assert(out);
-	fprintf(out, "\t.globl %s\n\n", current_func->func_name);
+	if (strcmp(current_func->func_name, "main") != 0)
+		fprintf(out, ".globl %s\n\n", current_func->func_name);
+
 	fprintf(out, "%s:\n", current_func->func_name);
 	int memory_size = 0;
 	struct mcc_ir_line *current_line = current_func->line_head->root;
@@ -25,7 +27,7 @@ void create_function_label(FILE *out, struct mcc_ir_table *current_func)
 		memory_size = memory_size + 4 * current_line->memory_size;
 		current_line = current_line->next_line;
 	}
-	char memory_size_str[12];
+	char memory_size_str[12] = {0};
 	sprintf(memory_size_str, "%d", memory_size);
 	print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_PUSHL, MCC_ASM_REGISTER_EBP, 0, -1, 0);
 	print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_ESP, 0, MCC_ASM_REGISTER_EBP, 0);
@@ -36,11 +38,57 @@ void create_function_label(FILE *out, struct mcc_ir_table *current_func)
 This line stores zero (return value) in EAX. The C calling convention is to store return values in EAX when exiting
 a routine.
 */
-void create_asm_return(FILE *out, struct mcc_ir_line *line)
+void create_asm_return(FILE *out, struct mcc_ir_line *line, struct mcc_ir_table *current_func)
 {
 	assert(out);
 	assert(line);
+	assert(current_func);
+
 	print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, line->arg1, MCC_ASM_REGISTER_EAX, 0);
+	print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_POPL, MCC_ASM_REGISTER_EBP, 0, -1, 0);
+
+	if (strcmp(current_func->func_name, "main") == 0) { // main has own return procedure
+		return;
+	}
+
+	print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_RETL, -1, 0, -1, 0);
+}
+
+void create_asm_function_call(FILE *out, struct mcc_ir_line *line, struct mcc_ir_table *current_func)
+{
+	assert(out);
+	assert(line);
+
+	int used_stack_size = 0;
+	struct mcc_ir_line *current_line = current_func->line_head->root;
+	while (current_line != NULL && current_line->op_type == MCC_IR_TABLE_PUSH) {
+		if (current_line->op_type == MCC_IR_TABLE_CALL && strcmp(current_line->arg1, line->arg1) == 0) {
+			break;
+		}
+		used_stack_size = used_stack_size + 4 * current_line->memory_size;
+		current_line = current_line->next_line;
+	}
+	char memory_size_str[12] = {0};
+	sprintf(memory_size_str, "%d", used_stack_size);
+
+	print_asm_instruction_call(out, MCC_ASM_INSTRUCTION_CALL, line->arg1);
+
+	if (used_stack_size > 0)
+		print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_ADDL, memory_size_str, MCC_ASM_REGISTER_ESP,
+		                          0); // TODO wrong memory?
+}
+
+void create_asm_push(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *asm_head)
+{
+	assert(out);
+	assert(line);
+	assert(asm_head);
+
+	if (strncmp(line->arg1, "(", 1) == 0)
+		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_PUSHL, MCC_ASM_REGISTER_EBP, asm_head->offset, -1,
+		                          0);
+	else
+		print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_PUSHL, line->arg1, -1, 0);
 }
 
 void create_asm_binary_op(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *asm_head)
@@ -139,7 +187,10 @@ void create_asm_store(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *
 	}
 }
 
-void create_asm_line(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *asm_head)
+void create_asm_line(FILE *out,
+                     struct mcc_ir_line *line,
+                     struct mcc_asm_head *asm_head,
+                     struct mcc_ir_table *current_func)
 {
 	assert(out);
 	assert(line);
@@ -161,18 +212,34 @@ void create_asm_line(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *a
 		create_asm_store(out, line, asm_head);
 		break;
 	case MCC_IR_TABLE_RETURN:
-		create_asm_return(out, line);
+		create_asm_return(out, line, current_func);
+		break;
+	case MCC_IR_TABLE_PUSH:
+		create_asm_push(out, line, asm_head);
+		break;
+	case MCC_IR_TABLE_CALL:
+		create_asm_function_call(out, line, current_func);
 		break;
 	default:
 		break;
 	}
 }
 
-void mcc_create_asm(struct mcc_ir_table_head *ir, FILE *out)
+void mcc_create_asm(struct mcc_ir_table_head *ir, FILE *out, int destination)
 {
 	assert(ir);
 
-	create_asm_header(out);
+	FILE *tmpfile;
+	if (destination == 0) {
+		tmpfile = out;
+	} else {
+		tmpfile = open_tmp_file();
+		if (tmpfile == NULL) {
+			return;
+		}
+	}
+
+	create_asm_header(tmpfile);
 
 	struct mcc_asm_head *asm_head = malloc(sizeof(*asm_head));
 	asm_head->offset = 0;
@@ -185,9 +252,9 @@ void mcc_create_asm(struct mcc_ir_table_head *ir, FILE *out)
 	struct mcc_ir_table *current_func = ir->root;
 	while (current_func != NULL) {
 		struct mcc_ir_line *current_line = current_func->line_head->root;
-		create_function_label(out, current_func);
+		create_function_label(tmpfile, current_func);
 		while (current_line != NULL) {
-			create_asm_line(out, current_line, asm_head);
+			create_asm_line(tmpfile, current_line, asm_head, current_func);
 			current_line = current_line->next_line;
 		}
 		if (strcmp(current_func->func_name, "main") == 0) {
@@ -195,12 +262,12 @@ void mcc_create_asm(struct mcc_ir_table_head *ir, FILE *out)
 			leave frees the space saved on the stack by copying EBP into ESP, then popping the saved value
 			of EBP back to EBP.
 			*/
-			print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_LEAVE, -1, 0, -1, 0);
+			print_asm_instruction_reg(tmpfile, MCC_ASM_INSTRUCTION_LEAVE, -1, 0, -1, 0);
 			/*
 			This line returns control to the calling procedure by popping the saved instruction pointer
 			from the stack.
 			*/
-			print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_RETL, -1, 0, -1, 0);
+			print_asm_instruction_reg(tmpfile, MCC_ASM_INSTRUCTION_RETL, -1, 0, -1, 0);
 		}
 		current_func = current_func->next_table;
 	}
@@ -211,4 +278,14 @@ void mcc_create_asm(struct mcc_ir_table_head *ir, FILE *out)
 	        gcc -c file.s -o file.o
 	        gcc -o file file.o
 	*/
+	if (destination != 0) {
+		fclose(tmpfile);
+	}
+
+	mcc_delete_asm(asm_head);
+}
+
+void mcc_delete_asm(struct mcc_asm_head *asm_head)
+{
+	free(asm_head);
 }

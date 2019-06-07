@@ -126,7 +126,7 @@ struct mcc_cfg *generate_cfg(struct mcc_ir_table_head *ir_table_head, FILE *out,
 					cfg->current_block->target_id = ir_line->jump_target;
 					cfg->current_block->has_follower = true;
 				}
-				if(ir_line->next_line != NULL)
+				if (ir_line->next_line != NULL)
 					generate_block(cfg, ir_line->next_line->index, ir_table->id);
 			}
 
