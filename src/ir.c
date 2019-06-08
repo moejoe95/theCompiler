@@ -680,7 +680,7 @@ static void generate_ir_statement(struct mcc_ast_statement *stmt, struct mcc_ir_
 		generate_ir_assignment(stmt->declare_assign, head);
 		break;
 	case MCC_AST_STATEMENT_DECLARATION:
-		if (*stmt->declare_assign->declare_array_size > 0)
+		if (stmt->declare_assign->declare_array_size != NULL && *stmt->declare_assign->declare_array_size > 0)
 			generate_ir_declaration_array(stmt->declare_assign, head);
 		break;
 	case MCC_AST_STATEMENT_RETURN:
