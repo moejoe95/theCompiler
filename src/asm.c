@@ -195,10 +195,13 @@ void create_asm_store(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *
 
 	if (current->array == NULL) {
 		current->array = strdup(".long ");
-		strcat(current->array, line->arg2);
+		char value[64];
+		sprintf(value, ", %s", line->arg2);
+		strcat(current->array, value);
 	} else {
 		char value[64];
 		sprintf(value, ", %s", line->arg2);
+		current->array = strdup(current->array);
 		strcat(current->array, value);
 	}
 }
