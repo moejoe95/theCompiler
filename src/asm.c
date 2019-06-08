@@ -17,8 +17,8 @@ by the appropriate length.
 void create_function_label(FILE *out, struct mcc_ir_table *current_func)
 {
 	assert(out);
-	if (strcmp(current_func->func_name, "main") != 0)
-		fprintf(out, ".globl %s\n\n", current_func->func_name);
+	
+	fprintf(out, "\n\t.globl %s\n\n", current_func->func_name);
 
 	fprintf(out, "%s:\n", current_func->func_name);
 	int memory_size = 0;
@@ -31,7 +31,7 @@ void create_function_label(FILE *out, struct mcc_ir_table *current_func)
 	sprintf(memory_size_str, "%d", memory_size);
 	print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_PUSHL, MCC_ASM_REGISTER_EBP, 0, -1, 0);
 	print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_ESP, 0, MCC_ASM_REGISTER_EBP, 0);
-	print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_SUBL, memory_size_str, MCC_ASM_REGISTER_ESP, 0);
+	//print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_SUBL, memory_size_str, MCC_ASM_REGISTER_ESP, 0);
 }
 
 /*
@@ -61,21 +61,37 @@ void create_asm_function_call(FILE *out, struct mcc_ir_line *line, struct mcc_ir
 
 	int used_stack_size = 0;
 	struct mcc_ir_line *current_line = current_func->line_head->root;
-	while (current_line != NULL && current_line->op_type == MCC_IR_TABLE_PUSH) {
-		if (current_line->op_type == MCC_IR_TABLE_CALL && strcmp(current_line->arg1, line->arg1) == 0) {
+	while (current_line != NULL) {
+		if(current_line->op_type == MCC_IR_TABLE_PUSH){
+			used_stack_size = used_stack_size + 4 * current_line->memory_size;
+		}	
+		if(current_line->op_type == MCC_IR_TABLE_CALL && strcmp(current_line->arg1, line->arg1) == 0){
 			break;
-		}
-		used_stack_size = used_stack_size + 4 * current_line->memory_size;
-		current_line = current_line->next_line;
+		}	
+		current_line = current_line->next_line;	
 	}
 	char memory_size_str[12] = {0};
 	sprintf(memory_size_str, "%d", used_stack_size);
 
 	print_asm_instruction_call(out, MCC_ASM_INSTRUCTION_CALL, line->arg1);
 
-	if (used_stack_size > 0)
-		print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_ADDL, memory_size_str, MCC_ASM_REGISTER_ESP,
-		                          0); // TODO wrong memory?
+	if(used_stack_size > 0)
+		print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_ADDL, memory_size_str, MCC_ASM_REGISTER_ESP, 0);
+}
+
+void create_asm_built_in_function_call(FILE *out, struct mcc_ir_line *line)
+{
+	assert(out);
+	assert(line);
+
+	char memory_size_str[12] = {0};
+	sprintf(memory_size_str, "%d", 4 * line->memory_size);
+
+	print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_PUSHL, line->arg1, -1, 0);
+
+	print_asm_instruction_call(out, MCC_ASM_INSTRUCTION_CALL, line->built_in);
+
+	print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_ADDL, memory_size_str, MCC_ASM_REGISTER_ESP, 0);
 }
 
 void create_asm_push(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *asm_head)
@@ -220,6 +236,9 @@ void create_asm_line(FILE *out,
 	case MCC_IR_TABLE_CALL:
 		create_asm_function_call(out, line, current_func);
 		break;
+	case MCC_IR_TABLE_BUILT_IN:
+		create_asm_built_in_function_call(out, line);
+		break;
 	default:
 		break;
 	}
@@ -263,7 +282,7 @@ void mcc_create_asm(struct mcc_ir_table_head *ir, FILE *out, int destination)
 			leave frees the space saved on the stack by copying EBP into ESP, then popping the saved value
 			of EBP back to EBP.
 			*/
-			print_asm_instruction_reg(tmpfile, MCC_ASM_INSTRUCTION_LEAVE, -1, 0, -1, 0);
+			//print_asm_instruction_reg(tmpfile, MCC_ASM_INSTRUCTION_LEAVE, -1, 0, -1, 0);
 			/*
 			This line returns control to the calling procedure by popping the saved instruction pointer
 			from the stack.
