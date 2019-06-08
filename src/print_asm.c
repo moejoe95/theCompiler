@@ -19,7 +19,7 @@ void getAssemblyInstruction(enum mcc_asm_instruction in, char *in_string)
 		strcpy(in_string, "leave");
 		break;
 	case MCC_ASM_INSTRUCTION_RETL:
-		strcpy(in_string, "retl");
+		strcpy(in_string, "ret");
 		break;
 	case MCC_ASM_INSTRUCTION_SUBL:
 		strcpy(in_string, "subl");
