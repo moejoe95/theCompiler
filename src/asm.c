@@ -79,7 +79,7 @@ void create_asm_function_call(FILE *out, struct mcc_ir_line *line, struct mcc_ir
 		print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_ADDL, memory_size_str, MCC_ASM_REGISTER_ESP, 0);
 }
 
-void create_asm_built_in_function_call(FILE *out, struct mcc_ir_line *line, struct mcc_ir_table *current_func)
+void create_asm_built_in_function_call(FILE *out, struct mcc_ir_line *line)
 {
 	assert(out);
 	assert(line);
@@ -237,7 +237,7 @@ void create_asm_line(FILE *out,
 		create_asm_function_call(out, line, current_func);
 		break;
 	case MCC_IR_TABLE_BUILT_IN:
-		create_asm_built_in_function_call(out, line, current_func);
+		create_asm_built_in_function_call(out, line);
 		break;
 	default:
 		break;
