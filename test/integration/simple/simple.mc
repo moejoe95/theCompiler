@@ -1,4 +1,6 @@
 int main() {
-    print_int(5);
+    int x;
+    x = 100;
+    print_int(x);
     return 0;
 }
