@@ -31,7 +31,7 @@ void create_function_label(FILE *out, struct mcc_ir_table *current_func)
 	sprintf(memory_size_str, "%d", memory_size);
 	print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_PUSHL, MCC_ASM_REGISTER_EBP, 0, -1, 0);
 	print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_ESP, 0, MCC_ASM_REGISTER_EBP, 0);
-	// print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_SUBL, memory_size_str, MCC_ASM_REGISTER_ESP, 0);
+	//print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_SUBL, memory_size_str, MCC_ASM_REGISTER_ESP, 0);
 }
 
 /*
@@ -45,13 +45,11 @@ void create_asm_return(FILE *out, struct mcc_ir_line *line, struct mcc_ir_table 
 	assert(current_func);
 
 	print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, line->arg1, MCC_ASM_REGISTER_EAX, 0);
-	print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_POPL, MCC_ASM_REGISTER_EBP, 0, -1, 0);
-
-	if (strcmp(current_func->func_name, "main") == 0) { // main has own return procedure
-		return;
+	
+	if (strcmp(current_func->func_name, "main") != 0) { // main has own return procedure
+		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_POPL, MCC_ASM_REGISTER_EBP, 0, -1, 0);
+		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_RETL, -1, 0, -1, 0);
 	}
-
-	print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_RETL, -1, 0, -1, 0);
 }
 
 void create_asm_function_call(FILE *out, struct mcc_ir_line *line, struct mcc_ir_table *current_func)
@@ -285,8 +283,11 @@ void mcc_create_asm(struct mcc_ir_table_head *ir, FILE *out, int destination)
 			/*
 			leave frees the space saved on the stack by copying EBP into ESP, then popping the saved value
 			of EBP back to EBP.
+			equivalent to:
+				mov   %ebp, %esp 
+				pop   %ebp
 			*/
-			// print_asm_instruction_reg(tmpfile, MCC_ASM_INSTRUCTION_LEAVE, -1, 0, -1, 0);
+			print_asm_instruction_reg(tmpfile, MCC_ASM_INSTRUCTION_LEAVE, -1, 0, -1, 0);
 			/*
 			This line returns control to the calling procedure by popping the saved instruction pointer
 			from the stack.
