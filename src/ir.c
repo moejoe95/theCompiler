@@ -368,9 +368,17 @@ generate_built_in_function_call(struct mcc_ast_expression *expr_call, struct mcc
 	char *entity = NULL;
 
 	if (expr_call->function_call_arguments) {
-		struct mcc_ast_literal *lit = expr_call->function_call_arguments->expression->literal;
-		entity = generate_ir_literal_entity(lit);
-		new_table->memory_size = get_memory_size_literal_type(lit->type);
+		if(expr_call->function_call_arguments->expression->type == MCC_AST_EXPRESSION_TYPE_LITERAL){
+			struct mcc_ast_literal *lit = expr_call->function_call_arguments->expression->literal;
+			entity = generate_ir_literal_entity(lit);
+			new_table->memory_size = get_memory_size_literal_type(lit->type);
+		}
+		else
+		{
+			entity = lookup_table_args(head, expr_call->function_call_arguments->expression->identifier->name, NULL);
+		}
+		
+		
 	} else {
 		entity = strdup("-");
 	}
