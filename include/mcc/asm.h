@@ -59,6 +59,7 @@ struct mcc_asm_data_section {
 struct mcc_asm_head {
 	int offset;
 	struct mcc_asm_data_section *data_section;
+	int current_stack_size_parameters;
 };
 
 void mcc_create_asm(struct mcc_ir_table_head *ir, FILE *out, int destination);

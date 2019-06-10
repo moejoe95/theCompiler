@@ -52,29 +52,19 @@ void create_asm_return(FILE *out, struct mcc_ir_line *line, struct mcc_ir_table 
 	}
 }
 
-void create_asm_function_call(FILE *out, struct mcc_ir_line *line, struct mcc_ir_table *current_func)
+void create_asm_function_call(FILE *out, struct mcc_ir_line *line, struct mcc_ir_table *current_func, struct mcc_asm_head *asm_head)
 {
 	assert(out);
 	assert(line);
 
-	int used_stack_size = 0;
-	struct mcc_ir_line *current_line = current_func->line_head->root;
-	while (current_line != NULL) {
-		if (current_line->op_type == MCC_IR_TABLE_PUSH) {
-			used_stack_size = used_stack_size + 4 * current_line->memory_size;
-		}
-		if (current_line->op_type == MCC_IR_TABLE_CALL && strcmp(current_line->arg1, line->arg1) == 0) {
-			break;
-		}
-		current_line = current_line->next_line;
-	}
-	char memory_size_str[12] = {0};
-	sprintf(memory_size_str, "%d", used_stack_size);
-
 	print_asm_instruction_call(out, MCC_ASM_INSTRUCTION_CALL, line->arg1);
 
-	if (used_stack_size > 0) // Note that after the call returns, the caller cleans up the stack using the add instruction. 
+	if (asm_head->current_stack_size_parameters > 0) {// Note that after the call returns, the caller cleans up the stack using the add instruction. 
+		char memory_size_str[12] = {0};
+		sprintf(memory_size_str, "%d", asm_head->current_stack_size_parameters);
 		print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_ADDL, memory_size_str, MCC_ASM_REGISTER_ESP, 0);
+		asm_head->current_stack_size_parameters = 0;
+	}
 }
 
 void create_asm_built_in_function_call(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *asm_head)
@@ -83,7 +73,7 @@ void create_asm_built_in_function_call(FILE *out, struct mcc_ir_line *line, stru
 	assert(line);
 
 	char memory_size_str[12] = {0};
-	sprintf(memory_size_str, "%d", 4 * line->memory_size);
+	sprintf(memory_size_str, "%d", 4 * line->memory_size); //TODO always 0...fix in IR?
 
 	if (strncmp(line->arg1, "(", 1) == 0)
 		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_PUSHL, MCC_ASM_REGISTER_EBP, asm_head->offset, -1, 0);
@@ -105,6 +95,8 @@ void create_asm_push(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *a
 		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_PUSHL, MCC_ASM_REGISTER_EBP, asm_head->offset, -1, 0);
 	else
 		print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_PUSHL, line->arg1, -1, 0);
+
+	asm_head->current_stack_size_parameters += 4 * line->memory_size; //store used stack by parameters for function call clean up
 }
 
 void create_asm_binary_op(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *asm_head)
@@ -157,7 +149,11 @@ void create_asm_unary(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *
 void create_asm_assignment(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *head)
 {
 	head->offset = head->offset - 4;
-	print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, line->arg2, MCC_ASM_REGISTER_EAX, 0);
+	if (strncmp(line->arg2, "(", 1) == 0)
+		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EBP, head->offset + 4, MCC_ASM_REGISTER_EAX, 0);
+	else{
+		print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, line->arg2, MCC_ASM_REGISTER_EAX, 0);
+	}
 	print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EAX, 0, MCC_ASM_REGISTER_EBP,
 	                          head->offset);
 }
@@ -237,7 +233,7 @@ void create_asm_line(FILE *out,
 		create_asm_push(out, line, asm_head);
 		break;
 	case MCC_IR_TABLE_CALL:
-		create_asm_function_call(out, line, current_func);
+		create_asm_function_call(out, line, current_func, asm_head);
 		break;
 	case MCC_IR_TABLE_BUILT_IN:
 		create_asm_built_in_function_call(out, line, asm_head);
@@ -265,6 +261,7 @@ void mcc_create_asm(struct mcc_ir_table_head *ir, FILE *out, int destination)
 
 	struct mcc_asm_head *asm_head = malloc(sizeof(*asm_head));
 	asm_head->offset = 0;
+	asm_head->current_stack_size_parameters = 0;
 
 	struct mcc_asm_data_section *data_root = malloc(sizeof(*data_root));
 	data_root->id = strdup("\n.data\n");
