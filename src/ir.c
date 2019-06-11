@@ -261,7 +261,24 @@ static void generate_ir_binary_expression(struct mcc_ast_expression *bin_expr,
 	} else {
 		entity1 = generate_ir_entity(head, bin_expr->lhs);
 	}
-	char *entity2 = generate_ir_entity(head, bin_expr->rhs);
+	char *entity2;
+	if (bin_expr->rhs->type != MCC_AST_EXPRESSION_TYPE_LITERAL) {
+		if (bin_expr->rhs->type == MCC_AST_EXPRESSION_TYPE_IDENTIFIER) {
+			if (bin_expr->rhs->type == MCC_AST_EXPRESSION_TYPE_IDENTIFIER) {
+				entity2 = lookup_table_args(head, bin_expr->rhs->identifier->name, NULL);
+			} else {
+				char value[14];
+				if (bin_expr->rhs->type == MCC_AST_EXPRESSION_TYPE_IDENTIFIER) {
+					sprintf(value, "(%d)", head->index - 1);
+				} else {
+					sprintf(value, "(%d)", head->index - 2);
+				}
+				entity2 = strdup(value);
+			}
+		}
+	} else {
+		entity2 = generate_ir_entity(head, bin_expr->rhs);
+	}
 
 	new_table->arg1 = entity1;
 	new_table->arg2 = entity2;
@@ -368,17 +385,15 @@ generate_built_in_function_call(struct mcc_ast_expression *expr_call, struct mcc
 	char *entity = NULL;
 
 	if (expr_call->function_call_arguments) {
-		if(expr_call->function_call_arguments->expression->type == MCC_AST_EXPRESSION_TYPE_LITERAL){
+		if (expr_call->function_call_arguments->expression->type == MCC_AST_EXPRESSION_TYPE_LITERAL) {
 			struct mcc_ast_literal *lit = expr_call->function_call_arguments->expression->literal;
 			entity = generate_ir_literal_entity(lit);
 			new_table->memory_size = get_memory_size_literal_type(lit->type);
+		} else {
+			entity = lookup_table_args(
+			    head, expr_call->function_call_arguments->expression->identifier->name, NULL);
 		}
-		else
-		{
-			entity = lookup_table_args(head, expr_call->function_call_arguments->expression->identifier->name, NULL);
-		}
-		
-		
+
 	} else {
 		entity = strdup("-");
 	}
