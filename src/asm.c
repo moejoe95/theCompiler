@@ -52,6 +52,34 @@ void create_function_label(FILE *out, struct mcc_ir_table *current_func, struct 
 	// print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_SUBL, memory_size_str, MCC_ASM_REGISTER_ESP, 0);
 }
 
+void create_asm_jumpfalse(FILE *out,
+                              struct mcc_ir_line *line,
+                              struct mcc_ir_table *current_func,
+                              struct mcc_asm_head *asm_head)
+{
+	assert(out);
+	assert(line);
+	assert(current_func);
+	assert(asm_head);
+
+	if (strncmp(line->arg1, "(", 1) != 0){
+		print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, line->arg1, 0, MCC_ASM_REGISTER_EAX);
+		print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_ADDL, "0", 0, MCC_ASM_REGISTER_EAX);
+		print_asm_instruction_call(out, MCC_ASM_INSTRUCTION_JZ, line->arg2);
+	}
+	
+
+	/* switch (line->)
+	{
+	case :
+		break;
+	
+	default:
+		break;
+	}*/
+	
+}
+
 /*
 This line stores zero (return value) in EAX. The C calling convention is to store return values in EAX when exiting
 a routine.
@@ -69,6 +97,7 @@ void create_asm_return(FILE *out, struct mcc_ir_line *line, struct mcc_ir_table 
 		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_RETL, -1, 0, -1, 0);
 	}
 }
+
 
 void create_asm_function_call(FILE *out,
                               struct mcc_ir_line *line,
@@ -291,6 +320,12 @@ void create_asm_line(FILE *out,
 		break;
 	case MCC_IR_TABLE_BUILT_IN:
 		create_asm_built_in_function_call(out, line, asm_head);
+		break;
+	case MCC_IR_TABLE_JUMPFALSE:
+		create_asm_jumpfalse(out, line, current_func, asm_head);
+		break;
+	case MCC_IR_TABLE_BR_LABEL:
+		fprintf(out, "%s:\n", line->arg1);
 		break;
 	default:
 		break;

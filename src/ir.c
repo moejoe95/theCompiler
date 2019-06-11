@@ -591,16 +591,16 @@ static void generate_ir_if(struct mcc_ast_statement *stmt, struct mcc_ir_line_he
 		head->current = jump_table;
 	}
 
+	sprintf(value, "L_%s_%d", head->func_name, head->current->index);
+
 	// set jumpfalse
-	sprintf(value, "(%d)", head->current->index + 1);
 	jump_false_loc = strdup(value);
 	jumpfalse_table->arg2 = jump_false_loc;
 	jumpfalse_table->jump_target = head->current->index + 1;
 
 	// create label for jumpfalse
-	sprintf(value, "%d", head->current->index + 1);
 	char* label_entity = strdup(value);
-	generate_ir_table_line(head, label_entity, NULL, MCC_IR_TABLE_LABEL, -1, -1);
+	generate_ir_table_line(head, label_entity, NULL, MCC_IR_TABLE_BR_LABEL, -1, -1);
 
 
 	// else body
@@ -681,17 +681,17 @@ static void generate_ir_while(struct mcc_ast_statement *stmt, struct mcc_ir_line
 		head->current = jump_table;
 	}
 
+	sprintf(value, "L_%s_%d", head->func_name, head->current->index);
+
 	// set jump false
-	sprintf(value, "(%d)", head->current->index + 1);
 	jump_false_loc = strdup(value);
 	cond_table->arg2 = jump_false_loc;
 	cond_table->jump_target = head->current->index + 1;
 	jump_table->arg2 = strdup(jump_false_loc);
 
 	// create label for jumpfalse
-	sprintf(value, "%d", head->current->index + 1);
 	char* label_entity = strdup(value);
-	generate_ir_table_line(head, label_entity, NULL, MCC_IR_TABLE_LABEL, -1, -1);
+	generate_ir_table_line(head, label_entity, NULL, MCC_IR_TABLE_BR_LABEL, -1, -1);
 }
 
 static void generate_ir_compound(struct mcc_ast_statement_list *list, struct mcc_ir_line_head *head)
@@ -839,8 +839,9 @@ struct mcc_ir_table_head *mcc_create_ir(struct mcc_ast_program *program, FILE *o
 	struct mcc_ast_func_list *list = program->function_list;
 	while (list != NULL) {
 		char *func_id = list->function->func_identifier->identifier->name;
-
+		
 		struct mcc_ir_line_head *line_head = create_line_head(program);
+		line_head->func_name = strdup(func_id);
 		generate_function_definition(list->function, line_head);
 		line_head->current->next_line = NULL;
 
