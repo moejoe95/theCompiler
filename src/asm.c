@@ -219,7 +219,7 @@ void create_asm_array(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *
 	assert(head);
 
 	char var[64];
-	sprintf(var, "%s:\n\n", line->arg1);
+	sprintf(var, "%s:\n", line->arg1);
 
 	struct mcc_asm_data_section *current = head->data_section;
 	while (current->next_data_section != NULL) {
