@@ -597,6 +597,12 @@ static void generate_ir_if(struct mcc_ast_statement *stmt, struct mcc_ir_line_he
 	jumpfalse_table->arg2 = jump_false_loc;
 	jumpfalse_table->jump_target = head->current->index + 1;
 
+	// create label for jumpfalse
+	sprintf(value, "%d", head->current->index + 1);
+	char* label_entity = strdup(value);
+	generate_ir_table_line(head, label_entity, NULL, MCC_IR_TABLE_LABEL, -1, -1);
+
+
 	// else body
 	if (stmt->else_stat) {
 		generate_ir_statement(stmt->else_stat, head, 0);
@@ -613,6 +619,8 @@ static void generate_ir_if(struct mcc_ast_statement *stmt, struct mcc_ir_line_he
 		jump_table->arg1 = jump_loc;
 		jump_table->jump_target = head->current->index + 1;
 	}
+
+
 }
 
 static void generate_ir_while(struct mcc_ast_statement *stmt, struct mcc_ir_line_head *head, int isLastStatement)
@@ -679,6 +687,11 @@ static void generate_ir_while(struct mcc_ast_statement *stmt, struct mcc_ir_line
 	cond_table->arg2 = jump_false_loc;
 	cond_table->jump_target = head->current->index + 1;
 	jump_table->arg2 = strdup(jump_false_loc);
+
+	// create label for jumpfalse
+	sprintf(value, "%d", head->current->index + 1);
+	char* label_entity = strdup(value);
+	generate_ir_table_line(head, label_entity, NULL, MCC_IR_TABLE_LABEL, -1, -1);
 }
 
 static void generate_ir_compound(struct mcc_ast_statement_list *list, struct mcc_ir_line_head *head)
