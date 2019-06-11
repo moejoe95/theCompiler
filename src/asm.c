@@ -8,15 +8,33 @@
 #include "mcc/ir.h"
 #include "mcc/print_asm.h"
 
+int find_stack_position(char *arg, struct mcc_asm_stack *stack)
+{
+	assert(stack);
+
+	struct mcc_asm_stack *current = stack->next_stack;
+	while (current != NULL) {
+		if (strcmp(arg, current->var) == 0) {
+			return current->stack_position;
+		}
+		current = current->next_stack;
+	}
+	return -1;
+}
+
 /*
 This sequence of instructions is typical at the start of a subroutine to save space on the stack for local variables;
 EBP is used as the base register to reference the local variables, and a value is subtracted from ESP to reserve space
 on the stack. In this case, eight bytes have been reserved on the stack. Note that pushl automatically decremented ESP
 by the appropriate length.
 */
-void create_function_label(FILE *out, struct mcc_ir_table *current_func)
+void create_function_label(FILE *out, struct mcc_ir_table *current_func, struct mcc_asm_head *asm_head)
 {
 	assert(out);
+
+	struct mcc_asm_stack *stack = malloc(sizeof(*stack));
+	stack->stack_position = 0;
+	asm_head->stack = stack;
 
 	fprintf(out, "\n\t.globl %s\n\n", current_func->func_name);
 
@@ -31,7 +49,7 @@ void create_function_label(FILE *out, struct mcc_ir_table *current_func)
 	sprintf(memory_size_str, "%d", memory_size);
 	print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_PUSHL, MCC_ASM_REGISTER_EBP, 0, -1, 0);
 	print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_ESP, 0, MCC_ASM_REGISTER_EBP, 0);
-	//print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_SUBL, memory_size_str, MCC_ASM_REGISTER_ESP, 0);
+	// print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_SUBL, memory_size_str, MCC_ASM_REGISTER_ESP, 0);
 }
 
 /*
@@ -45,21 +63,25 @@ void create_asm_return(FILE *out, struct mcc_ir_line *line, struct mcc_ir_table 
 	assert(current_func);
 
 	print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, line->arg1, MCC_ASM_REGISTER_EAX, 0);
-	
+
 	if (strcmp(current_func->func_name, "main") != 0) { // main has own return procedure
 		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_POPL, MCC_ASM_REGISTER_EBP, 0, -1, 0);
 		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_RETL, -1, 0, -1, 0);
 	}
 }
 
-void create_asm_function_call(FILE *out, struct mcc_ir_line *line, struct mcc_ir_table *current_func, struct mcc_asm_head *asm_head)
+void create_asm_function_call(FILE *out,
+                              struct mcc_ir_line *line,
+                              struct mcc_ir_table *current_func,
+                              struct mcc_asm_head *asm_head)
 {
 	assert(out);
 	assert(line);
 
 	print_asm_instruction_call(out, MCC_ASM_INSTRUCTION_CALL, line->arg1);
 
-	if (asm_head->current_stack_size_parameters > 0) {// Note that after the call returns, the caller cleans up the stack using the add instruction. 
+	if (asm_head->current_stack_size_parameters >
+	    0) { // Note that after the call returns, the caller cleans up the stack using the add instruction.
 		char memory_size_str[12] = {0};
 		sprintf(memory_size_str, "%d", asm_head->current_stack_size_parameters);
 		print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_ADDL, memory_size_str, MCC_ASM_REGISTER_ESP, 0);
@@ -73,10 +95,11 @@ void create_asm_built_in_function_call(FILE *out, struct mcc_ir_line *line, stru
 	assert(line);
 
 	char memory_size_str[12] = {0};
-	sprintf(memory_size_str, "%d", 4 * line->memory_size); //TODO always 0...fix in IR?
+	sprintf(memory_size_str, "%d", 4 * line->memory_size); // TODO always 0...fix in IR?
 
 	if (strncmp(line->arg1, "(", 1) == 0)
-		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_PUSHL, MCC_ASM_REGISTER_EBP, asm_head->offset, -1, 0);
+		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_PUSHL, MCC_ASM_REGISTER_EBP, asm_head->offset, -1,
+		                          0);
 	else
 		print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_PUSHL, line->arg1, -1, 0);
 
@@ -92,37 +115,53 @@ void create_asm_push(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *a
 	assert(asm_head);
 
 	if (strncmp(line->arg1, "(", 1) == 0)
-		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_PUSHL, MCC_ASM_REGISTER_EBP, asm_head->offset, -1, 0);
+		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_PUSHL, MCC_ASM_REGISTER_EBP, asm_head->offset, -1,
+		                          0);
 	else
 		print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_PUSHL, line->arg1, -1, 0);
 
-	asm_head->current_stack_size_parameters += 4 * line->memory_size; //store used stack by parameters for function call clean up
+	asm_head->current_stack_size_parameters +=
+	    4 * line->memory_size; // store used stack by parameters for function call clean up
 }
 
 void create_asm_binary_op(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *asm_head)
 {
+
+	int stack_position_arg1 = find_stack_position(line->arg1, asm_head->stack);
+	int stack_position_arg2 = find_stack_position(line->arg2, asm_head->stack);
+	if (stack_position_arg1 == -1 || stack_position_arg2 == -1) {
+		printf("fuck\n");
+	}
+
 	asm_head->offset = asm_head->offset - 4;
-	print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, line->arg1, MCC_ASM_REGISTER_EAX, 0);
+	print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EBP, stack_position_arg1,
+	                          MCC_ASM_REGISTER_EAX, 0);
 	switch (line->bin_op) {
 	case MCC_AST_BINARY_OP_ADD:
-		print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_ADDL, line->arg2, MCC_ASM_REGISTER_EAX, 0);
+		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_ADDL, MCC_ASM_REGISTER_EBP, stack_position_arg2,
+		                          MCC_ASM_REGISTER_EAX, 0);
 		break;
 	case MCC_AST_BINARY_OP_SUB:
-		print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_SUBL, line->arg2, MCC_ASM_REGISTER_EAX, 0);
+		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_SUBL, MCC_ASM_REGISTER_EBP, stack_position_arg2,
+		                          MCC_ASM_REGISTER_EAX, 0);
 		break;
 	case MCC_AST_BINARY_OP_MUL:
-		print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MULL, line->arg2, MCC_ASM_REGISTER_EAX, 0);
+		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MULL, MCC_ASM_REGISTER_EBP, stack_position_arg2,
+		                          MCC_ASM_REGISTER_EAX, 0);
 		break;
 	case MCC_AST_BINARY_OP_DIV:
 		print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, "0", MCC_ASM_REGISTER_EDX, 0);
-		print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, line->arg2, MCC_ASM_REGISTER_ECX, 0);
+		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EBP, stack_position_arg2,
+		                          MCC_ASM_REGISTER_ECX, 0);
 		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_DIVL, MCC_ASM_REGISTER_ECX, 0, -1, 0);
 		break;
 	case MCC_AST_BINARY_OP_LAND:
-		print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_ANDL, line->arg2, MCC_ASM_REGISTER_EAX, 0);
+		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_ANDL, MCC_ASM_REGISTER_EBP, stack_position_arg2,
+		                          MCC_ASM_REGISTER_EAX, 0);
 		break;
 	case MCC_AST_BINARY_OP_LOR:
-		print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_ORL, line->arg2, MCC_ASM_REGISTER_EAX, 0);
+		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_ORL, MCC_ASM_REGISTER_EBP, stack_position_arg2,
+		                          MCC_ASM_REGISTER_EAX, 0);
 		break;
 	default:
 		break;
@@ -148,10 +187,25 @@ void create_asm_unary(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *
 
 void create_asm_assignment(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *head)
 {
+
 	head->offset = head->offset - 4;
+
+	struct mcc_asm_stack *new_stack_var = malloc(sizeof(*new_stack_var));
+	new_stack_var->stack_position = head->offset;
+	char value[14] = {0};
+	sprintf(value, "(%d)", line->index);
+	new_stack_var->var = strdup(value);
+
+	struct mcc_asm_stack *current = head->stack;
+	while (current->next_stack != NULL) {
+		current = current->next_stack;
+	}
+	current->next_stack = new_stack_var;
+
 	if (strncmp(line->arg2, "(", 1) == 0)
-		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EBP, head->offset + 4, MCC_ASM_REGISTER_EAX, 0);
-	else{
+		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EBP, head->offset + 4,
+		                          MCC_ASM_REGISTER_EAX, 0);
+	else {
 		print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, line->arg2, MCC_ASM_REGISTER_EAX, 0);
 	}
 	print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EAX, 0, MCC_ASM_REGISTER_EBP,
@@ -273,7 +327,7 @@ void mcc_create_asm(struct mcc_ir_table_head *ir, FILE *out, int destination)
 	struct mcc_ir_table *current_func = ir->root;
 	while (current_func != NULL) {
 		struct mcc_ir_line *current_line = current_func->line_head->root;
-		create_function_label(tmpfile, current_func);
+		create_function_label(tmpfile, current_func, asm_head);
 		while (current_line != NULL) {
 			create_asm_line(tmpfile, current_line, asm_head, current_func);
 			current_line = current_line->next_line;
@@ -283,8 +337,8 @@ void mcc_create_asm(struct mcc_ir_table_head *ir, FILE *out, int destination)
 			leave frees the space saved on the stack by copying EBP into ESP, then popping the saved value
 			of EBP back to EBP.
 			equivalent to:
-				mov   %ebp, %esp 
-				pop   %ebp
+			        mov   %ebp, %esp
+			        pop   %ebp
 			*/
 			print_asm_instruction_reg(tmpfile, MCC_ASM_INSTRUCTION_LEAVE, -1, 0, -1, 0);
 			/*

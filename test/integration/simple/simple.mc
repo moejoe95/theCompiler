@@ -1,6 +1,10 @@
 int main() {
     int x;
     x = 100;
-    print_int(x);
+    int y;
+    y = 1;
+    int z;
+    z = x + y;
+    print_int(z);
     return 0;
 }
