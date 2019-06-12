@@ -1,10 +1,9 @@
+
+
 int main() {
-    int x;
-    x = 100;
-    int y;
-    y = 1;
-    int z;
-    z = x + y;
-    print_int(z);
+    if(true){
+        print_int(1);
+    }
+    print_int(5);
     return 0;
 }
