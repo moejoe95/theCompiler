@@ -561,7 +561,7 @@ static void generate_ir_if(struct mcc_ast_statement *stmt, struct mcc_ir_line_he
 	assert(stmt);
 	assert(head);
 
-	char value[14] = {0};
+	char value[64] = {0};
 
 	char *jump_loc = NULL;
 	char *jump_false_loc = NULL;
@@ -637,7 +637,7 @@ static void generate_ir_while(struct mcc_ast_statement *stmt, struct mcc_ir_line
 	assert(stmt);
 	assert(head);
 
-	char value[14] = {0};
+	char value[64] = {0};
 
 	char *jump_loc = NULL;
 	char *jump_false_loc = NULL;
