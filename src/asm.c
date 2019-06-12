@@ -67,16 +67,26 @@ void create_asm_jumpfalse(FILE *out,
 		print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_ADDL, "0", 0, MCC_ASM_REGISTER_EAX);
 		print_asm_instruction_call(out, MCC_ASM_INSTRUCTION_JZ, line->arg2);
 	}
+	else{
+		struct mcc_ir_line *temp_line = current_func->line_head->root;
+		char *search_index = strtok(line->arg1, "()");
+		while(temp_line->index != atoi(search_index)){
+			temp_line = temp_line->next_line;
+		}
+
+		switch (temp_line->op_type)
+		{
+		case MCC_IR_TABLE_BINARY_OP:
+			//printf("\tlit not needed\n");
+			break;
+		
+		default:
+			break;
+		}
+	}
 	
 
-	/* switch (line->)
-	{
-	case :
-		break;
 	
-	default:
-		break;
-	}*/
 	
 }
 
@@ -155,42 +165,78 @@ void create_asm_push(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *a
 
 void create_asm_binary_op(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *asm_head)
 {
+	int stack_position_arg1 = -1;
+	int stack_position_arg2 = -1;
+	if (strncmp(line->arg1, "(", 1) == 0)
+		stack_position_arg1 = find_stack_position(line->arg1, asm_head->stack);
+	if (strncmp(line->arg2, "(", 1) == 0)
+		stack_position_arg2 = find_stack_position(line->arg2, asm_head->stack);
 
-	int stack_position_arg1 = find_stack_position(line->arg1, asm_head->stack);
-	int stack_position_arg2 = find_stack_position(line->arg2, asm_head->stack);
-	if (stack_position_arg1 == -1 || stack_position_arg2 == -1) {
-		printf("fuck\n");
-	}
 
 	asm_head->offset = asm_head->offset - 4;
-	print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EBP, stack_position_arg1,
+	if(stack_position_arg1 != -1) // stack pos not found -> must be literal
+		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EBP, stack_position_arg1,
 	                          MCC_ASM_REGISTER_EAX, 0);
+	else
+		print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, line->arg1, MCC_ASM_REGISTER_EAX, 0);
+
 	switch (line->bin_op) {
 	case MCC_AST_BINARY_OP_ADD:
-		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_ADDL, MCC_ASM_REGISTER_EBP, stack_position_arg2,
+		if(stack_position_arg2 != -1)
+			print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_ADDL, MCC_ASM_REGISTER_EBP, stack_position_arg2,
 		                          MCC_ASM_REGISTER_EAX, 0);
+		else
+			print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_ADDL, line->arg2, MCC_ASM_REGISTER_EAX, 0);
 		break;
+
 	case MCC_AST_BINARY_OP_SUB:
-		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_SUBL, MCC_ASM_REGISTER_EBP, stack_position_arg2,
+		if(stack_position_arg2 != -1)
+			print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_SUBL, MCC_ASM_REGISTER_EBP, stack_position_arg2,
 		                          MCC_ASM_REGISTER_EAX, 0);
+		else
+			print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_SUBL, line->arg2, MCC_ASM_REGISTER_EAX, 0);
 		break;
+
 	case MCC_AST_BINARY_OP_MUL:
-		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MULL, MCC_ASM_REGISTER_EBP, stack_position_arg2,
+		if(stack_position_arg2 != -1)
+			print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MULL, MCC_ASM_REGISTER_EBP, stack_position_arg2,
 		                          MCC_ASM_REGISTER_EAX, 0);
+		else
+			print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MULL, line->arg2, MCC_ASM_REGISTER_EAX, 0);
 		break;
+
 	case MCC_AST_BINARY_OP_DIV:
 		print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, "0", MCC_ASM_REGISTER_EDX, 0);
-		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EBP, stack_position_arg2,
+		if(stack_position_arg2 != -1)
+			print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EBP, stack_position_arg2,
 		                          MCC_ASM_REGISTER_ECX, 0);
+		else
+			print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, line->arg2, MCC_ASM_REGISTER_EAX, 0);
 		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_DIVL, MCC_ASM_REGISTER_ECX, 0, -1, 0);
 		break;
+
 	case MCC_AST_BINARY_OP_LAND:
-		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_ANDL, MCC_ASM_REGISTER_EBP, stack_position_arg2,
+		if(stack_position_arg2 != -1)
+			print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_ANDL, MCC_ASM_REGISTER_EBP, stack_position_arg2,
 		                          MCC_ASM_REGISTER_EAX, 0);
+		else
+			print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_ANDL, line->arg2, MCC_ASM_REGISTER_EAX, 0);
 		break;
+
 	case MCC_AST_BINARY_OP_LOR:
-		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_ORL, MCC_ASM_REGISTER_EBP, stack_position_arg2,
+		if(stack_position_arg2 != -1)
+			print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_ORL, MCC_ASM_REGISTER_EBP, stack_position_arg2,
 		                          MCC_ASM_REGISTER_EAX, 0);
+		else
+			print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_ORL, line->arg2, MCC_ASM_REGISTER_EAX, 0);
+		break;
+
+	case MCC_AST_BINARY_OP_ST:
+		if(stack_position_arg2 != -1)
+			print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_CMP, MCC_ASM_REGISTER_EBP, stack_position_arg2,
+		                          MCC_ASM_REGISTER_EAX, 0);
+		else
+			print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_CMP, line->arg2, MCC_ASM_REGISTER_EAX, 0);
 		break;
 	default:
 		break;

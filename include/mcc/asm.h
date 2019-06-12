@@ -30,6 +30,9 @@ enum mcc_asm_instruction {
 	MCC_ASM_INSTRUCTION_ORL,
 	MCC_ASM_INSTRUCTION_NOTL,
 
+	// compare
+	MCC_ASM_INSTRUCTION_CMP,
+
 	// calls
 	MCC_ASM_INSTRUCTION_CALL,
 

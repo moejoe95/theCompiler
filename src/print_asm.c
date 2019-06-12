@@ -48,6 +48,9 @@ void getAssemblyInstruction(enum mcc_asm_instruction in, char *in_string)
 	case MCC_ASM_INSTRUCTION_JZ:
 		strcpy(in_string, "jz");
 		break;
+	case MCC_ASM_INSTRUCTION_CMP:
+		strcpy(in_string, "cmp");
+		break;
 	default:
 		strcpy(in_string, "UNDEF");
 		break;
