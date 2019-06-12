@@ -1,13 +1,12 @@
-
-
 int main() {
+    
+    int[2] a;
+
+    a[0] = 0;
+    a[1] = 1;
+
     int x;
-    int y;
-    x = 3;
-    y = 3;
-    if(x != y){
-        print_int(1);
-    }
-    print_int(5);
+    x = a[0] + a[1];
+    
     return 0;
 }
