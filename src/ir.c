@@ -73,26 +73,29 @@ static struct mcc_ir_line *create_new_ir_line()
 	return table;
 }
 
-static char *lookup_table_args(struct mcc_ir_line_head *head, char *arg1, char *arg2)
+static char *lookup_table_args(struct mcc_ir_line_head *head, char *arg1, char *arg2, enum mcc_ast_type type)
 {
 	assert(head);
 	char *result = NULL;
 	struct mcc_ir_line *table = head->root->next_line;
+
+	char value[128] = {0};
+	if (type == MCC_AST_TYPE_ARRAY) {
+		sprintf(value, "%s[%s]", arg1, arg2);
+		arg1 = value;
+	}
+
 	while (table != NULL) {
 		int arg2eq = 1;
-		if (arg2 != NULL) {
+		if (arg2 != NULL && table->arg2 != NULL && type != MCC_AST_TYPE_ARRAY)
 			arg2eq = strcmp(arg2, table->arg2);
-		}
+
 		if (table->arg1 != NULL) {
-			char *table_arg = strdup(table->arg1);
-			if (strcmp(arg1, strtok(table_arg, "[")) == 0 && arg2eq) {
-				char value[12] = {0};
+			if (strcmp(arg1, table->arg1) == 0 && arg2eq) {
 				sprintf(value, "(%d)", table->index);
 				result = strdup(value);
-				free(table_arg);
 				break;
 			}
-			free(table_arg);
 		}
 		table = table->next_line;
 	}
@@ -176,8 +179,8 @@ static char *generate_ir_entity(struct mcc_ir_line_head *head, struct mcc_ast_ex
 		entity = generate_ir_literal_entity(expr->literal);
 		break;
 	case MCC_AST_EXPRESSION_TYPE_IDENTIFIER:
-		entity =
-		    !entity ? strdup(expr->identifier->name) : lookup_table_args(head, expr->identifier->name, NULL);
+		entity = !entity ? strdup(expr->identifier->name)
+		                 : lookup_table_args(head, expr->identifier->name, NULL, MCC_AST_TYPE_STRING);
 		break;
 	case MCC_AST_EXPRESSION_TYPE_ARRAY_ACCESS:
 	case MCC_AST_EXPRESSION_TYPE_BINARY_OP:
@@ -247,7 +250,12 @@ static void generate_ir_binary_expression(struct mcc_ast_expression *bin_expr,
 	char *entity1;
 	if (bin_expr->lhs->type != MCC_AST_EXPRESSION_TYPE_LITERAL) {
 		if (bin_expr->lhs->type == MCC_AST_EXPRESSION_TYPE_IDENTIFIER) {
-			entity1 = lookup_table_args(head, bin_expr->lhs->identifier->name, NULL);
+			entity1 = lookup_table_args(head, bin_expr->lhs->identifier->name, NULL,
+			                            bin_expr->lhs->expression_type);
+		} else if (bin_expr->lhs->type == MCC_AST_EXPRESSION_TYPE_ARRAY_ACCESS) {
+			char *arg2 = generate_ir_entity(head, bin_expr->lhs->array_access_exp);
+			entity1 = lookup_table_args(head, bin_expr->lhs->array_access_id->identifier->name, arg2,
+			                            MCC_AST_TYPE_ARRAY);
 		} else {
 			char value[14];
 			if (bin_expr->rhs->type == MCC_AST_EXPRESSION_TYPE_IDENTIFIER) {
@@ -264,17 +272,20 @@ static void generate_ir_binary_expression(struct mcc_ast_expression *bin_expr,
 	char *entity2;
 	if (bin_expr->rhs->type != MCC_AST_EXPRESSION_TYPE_LITERAL) {
 		if (bin_expr->rhs->type == MCC_AST_EXPRESSION_TYPE_IDENTIFIER) {
+			entity2 = lookup_table_args(head, bin_expr->rhs->identifier->name, NULL,
+			                            bin_expr->rhs->expression_type);
+		} else if (bin_expr->rhs->type == MCC_AST_EXPRESSION_TYPE_ARRAY_ACCESS) {
+			char *arg2 = generate_ir_entity(head, bin_expr->rhs->array_access_exp);
+			entity2 = lookup_table_args(head, bin_expr->rhs->array_access_id->identifier->name, arg2,
+			                            MCC_AST_TYPE_ARRAY);
+		} else {
+			char value[14];
 			if (bin_expr->rhs->type == MCC_AST_EXPRESSION_TYPE_IDENTIFIER) {
-				entity2 = lookup_table_args(head, bin_expr->rhs->identifier->name, NULL);
+				sprintf(value, "(%d)", head->index - 1);
 			} else {
-				char value[14];
-				if (bin_expr->rhs->type == MCC_AST_EXPRESSION_TYPE_IDENTIFIER) {
-					sprintf(value, "(%d)", head->index - 1);
-				} else {
-					sprintf(value, "(%d)", head->index - 2);
-				}
-				entity2 = strdup(value);
+				sprintf(value, "(%d)", head->index - 2);
 			}
+			entity2 = strdup(value);
 		}
 	} else {
 		entity2 = generate_ir_entity(head, bin_expr->rhs);
@@ -390,8 +401,9 @@ generate_built_in_function_call(struct mcc_ast_expression *expr_call, struct mcc
 			entity = generate_ir_literal_entity(lit);
 			new_table->memory_size = get_memory_size_literal_type(lit->type);
 		} else {
-			entity = lookup_table_args(
-			    head, expr_call->function_call_arguments->expression->identifier->name, NULL);
+			entity =
+			    lookup_table_args(head, expr_call->function_call_arguments->expression->identifier->name,
+			                      NULL, MCC_AST_TYPE_STRING);
 		}
 
 	} else {
@@ -415,7 +427,6 @@ static void generate_ir_array_access(struct mcc_ast_expression *id_expr,
 	assert(array_expr);
 	assert(head);
 
-	head->index++;
 	char value[128] = {0};
 
 	char *id = id_expr->identifier->name;
@@ -491,7 +502,8 @@ static void generate_ir_assignment(struct mcc_ast_declare_assign *assign, struct
 			generate_ir_expression(assign->assign_rhs, head, -1);
 			sprintf(value, "(%d)", head->index);
 		} else {
-			char *result = lookup_table_args(head, assign->assign_rhs->identifier->name, NULL);
+			char *result =
+			    lookup_table_args(head, assign->assign_rhs->identifier->name, NULL, MCC_AST_TYPE_STRING);
 			sprintf(value, "%s", result);
 			free(result);
 		}
@@ -599,9 +611,8 @@ static void generate_ir_if(struct mcc_ast_statement *stmt, struct mcc_ir_line_he
 	jumpfalse_table->jump_target = head->current->index + 1;
 
 	// create label for jumpfalse
-	char* label_entity = strdup(value);
+	char *label_entity = strdup(value);
 	generate_ir_table_line(head, label_entity, NULL, MCC_IR_TABLE_BR_LABEL, -1, -1);
-
 
 	// else body
 	if (stmt->else_stat) {
@@ -619,8 +630,6 @@ static void generate_ir_if(struct mcc_ast_statement *stmt, struct mcc_ir_line_he
 		jump_table->arg1 = jump_loc;
 		jump_table->jump_target = head->current->index + 1;
 	}
-
-
 }
 
 static void generate_ir_while(struct mcc_ast_statement *stmt, struct mcc_ir_line_head *head, int isLastStatement)
@@ -628,7 +637,7 @@ static void generate_ir_while(struct mcc_ast_statement *stmt, struct mcc_ir_line
 	assert(stmt);
 	assert(head);
 
-	char value[12] = {0};
+	char value[14] = {0};
 
 	char *jump_loc = NULL;
 	char *jump_false_loc = NULL;
@@ -690,7 +699,7 @@ static void generate_ir_while(struct mcc_ast_statement *stmt, struct mcc_ir_line
 	jump_table->arg2 = strdup(jump_false_loc);
 
 	// create label for jumpfalse
-	char* label_entity = strdup(value);
+	char *label_entity = strdup(value);
 	generate_ir_table_line(head, label_entity, NULL, MCC_IR_TABLE_BR_LABEL, -1, -1);
 }
 
@@ -839,7 +848,7 @@ struct mcc_ir_table_head *mcc_create_ir(struct mcc_ast_program *program, FILE *o
 	struct mcc_ast_func_list *list = program->function_list;
 	while (list != NULL) {
 		char *func_id = list->function->func_identifier->identifier->name;
-		
+
 		struct mcc_ir_line_head *line_head = create_line_head(program);
 		line_head->func_name = strdup(func_id);
 		generate_function_definition(list->function, line_head);
