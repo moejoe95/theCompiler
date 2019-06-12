@@ -617,19 +617,25 @@ static void generate_ir_if(struct mcc_ast_statement *stmt, struct mcc_ir_line_he
 	// else body
 	if (stmt->else_stat) {
 		generate_ir_statement(stmt->else_stat, head, 0);
-		sprintf(value, "(%d)", head->current->index + 2);
-		if (!isLastStatement)
+		if (!isLastStatement){
+			sprintf(value, "L_%s_%d", head->func_name, head->current->index + 2);
 			generate_ir_table_line(head, strdup(value), NULL, MCC_IR_TABLE_JUMP, head->current->index + 2,
 			                       -1);
+		}
+			
 	}
 
 	// set jump loc
 	if (jump_table != NULL && !isLastStatement) {
-		sprintf(value, "(%d)", head->current->index + 1);
+		sprintf(value, "L_%s_%d", head->func_name, head->current->index + 1);
 		jump_loc = strdup(value);
 		jump_table->arg1 = jump_loc;
 		jump_table->jump_target = head->current->index + 1;
 	}
+
+	// create label for jump
+	char *label_entity2 = strdup(value);
+	generate_ir_table_line(head, label_entity2, NULL, MCC_IR_TABLE_BR_LABEL, -1, -1);
 }
 
 static void generate_ir_while(struct mcc_ast_statement *stmt, struct mcc_ir_line_head *head, int isLastStatement)

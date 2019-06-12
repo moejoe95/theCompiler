@@ -69,6 +69,9 @@ void getAssemblyInstruction(enum mcc_asm_instruction in, char *in_string)
 	case MCC_ASM_INSTRUCTION_CMP:
 		strcpy(in_string, "cmpl");
 		break;
+	case MCC_ASM_INSTRUCTION_JMP:
+		strcpy(in_string, "jmp");
+		break;
 	default:
 		strcpy(in_string, "UNDEF");
 		break;

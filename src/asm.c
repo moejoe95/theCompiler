@@ -387,6 +387,9 @@ void create_asm_line(FILE *out,
 	case MCC_IR_TABLE_JUMPFALSE:
 		create_asm_jumpfalse(out, line, current_func, asm_head);
 		break;
+	case MCC_IR_TABLE_JUMP:
+		print_asm_instruction_call(out, MCC_ASM_INSTRUCTION_JMP, line->arg1);
+		break;
 	case MCC_IR_TABLE_BR_LABEL:
 		fprintf(out, "%s:\n", line->arg1);
 		break;
