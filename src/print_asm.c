@@ -48,8 +48,26 @@ void getAssemblyInstruction(enum mcc_asm_instruction in, char *in_string)
 	case MCC_ASM_INSTRUCTION_JZ:
 		strcpy(in_string, "jz");
 		break;
+	case MCC_ASM_INSTRUCTION_JL:
+		strcpy(in_string, "jl");
+		break;
+	case MCC_ASM_INSTRUCTION_JG:
+		strcpy(in_string, "jg");
+		break;
+	case MCC_ASM_INSTRUCTION_JGE:
+		strcpy(in_string, "jge");
+		break;
+	case MCC_ASM_INSTRUCTION_JLE:
+		strcpy(in_string, "jle");
+		break;
+	case MCC_ASM_INSTRUCTION_JE:
+		strcpy(in_string, "je");
+		break;
+	case MCC_ASM_INSTRUCTION_JNE:
+		strcpy(in_string, "jne");
+		break;
 	case MCC_ASM_INSTRUCTION_CMP:
-		strcpy(in_string, "cmp");
+		strcpy(in_string, "cmpl");
 		break;
 	default:
 		strcpy(in_string, "UNDEF");
