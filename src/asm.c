@@ -420,6 +420,9 @@ void mcc_create_asm(struct mcc_ir_table_head *ir, FILE *out, int destination)
 {
 	assert(ir);
 
+	// 0 = console only
+	// 1 = file only
+	// 2 = console and file
 	FILE *tmpfile;
 	if (destination == 0) {
 		tmpfile = out;
@@ -469,14 +472,20 @@ void mcc_create_asm(struct mcc_ir_table_head *ir, FILE *out, int destination)
 		current_func = current_func->next_table;
 	}
 
-	print_asm_data_section(out, data_root);
+	print_asm_data_section(tmpfile, data_root);
 
-	/* compile assembly with
-	        gcc -c file.s -o file.o
-	        gcc -o file file.o
-	*/
 	if (destination != 0) {
 		fclose(tmpfile);
+		if (destination == 2) {
+			tmpfile = fopen("asm_tmp.s", "r");
+			int c;
+			c = fgetc(tmpfile);
+			while (c != EOF) {
+				printf("%c", c);
+				c = fgetc(tmpfile);
+			}
+			fclose(tmpfile);
+		}
 	}
 
 	mcc_delete_asm(asm_head);
