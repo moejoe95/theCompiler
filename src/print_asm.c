@@ -172,10 +172,23 @@ void print_asm_data_section(FILE *out, struct mcc_asm_data_section *data)
 {
 	struct mcc_asm_data_section *current = data;
 	while (current != NULL) {
-		fprintf(out, "%s", current->id);
-		if (current->array != NULL)
-			fprintf(out, "\t%s\n", current->array);
+		fprintf(out, "\n%s", current->id);
+		if (current->index == NULL) {
+			current = current->next_data_section;
+			continue;
+		}
+		struct mcc_asm_data_index *index = current->index;
+		fprintf(out, "\t");
+		int i = 0;
+		while (index->next_data_index != NULL) {
+			fprintf(out, "%s", index->value);
+			index = index->next_data_index;
+			if (index->next_data_index != NULL && i != 0)
+				fprintf(out, ", ");
+			i++;
+		}
 		current = current->next_data_section;
+		fprintf(out, "\n");
 	}
 }
 FILE *open_tmp_file()

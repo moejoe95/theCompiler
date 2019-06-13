@@ -440,7 +440,21 @@ static void generate_ir_array_access(struct mcc_ast_expression *id_expr,
 		type = array_expr->literal->type;
 	}
 
-	generate_ir_table_line(head, strdup(value), NULL, MCC_IR_TABLE_LOAD, -1, type);
+	// get value (arg2) of store instruction
+	char *arg2 = NULL;
+	char *arr_expr_str = generate_ir_entity(head, array_expr);
+	char *store_line = lookup_table_args(head, id_expr->identifier->name, arr_expr_str, MCC_AST_TYPE_ARRAY);
+	struct mcc_ir_line *current = head->root;
+	while (current != NULL) {
+		char value[14] = {0};
+		sprintf(value, "(%d)", current->index);
+		if (strcmp(value, store_line) == 0) {
+			arg2 = current->arg2;
+		}
+		current = current->next_line;
+	}
+
+	generate_ir_table_line(head, strdup(value), arg2, MCC_IR_TABLE_LOAD, -1, type);
 }
 
 static void generate_ir_expression(struct mcc_ast_expression *expr,
@@ -617,12 +631,11 @@ static void generate_ir_if(struct mcc_ast_statement *stmt, struct mcc_ir_line_he
 	// else body
 	if (stmt->else_stat) {
 		generate_ir_statement(stmt->else_stat, head, 0);
-		if (!isLastStatement){
+		if (!isLastStatement) {
 			sprintf(value, "L_%s_%d", head->func_name, head->current->index + 2);
 			generate_ir_table_line(head, strdup(value), NULL, MCC_IR_TABLE_JUMP, head->current->index + 2,
 			                       -1);
 		}
-			
 	}
 
 	// set jump loc

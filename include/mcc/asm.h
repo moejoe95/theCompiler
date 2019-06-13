@@ -65,9 +65,14 @@ enum mcc_asm_operand {
 	MCC_ASM_REGISTER_ESP,
 };
 
+struct mcc_asm_data_index {
+	char *value;
+	struct mcc_asm_data_index *next_data_index;
+};
+
 struct mcc_asm_data_section {
 	char *id;
-	char *array;
+	struct mcc_asm_data_index *index;
 	struct mcc_asm_data_section *next_data_section;
 };
 
