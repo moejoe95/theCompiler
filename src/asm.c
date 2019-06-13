@@ -149,7 +149,7 @@ void create_asm_built_in_function_call(FILE *out, struct mcc_ir_line *line, stru
 	if (strncmp(line->arg1, "(", 1) == 0)
 		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_PUSHL, MCC_ASM_REGISTER_EBP, asm_head->offset, -1,
 		                          0);
-	else
+	else if (strcmp(line->arg1, "-") != 0)
 		print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_PUSHL, line->arg1, -1, 0);
 
 	print_asm_instruction_call(out, MCC_ASM_INSTRUCTION_CALL, line->built_in);
