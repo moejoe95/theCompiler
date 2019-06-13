@@ -22,6 +22,21 @@ int find_stack_position(char *arg, struct mcc_asm_stack *stack)
 	return -1;
 }
 
+void push_on_stack(struct mcc_ir_line *line, struct mcc_asm_head *head)
+{
+	struct mcc_asm_stack *new_stack_var = malloc(sizeof(*new_stack_var));
+	new_stack_var->stack_position = head->offset;
+	char value[14] = {0};
+	sprintf(value, "(%d)", line->index);
+	new_stack_var->var = strdup(value);
+
+	struct mcc_asm_stack *current = head->stack;
+	while (current->next_stack != NULL) {
+		current = current->next_stack;
+	}
+	current->next_stack = new_stack_var;
+}
+
 /*
 This sequence of instructions is typical at the start of a subroutine to save space on the stack for local variables;
 EBP is used as the base register to reference the local variables, and a value is subtracted from ESP to reserve space
@@ -273,17 +288,7 @@ void create_asm_assignment(FILE *out, struct mcc_ir_line *line, struct mcc_asm_h
 
 	head->offset = head->offset - 4;
 
-	struct mcc_asm_stack *new_stack_var = malloc(sizeof(*new_stack_var));
-	new_stack_var->stack_position = head->offset;
-	char value[14] = {0};
-	sprintf(value, "(%d)", line->index);
-	new_stack_var->var = strdup(value);
-
-	struct mcc_asm_stack *current = head->stack;
-	while (current->next_stack != NULL) {
-		current = current->next_stack;
-	}
-	current->next_stack = new_stack_var;
+	push_on_stack(line, head);
 
 	if (strncmp(line->arg2, "(", 1) == 0)
 		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EBP, head->offset + 4,
@@ -355,13 +360,6 @@ void create_asm_store(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *
 	}
 
 	free(load);
-}
-
-void create_asm_load(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *head)
-{
-	assert(out);
-	assert(line);
-	assert(head);
 
 	create_asm_assignment(out, line, head);
 }
@@ -383,9 +381,6 @@ void create_asm_line(FILE *out,
 		break;
 	case MCC_IR_TABLE_ASSIGNMENT:
 		create_asm_assignment(out, line, asm_head);
-		break;
-	case MCC_IR_TABLE_LOAD:
-		create_asm_load(out, line, asm_head);
 		break;
 	case MCC_IR_TABLE_ARRAY:
 		create_asm_array(out, line, asm_head);

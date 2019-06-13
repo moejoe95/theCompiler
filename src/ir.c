@@ -419,44 +419,6 @@ generate_built_in_function_call(struct mcc_ast_expression *expr_call, struct mcc
 	head->current = new_table;
 }
 
-static void generate_ir_array_access(struct mcc_ast_expression *id_expr,
-                                     struct mcc_ast_expression *array_expr,
-                                     struct mcc_ir_line_head *head)
-{
-	assert(id_expr);
-	assert(array_expr);
-	assert(head);
-
-	char value[128] = {0};
-
-	char *id = id_expr->identifier->name;
-	enum mcc_ast_literal_type type = -1;
-	if (array_expr->type != MCC_AST_EXPRESSION_TYPE_LITERAL) {
-		generate_ir_expression(array_expr, head, -1);
-		sprintf(value, "%s[(%d)]", id, head->index);
-	} else {
-		char *lit = generate_ir_literal_entity(array_expr->literal);
-		sprintf(value, "%s[%s]", id, lit);
-		type = array_expr->literal->type;
-	}
-
-	// get value (arg2) of store instruction
-	char *arg2 = NULL;
-	char *arr_expr_str = generate_ir_entity(head, array_expr);
-	char *store_line = lookup_table_args(head, id_expr->identifier->name, arr_expr_str, MCC_AST_TYPE_ARRAY);
-	struct mcc_ir_line *current = head->root;
-	while (current != NULL) {
-		char value[14] = {0};
-		sprintf(value, "(%d)", current->index);
-		if (strcmp(value, store_line) == 0) {
-			arg2 = current->arg2;
-		}
-		current = current->next_line;
-	}
-
-	generate_ir_table_line(head, strdup(value), arg2, MCC_IR_TABLE_LOAD, -1, type);
-}
-
 static void generate_ir_expression(struct mcc_ast_expression *expr,
                                    struct mcc_ir_line_head *head,
                                    enum ir_table_operation_type type)
@@ -487,7 +449,6 @@ static void generate_ir_expression(struct mcc_ast_expression *expr,
 		generate_ir_function_call(expr, head);
 		break;
 	case MCC_AST_EXPRESSION_TYPE_ARRAY_ACCESS:
-		generate_ir_array_access(expr->array_access_id, expr->array_access_exp, head);
 		break;
 	}
 }
