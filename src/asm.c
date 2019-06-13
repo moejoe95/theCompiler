@@ -302,7 +302,7 @@ void create_asm_array(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *
 	assert(head);
 
 	char var[64];
-	sprintf(var, "%s:\n", line->arg1);
+	sprintf(var, "%s", line->arg1);
 
 	struct mcc_asm_data_section *current = head->data_section;
 	while (current->next_data_section != NULL) {
@@ -341,12 +341,11 @@ void create_asm_store(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *
 	char *access_position = strtok(NULL, "]");
 	char *ptr;
 	int access_position_int = strtol(access_position, &ptr, 10);
-	free(load);
 
 	struct mcc_asm_data_section *data = head->data_section;
 	while (data != NULL) {
 		if (strcmp(data->id, id) == 0) {
-			struct mcc_asm_data_index *index = data->index->next_data_index;
+			struct mcc_asm_data_index *index = data->index;
 			for (int i = 0; i <= access_position_int; i++) {
 				index = index->next_data_index;
 			}
@@ -354,6 +353,8 @@ void create_asm_store(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *
 		}
 		data = data->next_data_section;
 	}
+
+	free(load);
 }
 
 void create_asm_load(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *head)
@@ -361,6 +362,8 @@ void create_asm_load(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *h
 	assert(out);
 	assert(line);
 	assert(head);
+
+	create_asm_assignment(out, line, head);
 }
 
 void create_asm_line(FILE *out,

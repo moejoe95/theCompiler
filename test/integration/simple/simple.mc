@@ -1,12 +1,9 @@
 int main() {
     
-    int[2] a;
+    int[3] a;
+    a[0] = 1;
 
-    a[0] = 0;
-    a[1] = 1;
+    a[2] = 34;
 
-    int x;
-    x = a[0] + a[1];
-    
     return 0;
 }

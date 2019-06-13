@@ -165,18 +165,19 @@ void print_asm_instruction_lit(
 
 void create_asm_header(FILE *out)
 {
-	fprintf(out, "\t.text\n");
+	fprintf(out, ".text\n");
 }
 
 void print_asm_data_section(FILE *out, struct mcc_asm_data_section *data)
 {
+	if (data->next_data_section == NULL)
+		return;
+
 	struct mcc_asm_data_section *current = data;
+	fprintf(out, "%s", current->id);
+	current = current->next_data_section;
 	while (current != NULL) {
-		fprintf(out, "\n%s", current->id);
-		if (current->index == NULL) {
-			current = current->next_data_section;
-			continue;
-		}
+		fprintf(out, "\n%s:\n", current->id);
 		struct mcc_asm_data_index *index = current->index;
 		fprintf(out, "\t");
 		int i = 0;
