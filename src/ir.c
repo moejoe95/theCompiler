@@ -94,7 +94,6 @@ static char *lookup_table_args(struct mcc_ir_line_head *head, char *arg1, char *
 			if (strcmp(arg1, table->arg1) == 0 && arg2eq) {
 				sprintf(value, "(%d)", table->index);
 				result = strdup(value);
-				break;
 			}
 		}
 		table = table->next_line;
