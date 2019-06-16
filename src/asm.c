@@ -289,33 +289,33 @@ void create_asm_assignment(FILE *out, struct mcc_ir_line *line, struct mcc_asm_h
 	head->offset = head->offset - 4;
 
 	push_on_stack(line, head);
-	
-	
 
 	if (strncmp(line->arg2, "(", 1) == 0) {
 		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EBP, head->offset + 4,
 		                          MCC_ASM_REGISTER_EAX, 0);
-	}
-	else {
-		struct mcc_asm_data_section *current = head->data_section;
-		while (current->next_data_section != NULL) {
-			current = current->next_data_section;
+	} else {
+		if (strncmp(line->arg2, "\"", 1) == 0) {
+			struct mcc_asm_data_section *current = head->data_section;
+			while (current->next_data_section != NULL) {
+				current = current->next_data_section;
+			}
+			struct mcc_asm_data_section *new_data_section = malloc(sizeof(*new_data_section));
+			new_data_section->id = strdup(line->arg1);
+			new_data_section->next_data_section = NULL;
+			current->next_data_section = new_data_section;
+
+			struct mcc_asm_data_index *data_index_root = malloc(sizeof(*data_index_root));
+			struct mcc_asm_data_index *new_data_index = malloc(sizeof(*new_data_index));
+			new_data_index->value = strdup(line->arg2);
+			new_data_index->next_data_index = NULL;
+
+			data_index_root->value = strdup(".string ");
+			data_index_root->next_data_index = new_data_index;
+			new_data_section->index = data_index_root;
+			print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, line->arg1, MCC_ASM_REGISTER_EAX, 0);
+		} else {
+			print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, line->arg2, MCC_ASM_REGISTER_EAX, 0);
 		}
-		struct mcc_asm_data_section *new_data_section = malloc(sizeof(*new_data_section));
-		new_data_section->id = strdup(line->arg1);
-		new_data_section->next_data_section = NULL;
-		current->next_data_section = new_data_section;
-
-		struct mcc_asm_data_index *data_index_root = malloc(sizeof(*data_index_root));
-		struct mcc_asm_data_index *new_data_index = malloc(sizeof(*new_data_index));
-		data_index_root->value = strdup(".string ");
-
-		new_data_index->value = strdup(line->arg2);
-		new_data_index->next_data_index = NULL;
-
-		data_index_root->next_data_index = new_data_index;
-		new_data_section->index = data_index_root;
-		print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, line->arg2, MCC_ASM_REGISTER_EAX, 0);
 	}
 	print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EAX, 0, MCC_ASM_REGISTER_EBP,
 	                          head->offset);
@@ -342,14 +342,13 @@ void create_asm_array(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *
 	struct mcc_asm_data_index *new_data_index_root = new_data_index_current;
 	char *ptr;
 	int len = strtol(line->arg2, &ptr, 10);
-	for (int i = 0; i <= len; i++) {
+	for (int i = 0; i < len; i++) {
 		struct mcc_asm_data_index *new_data_index_tmp = malloc(sizeof(*new_data_index_tmp));
 		new_data_index_tmp->value = strdup("0");
 		new_data_index_current->next_data_index = new_data_index_tmp;
 		new_data_index_current = new_data_index_tmp;
 	}
 	new_data_index_current->next_data_index = NULL;
-	new_data_index_current->value = NULL;
 
 	new_data_index_root->value = strdup(".long ");
 	new_data_section->index = new_data_index_root;

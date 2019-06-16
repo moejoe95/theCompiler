@@ -181,10 +181,10 @@ void print_asm_data_section(FILE *out, struct mcc_asm_data_section *data)
 		struct mcc_asm_data_index *index = current->index;
 		fprintf(out, "\t");
 		int i = 0;
-		while (index->next_data_index != NULL) {
+		while (index != NULL) {
 			fprintf(out, "%s", index->value);
 			index = index->next_data_index;
-			if (index->next_data_index != NULL && i != 0)
+			if (index != NULL && i != 0)
 				fprintf(out, ", ");
 			i++;
 		}
