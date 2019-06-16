@@ -29,6 +29,7 @@ void push_on_stack(struct mcc_ir_line *line, struct mcc_asm_head *head)
 	char value[14] = {0};
 	sprintf(value, "(%d)", line->index);
 	new_stack_var->var = strdup(value);
+	new_stack_var->next_stack = NULL;
 
 	struct mcc_asm_stack *current = head->stack;
 	while (current->next_stack != NULL) {
@@ -49,6 +50,7 @@ void create_function_label(FILE *out, struct mcc_ir_table *current_func, struct 
 
 	struct mcc_asm_stack *stack = malloc(sizeof(*stack));
 	stack->stack_position = 0;
+	stack->next_stack = NULL;
 	asm_head->stack = stack;
 
 	fprintf(out, "\n\t.globl %s\n\n", current_func->func_name);
