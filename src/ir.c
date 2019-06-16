@@ -80,10 +80,6 @@ static char *lookup_table_args(struct mcc_ir_line_head *head, char *arg1, char *
 	struct mcc_ir_line *table = head->root->next_line;
 
 	char value[128] = {0};
-	if (type == MCC_AST_TYPE_ARRAY) {
-		sprintf(value, "%s[%s]", arg1, arg2);
-		arg1 = value;
-	}
 
 	while (table != NULL) {
 		int arg2eq = 1;
