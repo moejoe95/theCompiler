@@ -69,7 +69,7 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	char* gcc_path = "gcc2";
+	char *gcc_path = "gcc";
 	if (getenv("MCC_BACKEND")) {
 		gcc_path = getenv("MCC_BACKEND");
 	}
@@ -77,11 +77,11 @@ int main(int argc, char *argv[])
 	static struct option long_options[] = {{"help", no_argument, NULL, 'h'},
 	                                       {"output", optional_argument, NULL, 'o'},
 	                                       {"version", optional_argument, NULL, 'v'},
-										   {"quiet", optional_argument, NULL, 'q'}};
+	                                       {"quiet", optional_argument, NULL, 'q'}};
 
 	char outfile[64] = {0};
 	snprintf(outfile, sizeof(outfile), "%s", "a.out");
-	
+
 	char logfile[64] = {0};
 	char *logfile_env = getenv("MCC_LOG_FILE");
 	if (logfile_env == NULL || strcmp(logfile_env, "") == 0) {
