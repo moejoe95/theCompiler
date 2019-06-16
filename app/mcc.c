@@ -56,14 +56,15 @@ void print_help(const char *prg_name)
                 q for quitting gdb
 
 */
-void mcc_invoke_backend(char *file_name, char *output_name)
+void mcc_invoke_backend(char *gcc, char *file_name, char *output_name)
 {
 	assert(file_name);
 
 	char file_name_built_in[] = "../resources/mc_builtins.c";
 
 	char command[128];
-	strcpy(command, "gcc -m32 ");
+	strcpy(command, gcc);
+	strcat(command, " -m32 ");
 	strcat(command, file_name_built_in);
 	strcat(command, " ");
 	strcat(command, file_name);
@@ -83,6 +84,11 @@ int main(int argc, char *argv[])
 		if (strcmp(log_level_env, "2") == 0) {
 			LOG_LEVEL = LOG_DEBUG;
 		}
+	}
+
+	char* gcc_path = "gcc2";
+	if (getenv("MCC_BACKEND")) {
+		gcc_path = getenv("MCC_BACKEND");
 	}
 
 	static struct option long_options[] = {{"help", no_argument, NULL, 'h'},
@@ -197,7 +203,7 @@ int main(int argc, char *argv[])
 		mcc_create_asm(ir, out, log_level_to_int(LOG_LEVEL) + 1);
 
 		// generate binary from ASM
-		mcc_invoke_backend("asm_tmp.s", "out");
+		mcc_invoke_backend(gcc_path, "asm_tmp.s", "out");
 
 		// cleanup
 		// TODO delete asm data
