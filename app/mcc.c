@@ -35,27 +35,10 @@ void print_help(const char *prg_name)
 	printf("OPTIONS:\n");
 	printf("\t-h,--help \t\tdisplays this help message\n");
 	printf("\t-o,--output <file> \twrite the output to <file> (defaults to stdout)\n");
-	printf("\t-f, --function <name> \tlimit scope to the given function\n");
+	printf("\t-v, --version <name> \tdisplay compiler version\n");
+	printf("\t-q, --quiet <name> \tsuppress error output\n");
 }
 
-/* compile assembly with
-        gcc -c file.s -o file.o
-        gcc -o file file.o
-
-        other way:
-                gcc -S -m32 hello.c
-                gcc -o hello_asm -m32 hello.s
-
-        for debugging with gdb:
-                as --gstabs+ test.s -o test.o --32
-                ld -m elf_i386 test.o -o test
-                gdb test
-                b main
-                run
-                si and to repeat ENTER
-                q for quitting gdb
-
-*/
 void mcc_invoke_backend(char *gcc, char *file_name, char *output_name)
 {
 	assert(file_name);
@@ -93,10 +76,9 @@ int main(int argc, char *argv[])
 
 	static struct option long_options[] = {{"help", no_argument, NULL, 'h'},
 	                                       {"output", optional_argument, NULL, 'o'},
-	                                       {"function", optional_argument, NULL, 'f'}};
+	                                       {"version", optional_argument, NULL, 'v'},
+										   {"quiet", optional_argument, NULL, 'q'}};
 
-	char func_name_scope[64] = {0};
-	int isScoped = 0;
 	char outfile[64] = {0};
 	char *outfile_env = getenv("MCC_LOG_FILE");
 	if (outfile_env == NULL || strcmp(outfile_env, "") == 0) {
@@ -105,7 +87,7 @@ int main(int argc, char *argv[])
 		snprintf(outfile, sizeof(outfile), "%s", outfile_env);
 	}
 	int c;
-	while ((c = getopt_long(argc, argv, "ho:f:", long_options, NULL)) != -1)
+	while ((c = getopt_long(argc, argv, "ho:vq:", long_options, NULL)) != -1)
 		switch (c) {
 		case 'h':
 			print_help(argv[0]);
@@ -114,9 +96,11 @@ int main(int argc, char *argv[])
 		case 'o':
 			snprintf(outfile, sizeof(outfile), "%s", optarg);
 			break;
-		case 'f':
-			isScoped = 1;
-			snprintf(func_name_scope, sizeof(func_name_scope), "%s", optarg);
+		case 'v':
+			printf("compiler version 0.1\n");
+			break;
+		case 'q':
+			// TODO suppress error output
 			break;
 		default:
 			return EXIT_FAILURE;
@@ -162,20 +146,6 @@ int main(int argc, char *argv[])
 				return EXIT_FAILURE;
 			}
 			pro = result.program;
-		}
-
-		if (isScoped) {
-			struct mcc_ast_func_list *list = pro->function_list;
-			struct mcc_ast_func_list *scope_func_list;
-			while (list != NULL) {
-				char *id = list->function->func_identifier->identifier->name;
-				if (strcmp(func_name_scope, id) == 0) {
-					scope_func_list = list;
-				}
-				list = list->next_function;
-			}
-			pro->function_list = scope_func_list;
-			pro->function_list->next_function = NULL;
 		}
 
 		// build symbol table
