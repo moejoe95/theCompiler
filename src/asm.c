@@ -161,11 +161,16 @@ void create_asm_built_in_function_call(FILE *out, struct mcc_ir_line *line, stru
 	char memory_size_str[12] = {0};
 	sprintf(memory_size_str, "%d", 4 * line->memory_size); // TODO always 0...fix in IR?
 
-	if (strncmp(line->arg1, "(", 1) == 0)
+	if (strncmp(line->arg1, "(", 1) == 0) {
 		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_PUSHL, MCC_ASM_REGISTER_EBP, asm_head->offset, -1,
 		                          0);
-	else if (strcmp(line->arg1, "-") != 0)
+	}
+	if (strncmp(line->arg1, "\"", 1) == 0) {
+		char *string_id = add_string_to_datasection(NULL, line->arg1, asm_head);
+		print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_PUSHL, string_id, -1, 0);
+	} else if (strcmp(line->arg1, "-") != 0) {
 		print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_PUSHL, line->arg1, -1, 0);
+	}
 
 	print_asm_instruction_call(out, MCC_ASM_INSTRUCTION_CALL, line->built_in);
 
@@ -283,6 +288,35 @@ void create_asm_unary(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *
 	                          head->offset);
 }
 
+char *add_string_to_datasection(char *name, char *value, struct mcc_asm_head *head)
+{
+	if (name == NULL) {
+		char var[64];
+		sprintf(var, "tmp_%d", head->temp_variable_id);
+		head->temp_variable_id = head->temp_variable_id + 1;
+		name = strdup(var);
+	}
+	struct mcc_asm_data_section *current = head->data_section;
+	while (current->next_data_section != NULL) {
+		current = current->next_data_section;
+	}
+	struct mcc_asm_data_section *new_data_section = malloc(sizeof(*new_data_section));
+	new_data_section->id = strdup(name);
+	new_data_section->next_data_section = NULL;
+	current->next_data_section = new_data_section;
+
+	struct mcc_asm_data_index *data_index_root = malloc(sizeof(*data_index_root));
+	struct mcc_asm_data_index *new_data_index = malloc(sizeof(*new_data_index));
+	new_data_index->value = strdup(value);
+	new_data_index->next_data_index = NULL;
+
+	data_index_root->value = strdup(".string ");
+	data_index_root->next_data_index = new_data_index;
+	new_data_section->index = data_index_root;
+
+	return name;
+}
+
 void create_asm_assignment(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *head)
 {
 
@@ -295,23 +329,7 @@ void create_asm_assignment(FILE *out, struct mcc_ir_line *line, struct mcc_asm_h
 		                          MCC_ASM_REGISTER_EAX, 0);
 	} else {
 		if (strncmp(line->arg2, "\"", 1) == 0) {
-			struct mcc_asm_data_section *current = head->data_section;
-			while (current->next_data_section != NULL) {
-				current = current->next_data_section;
-			}
-			struct mcc_asm_data_section *new_data_section = malloc(sizeof(*new_data_section));
-			new_data_section->id = strdup(line->arg1);
-			new_data_section->next_data_section = NULL;
-			current->next_data_section = new_data_section;
-
-			struct mcc_asm_data_index *data_index_root = malloc(sizeof(*data_index_root));
-			struct mcc_asm_data_index *new_data_index = malloc(sizeof(*new_data_index));
-			new_data_index->value = strdup(line->arg2);
-			new_data_index->next_data_index = NULL;
-
-			data_index_root->value = strdup(".string ");
-			data_index_root->next_data_index = new_data_index;
-			new_data_section->index = data_index_root;
+			add_string_to_datasection(line->arg1, line->arg2, head);
 			print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, line->arg1, MCC_ASM_REGISTER_EAX, 0);
 		} else {
 			print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, line->arg2, MCC_ASM_REGISTER_EAX, 0);
@@ -456,6 +474,7 @@ void mcc_create_asm(struct mcc_ir_table_head *ir, FILE *out, int destination)
 	struct mcc_asm_head *asm_head = malloc(sizeof(*asm_head));
 	asm_head->offset = 0;
 	asm_head->current_stack_size_parameters = 0;
+	asm_head->temp_variable_id = 0;
 
 	struct mcc_asm_data_section *data_root = malloc(sizeof(*data_root));
 	data_root->id = strdup("\n.data\n");

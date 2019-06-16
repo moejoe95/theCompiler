@@ -36,7 +36,7 @@ enum mcc_asm_instruction {
 	// calls
 	MCC_ASM_INSTRUCTION_CALL,
 
-	//jumps
+	// jumps
 	MCC_ASM_INSTRUCTION_JE,
 	MCC_ASM_INSTRUCTION_JNE,
 	MCC_ASM_INSTRUCTION_JZ,
@@ -45,7 +45,6 @@ enum mcc_asm_instruction {
 	MCC_ASM_INSTRUCTION_JL,
 	MCC_ASM_INSTRUCTION_JLE,
 	MCC_ASM_INSTRUCTION_JMP
-
 
 };
 
@@ -87,7 +86,10 @@ struct mcc_asm_head {
 	struct mcc_asm_data_section *data_section;
 	int current_stack_size_parameters;
 	struct mcc_asm_stack *stack;
+	int temp_variable_id;
 };
+
+char *add_string_to_datasection(char *name, char *value, struct mcc_asm_head *head);
 
 void mcc_create_asm(struct mcc_ir_table_head *ir, FILE *out, int destination);
 void mcc_delete_asm(struct mcc_asm_head *asm_head);
