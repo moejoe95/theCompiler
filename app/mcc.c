@@ -34,7 +34,7 @@ void print_help(const char *prg_name)
 	printf("\nUse '-' as input file to read from stdin.\n");
 	printf("OPTIONS:\n");
 	printf("\t-h,--help \t\tdisplays this help message\n");
-	printf("\t-o,--output <file> \twrite the output to <file> (defaults to stdout)\n");
+	printf("\t-o,--output <file> \twrite the output to <file> (defaults to a.out)\n");
 	printf("\t-v, --version <name> \tdisplay compiler version\n");
 	printf("\t-q, --quiet <name> \tsuppress error output\n");
 }
@@ -80,11 +80,14 @@ int main(int argc, char *argv[])
 										   {"quiet", optional_argument, NULL, 'q'}};
 
 	char outfile[64] = {0};
-	char *outfile_env = getenv("MCC_LOG_FILE");
-	if (outfile_env == NULL || strcmp(outfile_env, "") == 0) {
-		snprintf(outfile, sizeof(outfile), "%s", "-");
+	snprintf(outfile, sizeof(outfile), "%s", "a.out");
+	
+	char logfile[64] = {0};
+	char *logfile_env = getenv("MCC_LOG_FILE");
+	if (logfile_env == NULL || strcmp(logfile_env, "") == 0) {
+		snprintf(logfile, sizeof(logfile), "%s", "-");
 	} else {
-		snprintf(outfile, sizeof(outfile), "%s", outfile_env);
+		snprintf(logfile, sizeof(logfile), "%s", logfile_env);
 	}
 	int c;
 	while ((c = getopt_long(argc, argv, "ho:vq:", long_options, NULL)) != -1)
@@ -106,12 +109,12 @@ int main(int argc, char *argv[])
 			return EXIT_FAILURE;
 		}
 
-	// get output file / stdout
+	// get log file / stdout
 	FILE *out;
-	if (strcmp("-", outfile) == 0) {
+	if (strcmp("-", logfile) == 0) {
 		out = stdout;
 	} else {
-		out = fopen(outfile, "w");
+		out = fopen(logfile, "w");
 		if (!out) {
 			perror("fopen");
 			return EXIT_FAILURE;
@@ -173,7 +176,7 @@ int main(int argc, char *argv[])
 		mcc_create_asm(ir, out, log_level_to_int(LOG_LEVEL) + 1);
 
 		// generate binary from ASM
-		mcc_invoke_backend(gcc_path, "asm_tmp.s", "out");
+		mcc_invoke_backend(gcc_path, "asm_tmp.s", outfile);
 
 		// cleanup
 		// TODO delete asm data
