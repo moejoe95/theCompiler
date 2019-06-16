@@ -400,6 +400,10 @@ generate_built_in_function_call(struct mcc_ast_expression *expr_call, struct mcc
 			entity = lookup_table_args(
 			    head, expr_call->function_call_arguments->expression->array_access_id->identifier->name,
 			    NULL, MCC_AST_TYPE_STRING);
+		} else if (expr_call->function_call_arguments->expression->type ==
+		           MCC_AST_EXPRESSION_TYPE_FUNCTION_CALL) {
+			entity =
+			    expr_call->function_call_arguments->expression->function_call_identifier->identifier->name;
 		} else {
 			entity =
 			    lookup_table_args(head, expr_call->function_call_arguments->expression->identifier->name,
