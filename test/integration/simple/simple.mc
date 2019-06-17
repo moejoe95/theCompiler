@@ -1,13 +1,12 @@
 int main() {
     
-    string s1;
-    string s2;
-    s1 = "hello ";
-    s2 = s1;
+    int x;
+    x = 1;
+    while(x < 5){
+        x = x + 1;
+    }
 
-    print(s1);
-    print("world");
-    print_nl();
+    print_int(x);
 
     return 0;
 }

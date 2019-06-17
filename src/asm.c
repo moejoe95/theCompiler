@@ -14,7 +14,7 @@ int find_stack_position(char *arg, struct mcc_asm_stack *stack)
 
 	struct mcc_asm_stack *current = stack->next_stack;
 	while (current != NULL) {
-		if (strcmp(arg, current->var) == 0) {
+		if (strcmp(arg, current->line_no) == 0 || strcmp(arg, current->var) == 0) {
 			return current->stack_position;
 		}
 		current = current->next_stack;
@@ -28,7 +28,8 @@ void push_on_stack(struct mcc_ir_line *line, struct mcc_asm_head *head)
 	new_stack_var->stack_position = head->offset;
 	char value[14] = {0};
 	sprintf(value, "(%d)", line->index);
-	new_stack_var->var = strdup(value);
+	new_stack_var->line_no = strdup(value);
+	new_stack_var->var = strdup(line->arg1);
 	new_stack_var->next_stack = NULL;
 
 	struct mcc_asm_stack *current = head->stack;
@@ -37,6 +38,23 @@ void push_on_stack(struct mcc_ir_line *line, struct mcc_asm_head *head)
 	}
 	current->next_stack = new_stack_var;
 }
+
+void update_stack(struct mcc_ir_line *line, struct mcc_asm_stack *stack)
+{
+	assert(stack);
+	assert(line);
+
+	struct mcc_asm_stack *current = stack->next_stack;
+	while (current != NULL) {
+		if (strcmp(line->arg1, current->var) == 0) {
+			char value[14] = {0};
+			sprintf(value, "(%d)", line->index);
+			current->line_no = strdup(value);
+		}
+		current = current->next_stack;
+	}
+}
+
 
 /*
 This sequence of instructions is typical at the start of a subroutine to save space on the stack for local variables;
@@ -142,6 +160,7 @@ void create_asm_function_call(FILE *out,
                               struct mcc_asm_head *asm_head)
 {
 	assert(out);
+	assert(current_func);
 	assert(line);
 
 	print_asm_instruction_call(out, MCC_ASM_INSTRUCTION_CALL, line->arg1);
@@ -160,11 +179,14 @@ void create_asm_built_in_function_call(FILE *out, struct mcc_ir_line *line, stru
 	assert(out);
 	assert(line);
 
+	int stack_pos = -1;
+	stack_pos = find_stack_position(line->arg1, asm_head->stack);
+
 	char memory_size_str[12] = {0};
 	sprintf(memory_size_str, "%d", 4 * line->memory_size); // TODO always 0...fix in IR?
 
 	if (strncmp(line->arg1, "(", 1) == 0) {
-		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_PUSHL, MCC_ASM_REGISTER_EBP, asm_head->offset, -1,
+		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_PUSHL, MCC_ASM_REGISTER_EBP, stack_pos, -1,
 		                          0);
 	} else if (strncmp(line->arg1, "\"", 1) == 0) {
 		char *string_id = add_string_to_datasection(NULL, line->arg1, asm_head);
@@ -184,8 +206,11 @@ void create_asm_push(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *a
 	assert(line);
 	assert(asm_head);
 
+	int stack_pos = -1;
+	stack_pos = find_stack_position(line->arg1, asm_head->stack);
+
 	if (strncmp(line->arg1, "(", 1) == 0)
-		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_PUSHL, MCC_ASM_REGISTER_EBP, asm_head->offset, -1,
+		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_PUSHL, MCC_ASM_REGISTER_EBP, stack_pos, -1,
 		                          0);
 	else
 		print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_PUSHL, line->arg1, -1, 0);
@@ -320,13 +345,20 @@ char *add_string_to_datasection(char *name, char *value, struct mcc_asm_head *he
 
 void create_asm_assignment(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *head)
 {
+	int stack_position = -1;
+	stack_position = find_stack_position(line->arg1, head->stack);
 
-	head->offset = head->offset - 4;
-
-	push_on_stack(line, head);
+	if (stack_position == -1){
+		head->offset = head->offset - 4;
+		stack_position = head->offset;
+		push_on_stack(line, head);
+	}
+	else{
+		update_stack(line, head->stack);
+	}
 
 	if (strncmp(line->arg2, "(", 1) == 0) {
-		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EBP, head->offset + 4,
+		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EBP, head->offset,
 		                          MCC_ASM_REGISTER_EAX, 0);
 	} else {
 		if (strncmp(line->arg2, "\"", 1) == 0) {
@@ -337,7 +369,7 @@ void create_asm_assignment(FILE *out, struct mcc_ir_line *line, struct mcc_asm_h
 		}
 	}
 	print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EAX, 0, MCC_ASM_REGISTER_EBP,
-	                          head->offset);
+	                          stack_position);
 }
 
 void create_asm_array(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *head)
