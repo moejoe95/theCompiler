@@ -76,9 +76,9 @@ static struct mcc_ir_line *create_new_ir_line()
 static char *lookup_table_args(struct mcc_ir_line_head *head, char *arg1, char *arg2, enum mcc_ast_type type)
 {
 	assert(head);
-	char *result = NULL;
 	struct mcc_ir_line *table = head->root->next_line;
 
+	int found = 0;
 	char value[128] = {0};
 
 	while (table != NULL) {
@@ -89,12 +89,24 @@ static char *lookup_table_args(struct mcc_ir_line_head *head, char *arg1, char *
 		if (table->arg1 != NULL) {
 			if (strcmp(arg1, table->arg1) == 0 && arg2eq) {
 				sprintf(value, "(%d)", table->index);
-				result = strdup(value);
+				found = 1;
 			}
 		}
 		table = table->next_line;
 	}
-	return result;
+
+	if (found == 0) {
+		switch (type) {
+		case MCC_AST_TYPE_STRING:
+			sprintf(value, "\"\"");
+			break;
+		default:
+			sprintf(value, "%d", 0);
+			break;
+		}
+	}
+
+	return strdup(value);
 }
 
 static char *generate_ir_literal_entity(struct mcc_ast_literal *lit)
@@ -407,7 +419,7 @@ generate_built_in_function_call(struct mcc_ast_expression *expr_call, struct mcc
 		} else {
 			entity =
 			    lookup_table_args(head, expr_call->function_call_arguments->expression->identifier->name,
-			                      NULL, MCC_AST_TYPE_STRING);
+			                      NULL, expr_call->function_call_arguments->expression->expression_type);
 		}
 
 	} else {

@@ -546,7 +546,7 @@ void mcc_create_asm(struct mcc_ir_table_head *ir, FILE *out, int destination)
 
 	if (destination != 0) {
 		fclose(tmpfile);
-		if (destination == 2) {
+		if (destination >= 2) {
 			tmpfile = fopen("asm_tmp.s", "r");
 			int c;
 			c = fgetc(tmpfile);
