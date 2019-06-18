@@ -43,7 +43,7 @@ void getAssemblyInstruction(enum mcc_asm_instruction in, char *in_string)
 		strcpy(in_string, "notl");
 		break;
 	case MCC_ASM_INSTRUCTION_CALL:
-		strcpy(in_string, "call");
+		strcpy(in_string, "calll");
 		break;
 	case MCC_ASM_INSTRUCTION_JZ:
 		strcpy(in_string, "jz");
