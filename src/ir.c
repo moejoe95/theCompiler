@@ -78,6 +78,13 @@ static char *lookup_table_args(struct mcc_ir_line_head *head, char *arg1, char *
 	assert(head);
 	struct mcc_ir_line *table = head->root->next_line;
 
+	char lookup_arg[128] = {0};
+	if (type == MCC_AST_TYPE_ARRAY) {
+		sprintf(lookup_arg, "%s[%s]", arg1, arg2);
+	} else {
+		sprintf(lookup_arg, "%s", arg1);
+	}
+
 	int found = 0;
 	char value[128] = {0};
 
@@ -87,7 +94,7 @@ static char *lookup_table_args(struct mcc_ir_line_head *head, char *arg1, char *
 			arg2eq = strcmp(arg2, table->arg2);
 
 		if (table->arg1 != NULL) {
-			if (strcmp(arg1, table->arg1) == 0 && arg2eq) {
+			if (strcmp(lookup_arg, table->arg1) == 0 && arg2eq) {
 				sprintf(value, "(%d)", table->index);
 				found = 1;
 			}
@@ -265,11 +272,7 @@ static void generate_ir_binary_expression(struct mcc_ast_expression *bin_expr,
 			                            MCC_AST_TYPE_ARRAY);
 		} else {
 			char value[14];
-			if (bin_expr->rhs->type == MCC_AST_EXPRESSION_TYPE_IDENTIFIER) {
-				sprintf(value, "(%d)", head->index - 1);
-			} else {
-				sprintf(value, "(%d)", head->index - 2);
-			}
+			sprintf(value, "(%d)", head->index - 1);
 			entity1 = strdup(value);
 		}
 
@@ -287,11 +290,7 @@ static void generate_ir_binary_expression(struct mcc_ast_expression *bin_expr,
 			                            MCC_AST_TYPE_ARRAY);
 		} else {
 			char value[14];
-			if (bin_expr->rhs->type == MCC_AST_EXPRESSION_TYPE_IDENTIFIER) {
-				sprintf(value, "(%d)", head->index - 1);
-			} else {
-				sprintf(value, "(%d)", head->index - 2);
-			}
+			sprintf(value, "(%d)", head->index - 1);
 			entity2 = strdup(value);
 		}
 	} else {
@@ -397,42 +396,12 @@ generate_built_in_function_call(struct mcc_ast_expression *expr_call, struct mcc
 {
 	assert(expr_call);
 	assert(head);
+	char *func_id = expr_call->function_call_identifier->identifier->name;
 
-	head->index++;
-	struct mcc_ir_line *new_table = create_new_ir_line();
-	char *entity = NULL;
+	generate_function_arguments(expr_call, head);
 
-	if (expr_call->function_call_arguments) {
-		if (expr_call->function_call_arguments->expression->type == MCC_AST_EXPRESSION_TYPE_LITERAL) {
-			struct mcc_ast_literal *lit = expr_call->function_call_arguments->expression->literal;
-			entity = generate_ir_literal_entity(lit);
-			new_table->memory_size = get_memory_size_literal_type(lit->type);
-		} else if (expr_call->function_call_arguments->expression->type ==
-		           MCC_AST_EXPRESSION_TYPE_ARRAY_ACCESS) {
-			entity = lookup_table_args(
-			    head, expr_call->function_call_arguments->expression->array_access_id->identifier->name,
-			    NULL, MCC_AST_TYPE_STRING);
-		} else if (expr_call->function_call_arguments->expression->type ==
-		           MCC_AST_EXPRESSION_TYPE_FUNCTION_CALL) {
-			entity =
-			    expr_call->function_call_arguments->expression->function_call_identifier->identifier->name;
-		} else {
-			entity =
-			    lookup_table_args(head, expr_call->function_call_arguments->expression->identifier->name,
-			                      NULL, expr_call->function_call_arguments->expression->expression_type);
-		}
-
-	} else {
-		entity = strdup("-");
-	}
-	new_table->arg1 = entity;
-	new_table->arg2 = NULL;
-	new_table->op_type = MCC_IR_TABLE_BUILT_IN;
-	new_table->index = head->index;
-	new_table->built_in = built_in;
-
-	head->current->next_line = new_table;
-	head->current = new_table;
+	// call function line
+	generate_ir_table_line(head, strdup(func_id), NULL, MCC_IR_TABLE_CALL, -1, -1);
 }
 
 static void generate_ir_expression(struct mcc_ast_expression *expr,

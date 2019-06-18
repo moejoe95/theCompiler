@@ -77,9 +77,6 @@ static void get_table_line(struct mcc_ir_line *line, char *target)
 	case MCC_IR_TABLE_POP:
 		sprintf(value, "(%d): %s %s\n", line->index, "pop", line->arg1);
 		break;
-	case MCC_IR_TABLE_BUILT_IN:
-		sprintf(value, "(%d): %s %s\n", line->index, "builtin", line->arg1);
-		break;
 	case MCC_IR_TABLE_CALL:
 		sprintf(value, "(%d): %s %s\n", line->index, "call", line->arg1);
 		break;

@@ -55,7 +55,6 @@ void update_stack(struct mcc_ir_line *line, struct mcc_asm_stack *stack)
 	}
 }
 
-
 /*
 This sequence of instructions is typical at the start of a subroutine to save space on the stack for local variables;
 EBP is used as the base register to reference the local variables, and a value is subtracted from ESP to reserve space
@@ -174,33 +173,6 @@ void create_asm_function_call(FILE *out,
 	}
 }
 
-void create_asm_built_in_function_call(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *asm_head)
-{
-	assert(out);
-	assert(line);
-
-	int stack_pos = -1;
-	stack_pos = find_stack_position(line->arg1, asm_head->stack);
-
-	char memory_size_str[12] = {0};
-	sprintf(memory_size_str, "%d", 4 * 1);//line->memory_size); // TODO always 0...fix in IR?
-
-	if (strncmp(line->arg1, "(", 1) == 0) {
-		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_PUSHL, MCC_ASM_REGISTER_EBP, stack_pos, -1,
-		                          0);
-	} else if (strncmp(line->arg1, "\"", 1) == 0) {
-		char *string_id = add_string_to_datasection(NULL, line->arg1, asm_head);
-		print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_PUSHL, string_id, -1, 0);
-	} else if (strcmp(line->arg1, "-") != 0) {
-		print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_PUSHL, line->arg1, -1, 0);
-	}
-
-	print_asm_instruction_call(out, MCC_ASM_INSTRUCTION_CALL, line->built_in);
-
-	if(strcmp(line->built_in, "print_nl") != 0)//line->memory_size > 0)
-		print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_ADDL, memory_size_str, MCC_ASM_REGISTER_ESP, 0);
-}
-
 void create_asm_push(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *asm_head)
 {
 	assert(out);
@@ -211,8 +183,7 @@ void create_asm_push(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *a
 	stack_pos = find_stack_position(line->arg1, asm_head->stack);
 
 	if (strncmp(line->arg1, "(", 1) == 0)
-		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_PUSHL, MCC_ASM_REGISTER_EBP, stack_pos, -1,
-		                          0);
+		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_PUSHL, MCC_ASM_REGISTER_EBP, stack_pos, -1, 0);
 	else
 		print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_PUSHL, line->arg1, -1, 0);
 
@@ -350,18 +321,17 @@ void create_asm_assignment(FILE *out, struct mcc_ir_line *line, struct mcc_asm_h
 	int stack_position = -1;
 	stack_position = find_stack_position(line->arg1, head->stack);
 
-	if (stack_position == -1){
+	if (stack_position == -1) {
 		head->offset = head->offset - 4;
 		stack_position = head->offset;
 		push_on_stack(line, head);
-	}
-	else{
+	} else {
 		update_stack(line, head->stack);
 	}
 
 	if (strncmp(line->arg2, "(", 1) == 0) {
-		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EBP, find_stack_position(line->arg2, head->stack),
-		                          MCC_ASM_REGISTER_EAX, 0);
+		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EBP,
+		                          find_stack_position(line->arg2, head->stack), MCC_ASM_REGISTER_EAX, 0);
 	} else {
 		if (strncmp(line->arg2, "\"", 1) == 0) {
 			add_string_to_datasection(line->arg1, line->arg2, head);
@@ -469,9 +439,6 @@ void create_asm_line(FILE *out,
 		break;
 	case MCC_IR_TABLE_CALL:
 		create_asm_function_call(out, line, current_func, asm_head);
-		break;
-	case MCC_IR_TABLE_BUILT_IN:
-		create_asm_built_in_function_call(out, line, asm_head);
 		break;
 	case MCC_IR_TABLE_JUMPFALSE:
 		create_asm_jumpfalse(out, line, current_func, asm_head);

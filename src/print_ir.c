@@ -72,9 +72,6 @@ void print_row(struct mcc_ir_line *table, FILE *out)
 	case MCC_IR_TABLE_RETURN:
 		sprintf(operation, "%s", "return");
 		break;
-	case MCC_IR_TABLE_BUILT_IN:
-		sprintf(operation, "%-10.10s", table->built_in);
-		break;
 	case MCC_IR_TABLE_CALL:
 		sprintf(operation, "%s", "call\t");
 		break;
