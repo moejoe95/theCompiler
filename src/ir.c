@@ -11,8 +11,6 @@
 
 // forward declarations
 static void generate_function_definition(struct mcc_ast_func_definition *func, struct mcc_ir_line_head *head);
-static void
-generate_built_in_function_call(struct mcc_ast_expression *expr_call, struct mcc_ir_line_head *head, char *b);
 static void generate_ir_statement(struct mcc_ast_statement *stmt, struct mcc_ir_line_head *head, int isLastStatement);
 static void generate_ir_function_call(struct mcc_ast_expression *e, struct mcc_ir_line_head *head);
 static void
@@ -31,8 +29,9 @@ static int get_memory_size_literal_type(enum mcc_ast_literal_type type)
 		break;
 	case MCC_AST_LITERAL_TYPE_FLOAT:
 		mem_size = 2;
-
+		break;
 	default:
+		mem_size = 0;
 		break;
 	}
 	return mem_size;
@@ -71,6 +70,20 @@ static struct mcc_ir_line *create_new_ir_line()
 	table->jump_target = 0;
 	table->memory_size = 0;
 	return table;
+}
+
+static int lookup_memory_size(struct mcc_ir_line_head *head, int line)
+{
+	assert(head);
+	struct mcc_ir_line *table = head->root->next_line;
+
+	while (table != NULL) {
+		if (table->index == line) {
+			return table->memory_size;
+		}
+		table = table->next_line;
+	}
+	return 0;
 }
 
 static char *lookup_table_args(struct mcc_ir_line_head *head, char *arg1, char *arg2, enum mcc_ast_type type)
@@ -232,12 +245,12 @@ static void generate_ir_table_line(struct mcc_ir_line_head *head,
 	if (jump_loc >= 0) {
 		new_table->jump_target = jump_loc;
 	}
-	if (lit_type >= 0) {
-		new_table->memory_size = get_memory_size_literal_type(lit_type);
-	} else {
-		new_table->memory_size = -1;
-	}
 
+	if (arg1[0] == '(') {
+		new_table->memory_size = lookup_memory_size(head, head->index - 1);
+	} else {
+		new_table->memory_size = get_memory_size_literal_type(lit_type);
+	}
 	head->current->next_line = new_table;
 	head->current = new_table;
 }
@@ -373,31 +386,7 @@ static void generate_ir_function_call(struct mcc_ast_expression *expr_call, stru
 
 	char *func_id = expr_call->function_call_identifier->identifier->name;
 
-	// built in functions
-	int i = 0;
-	static char *built_ins[6] = {"print_nl", "read_int", "print", "print_int", "print_float", "read_float"};
-	while (built_ins[i]) {
-		if (strcmp(built_ins[i], func_id) == 0) {
-			generate_built_in_function_call(expr_call, head, built_ins[i]);
-			return;
-		}
-		i++;
-	}
-
 	// normal functions
-	generate_function_arguments(expr_call, head);
-
-	// call function line
-	generate_ir_table_line(head, strdup(func_id), NULL, MCC_IR_TABLE_CALL, -1, -1);
-}
-
-static void
-generate_built_in_function_call(struct mcc_ast_expression *expr_call, struct mcc_ir_line_head *head, char *built_in)
-{
-	assert(expr_call);
-	assert(head);
-	char *func_id = expr_call->function_call_identifier->identifier->name;
-
 	generate_function_arguments(expr_call, head);
 
 	// call function line
@@ -616,7 +605,6 @@ static void generate_ir_while(struct mcc_ast_statement *stmt, struct mcc_ir_line
 	// set jump loc
 	jump_loc = strdup(value);
 
-	int index = head->index + 1;
 	int jump_target = head->current->index + 1;
 
 	// while condition
