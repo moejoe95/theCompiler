@@ -55,6 +55,18 @@ void update_stack(struct mcc_ir_line *line, struct mcc_asm_stack *stack)
 	}
 }
 
+char* get_stack_size(struct mcc_ir_line* root){
+	int memory_size = 0;
+	while (root != NULL) {
+		memory_size = memory_size + 4 * root->memory_size;
+		root = root->next_line;
+	}
+	char memory_size_str[12] = {0};
+	sprintf(memory_size_str, "%d", memory_size);
+
+	return strdup(memory_size_str);
+}
+
 /*
 This sequence of instructions is typical at the start of a subroutine to save space on the stack for local variables;
 EBP is used as the base register to reference the local variables, and a value is subtracted from ESP to reserve space
@@ -73,17 +85,10 @@ void create_function_label(FILE *out, struct mcc_ir_table *current_func, struct 
 	fprintf(out, "\n\t.globl %s\n\n", current_func->func_name);
 
 	fprintf(out, "%s:\n", current_func->func_name);
-	int memory_size = 0;
-	struct mcc_ir_line *current_line = current_func->line_head->root;
-	while (current_line != NULL) {
-		memory_size = memory_size + 4 * current_line->memory_size;
-		current_line = current_line->next_line;
-	}
-	char memory_size_str[12] = {0};
-	sprintf(memory_size_str, "%d", memory_size);
+
 	print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_PUSHL, MCC_ASM_REGISTER_EBP, 0, -1, 0);
 	print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_ESP, 0, MCC_ASM_REGISTER_EBP, 0);
-	print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_SUBL, memory_size_str, MCC_ASM_REGISTER_ESP, 0);
+	print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_SUBL, get_stack_size(current_func->line_head->root), MCC_ASM_REGISTER_ESP, 0);
 }
 
 void create_asm_jumpfalse(FILE *out,
@@ -148,6 +153,7 @@ void create_asm_return(FILE *out, struct mcc_ir_line *line, struct mcc_ir_table 
 	print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, line->arg1, MCC_ASM_REGISTER_EAX, 0);
 
 	if (strcmp(current_func->func_name, "main") != 0) { // main has own return procedure
+		print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_ADDL, get_stack_size(current_func->line_head->root), MCC_ASM_REGISTER_ESP, 0);
 		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_POPL, MCC_ASM_REGISTER_EBP, 0, -1, 0);
 		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_RETL, -1, 0, -1, 0);
 	}

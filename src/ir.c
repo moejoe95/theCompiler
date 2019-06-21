@@ -616,7 +616,6 @@ static void generate_ir_while(struct mcc_ast_statement *stmt, struct mcc_ir_line
 	// set jump loc
 	jump_loc = strdup(value);
 
-	int index = head->index + 1;
 	int jump_target = head->current->index + 1;
 
 	// while condition
