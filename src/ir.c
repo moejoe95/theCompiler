@@ -11,12 +11,11 @@
 
 // forward declarations
 static void generate_function_definition(struct mcc_ast_func_definition *func, struct mcc_ir_line_head *head);
-static void generate_ir_statement(struct mcc_ast_statement *stmt, struct mcc_ir_line_head *head, int isLastStatement);
+static void generate_ir_statement(struct mcc_ast_statement *stmt, struct mcc_ir_line_head *head);
 static void generate_ir_function_call(struct mcc_ast_expression *e, struct mcc_ir_line_head *head);
 static void
 generate_ir_expression(struct mcc_ast_expression *e, struct mcc_ir_line_head *head, enum ir_table_operation_type t);
 static int hasStatementReturn(struct mcc_ast_statement *stmt);
-static int isLastStatement(struct mcc_ast_statement_list *list);
 
 static int get_memory_size_literal_type(enum mcc_ast_literal_type type)
 {
@@ -72,20 +71,6 @@ static struct mcc_ir_line *create_new_ir_line()
 	return table;
 }
 
-static int lookup_memory_size(struct mcc_ir_line_head *head, int line)
-{
-	assert(head);
-	struct mcc_ir_line *table = head->root->next_line;
-
-	while (table != NULL) {
-		if (table->index == line) {
-			return table->memory_size;
-		}
-		table = table->next_line;
-	}
-	return 0;
-}
-
 static char *lookup_table_args(struct mcc_ir_line_head *head, char *arg1, char *arg2, enum mcc_ast_type type)
 {
 	assert(head);
@@ -127,6 +112,24 @@ static char *lookup_table_args(struct mcc_ir_line_head *head, char *arg1, char *
 	}
 
 	return strdup(value);
+}
+
+static int get_memory_size_line(struct mcc_ir_line_head *head, char *arg1)
+{
+	assert(head);
+	struct mcc_ir_line *table = head->root->next_line;
+
+	while (table != NULL) {
+		char value[128] = {0};
+		sprintf(value, "(%d)", table->index);
+		if (strcmp(value, arg1) == 0) {
+			return table->memory_size;
+		}
+
+		table = table->next_line;
+	}
+
+	return 0;
 }
 
 static char *generate_ir_literal_entity(struct mcc_ast_literal *lit)
@@ -223,7 +226,9 @@ static void generate_ir_table_line(struct mcc_ir_line_head *head,
 	}
 
 	if (arg1[0] == '(') {
-		new_table->memory_size = lookup_memory_size(head, head->index - 1);
+		new_table->memory_size = get_memory_size_line(head, arg1);
+	} else if (arg2 != NULL && arg2[0] == '(') {
+		new_table->memory_size = get_memory_size_line(head, arg2);
 	} else {
 		new_table->memory_size = get_memory_size_literal_type(lit_type);
 	}
@@ -374,7 +379,7 @@ static void generate_ir_identifier(struct mcc_ast_expression *expr,
                                    enum ir_table_operation_type type)
 {
 	char *value = lookup_table_args(head, expr->identifier->name, NULL, expr->expression_type);
-	generate_ir_table_line(head, strdup(value), NULL, type, -1, -1);
+	generate_ir_table_line(head, value, NULL, type, -1, -1);
 }
 
 static void generate_ir_expression(struct mcc_ast_expression *expr,
@@ -480,16 +485,19 @@ static void generate_ir_return(struct mcc_ast_expression *expr, struct mcc_ir_li
 
 		// insert additional line in IR table
 		if (expr->type != MCC_AST_EXPRESSION_TYPE_LITERAL && expr->type != MCC_AST_EXPRESSION_TYPE_IDENTIFIER) {
-			sprintf(value, "(%d)", head->index - 1);
+			sprintf(value, "(%d)", head->index);
 			generate_ir_table_line(head, strdup(value), NULL, MCC_IR_TABLE_PUSH, -1, -1);
 
 			sprintf(value, "(%d)", head->index);
 			generate_ir_table_line(head, strdup(value), NULL, MCC_IR_TABLE_RETURN, -1, -1);
 		}
+	} else {
+		sprintf(value, "-");
+		generate_ir_table_line(head, strdup(value), NULL, MCC_IR_TABLE_RETURN, -1, -1);
 	}
 }
 
-static void generate_ir_if(struct mcc_ast_statement *stmt, struct mcc_ir_line_head *head, int isLastStatement)
+static void generate_ir_if(struct mcc_ast_statement *stmt, struct mcc_ir_line_head *head)
 {
 	assert(stmt);
 	assert(head);
@@ -520,11 +528,11 @@ static void generate_ir_if(struct mcc_ast_statement *stmt, struct mcc_ir_line_he
 	head->current = jumpfalse_table;
 
 	// if body
-	generate_ir_statement(stmt->if_stat, head, 0);
+	generate_ir_statement(stmt->if_stat, head);
 
 	// generate jump table
 	struct mcc_ir_line *jump_table = NULL;
-	if (!hasStatementReturn(stmt->if_stat) && !isLastStatement) {
+	if (stmt->else_stat) {
 		jump_table = create_new_ir_line();
 		head->index++;
 		jump_table->arg1 = jump_loc;
@@ -549,28 +557,22 @@ static void generate_ir_if(struct mcc_ast_statement *stmt, struct mcc_ir_line_he
 
 	// else body
 	if (stmt->else_stat) {
-		generate_ir_statement(stmt->else_stat, head, 0);
-		if (!isLastStatement) {
-			sprintf(value, "L_%s_%d", head->func_name, head->current->index + 2);
-			generate_ir_table_line(head, strdup(value), NULL, MCC_IR_TABLE_JUMP, head->current->index + 2,
-			                       -1);
+		generate_ir_statement(stmt->else_stat, head);
+
+		// set jump loc
+		if (jump_table != NULL) {
+			sprintf(value, "L_%s_%d", head->func_name, head->current->index + 1);
+			jump_loc = strdup(value);
+			jump_table->arg1 = jump_loc;
+			jump_table->jump_target = head->current->index + 1;
 		}
+		// create label for jump
+		char *label_entity2 = strdup(value);
+		generate_ir_table_line(head, label_entity2, NULL, MCC_IR_TABLE_BR_LABEL, -1, -1);
 	}
-
-	// set jump loc
-	if (jump_table != NULL && !isLastStatement) {
-		sprintf(value, "L_%s_%d", head->func_name, head->current->index + 1);
-		jump_loc = strdup(value);
-		jump_table->arg1 = jump_loc;
-		jump_table->jump_target = head->current->index + 1;
-	}
-
-	// create label for jump
-	char *label_entity2 = strdup(value);
-	generate_ir_table_line(head, label_entity2, NULL, MCC_IR_TABLE_BR_LABEL, -1, -1);
 }
 
-static void generate_ir_while(struct mcc_ast_statement *stmt, struct mcc_ir_line_head *head, int isLastStatement)
+static void generate_ir_while(struct mcc_ast_statement *stmt, struct mcc_ir_line_head *head)
 {
 	assert(stmt);
 	assert(head);
@@ -610,11 +612,11 @@ static void generate_ir_while(struct mcc_ast_statement *stmt, struct mcc_ir_line
 	head->current = cond_table;
 
 	// while body
-	generate_ir_statement(stmt->while_stat, head, 0);
+	generate_ir_statement(stmt->while_stat, head);
 
 	// generate jump table
 	struct mcc_ir_line *jump_table = create_new_ir_line();
-	if (!hasStatementReturn(stmt->while_stat) && !isLastStatement) {
+	if (!hasStatementReturn(stmt->while_stat)) {
 		head->index++;
 		jump_table->arg1 = jump_loc;
 		jump_table->arg2 = NULL;
@@ -642,14 +644,14 @@ static void generate_ir_compound(struct mcc_ast_statement_list *list, struct mcc
 {
 	struct mcc_ast_statement_list *temp_list = list;
 	while (temp_list != NULL) {
-		generate_ir_statement(temp_list->statement, head, 0);
+		generate_ir_statement(temp_list->statement, head);
 		if (temp_list->statement->type == MCC_AST_STATEMENT_RETURN)
 			break;
 		temp_list = temp_list->next_statement;
 	}
 }
 
-static void generate_ir_statement(struct mcc_ast_statement *stmt, struct mcc_ir_line_head *head, int isLastStatement)
+static void generate_ir_statement(struct mcc_ast_statement *stmt, struct mcc_ir_line_head *head)
 {
 	assert(stmt);
 	assert(head);
@@ -669,10 +671,10 @@ static void generate_ir_statement(struct mcc_ast_statement *stmt, struct mcc_ir_
 		generate_ir_return(stmt->expression, head);
 		break;
 	case MCC_AST_STATEMENT_IF:
-		generate_ir_if(stmt, head, isLastStatement);
+		generate_ir_if(stmt, head);
 		break;
 	case MCC_AST_STATEMENT_WHILE:
-		generate_ir_while(stmt, head, isLastStatement);
+		generate_ir_while(stmt, head);
 		break;
 	case MCC_AST_STATEMENT_COMPOUND:
 		generate_ir_compound(stmt->compound, head);
@@ -701,14 +703,6 @@ static int hasStatementReturn(struct mcc_ast_statement *stmt)
 		break;
 	}
 	return 0;
-}
-
-static int isLastStatement(struct mcc_ast_statement_list *list)
-{
-	if (list->next_statement) {
-		return 0;
-	}
-	return 1;
 }
 
 static void generate_ir_param(struct mcc_ast_parameter *param, struct mcc_ir_line_head *head)
@@ -759,8 +753,12 @@ static void generate_function_definition(struct mcc_ast_func_definition *func, s
 	// func compound
 	struct mcc_ast_statement_list *list = func->func_compound->compound;
 	while (list != NULL) {
-		generate_ir_statement(list->statement, head, isLastStatement(list));
+		generate_ir_statement(list->statement, head);
 		list = list->next_statement;
+	}
+
+	if (!hasStatementReturn(func->func_compound)) {
+		generate_ir_return(NULL, head);
 	}
 }
 

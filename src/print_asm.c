@@ -78,6 +78,9 @@ void get_assembly_instruction(enum mcc_asm_instruction in, char *in_string)
 	case MCC_ASM_INSTRUCTION_FSTPL:
 		strcpy(in_string, "fstpl");
 		break;
+	case MCC_ASM_INSTRUCTION_FADDL:
+		strcpy(in_string, "faddl");
+		break;
 	default:
 		strcpy(in_string, "UNDEF");
 		break;

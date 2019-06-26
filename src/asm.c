@@ -8,12 +8,14 @@
 #include "mcc/ir.h"
 #include "mcc/print_asm.h"
 
+char *add_asm_float(char *line, struct mcc_asm_head *head);
+
 int find_stack_position(char *arg, struct mcc_asm_stack *stack)
 {
 	assert(stack);
 
 	struct mcc_asm_stack *current = stack->next_stack;
-	while (current != NULL) {
+	while (current != NULL && (current->line_no != NULL && current->var != NULL)) {
 		if (strcmp(arg, current->line_no) == 0 || strcmp(arg, current->var) == 0) {
 			return current->stack_position;
 		}
@@ -47,6 +49,9 @@ void update_stack(struct mcc_ir_line *line, struct mcc_asm_stack *stack)
 	struct mcc_asm_stack *current = stack->next_stack;
 	while (current != NULL) {
 		if (strcmp(line->arg1, current->var) == 0) {
+			if (current->line_no != NULL) {
+				free(current->line_no);
+			}
 			char value[14] = {0};
 			sprintf(value, "(%d)", line->index);
 			current->line_no = strdup(value);
@@ -68,6 +73,26 @@ char *get_stack_size(struct mcc_ir_line *root)
 	return strdup(memory_size_str);
 }
 
+char *lookup_data_section(char *arg, struct mcc_asm_head *asm_head)
+{
+
+	int is_in_data_section = 0;
+	struct mcc_asm_data_section *data_section = asm_head->data_section;
+	while (data_section != NULL) {
+		if (strcmp(arg, data_section->id) == 0) {
+			is_in_data_section = 1;
+			break;
+		}
+		data_section = data_section->next_data_section;
+	}
+	if (is_in_data_section) {
+		return data_section->id;
+	}
+
+	char *f_value = add_asm_float(arg, asm_head);
+	return f_value;
+}
+
 /*
 This sequence of instructions is typical at the start of a subroutine to save space on the stack for local variables;
 EBP is used as the base register to reference the local variables, and a value is subtracted from ESP to reserve space
@@ -81,7 +106,18 @@ void create_function_label(FILE *out, struct mcc_ir_table *current_func, struct 
 	struct mcc_asm_stack *stack = malloc(sizeof(*stack));
 	stack->stack_position = 0;
 	stack->next_stack = NULL;
-	asm_head->stack = stack;
+	stack->var = NULL;
+	stack->line_no = NULL;
+
+	if (asm_head->stack == NULL) {
+		asm_head->stack = stack;
+	} else {
+		struct mcc_asm_stack *current = asm_head->stack;
+		while (current->next_stack != NULL) {
+			current = current->next_stack;
+		}
+		current->next_stack = stack;
+	}
 
 	fprintf(out, "\n\t.globl %s\n\n", current_func->func_name);
 
@@ -89,8 +125,10 @@ void create_function_label(FILE *out, struct mcc_ir_table *current_func, struct 
 
 	print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_PUSHL, MCC_ASM_REGISTER_EBP, 0, -1, 0);
 	print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_ESP, 0, MCC_ASM_REGISTER_EBP, 0);
-	print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_SUBL, get_stack_size(current_func->line_head->root),
-	                          MCC_ASM_REGISTER_ESP, 0);
+
+	char *stack_size = get_stack_size(current_func->line_head->root);
+	print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_SUBL, stack_size, MCC_ASM_REGISTER_ESP, 0);
+	free(stack_size);
 }
 
 void create_asm_jumpfalse(FILE *out,
@@ -155,10 +193,11 @@ void create_asm_return(FILE *out, struct mcc_ir_line *line, struct mcc_ir_table 
 	print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, line->arg1, MCC_ASM_REGISTER_EAX, 0);
 
 	if (strcmp(current_func->func_name, "main") != 0) { // main has own return procedure
-		print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_ADDL, get_stack_size(current_func->line_head->root),
-		                          MCC_ASM_REGISTER_ESP, 0);
+		char *stack_size = get_stack_size(current_func->line_head->root);
+		print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_ADDL, stack_size, MCC_ASM_REGISTER_ESP, 0);
 		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_POPL, MCC_ASM_REGISTER_EBP, 0, -1, 0);
 		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_RETL, -1, 0, -1, 0);
+		free(stack_size);
 	}
 }
 
@@ -196,6 +235,12 @@ void create_asm_push(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *a
 		if (strncmp(line->arg1, "\"", 1) == 0) {
 			char *loc = add_string_to_datasection(NULL, line->arg1, asm_head);
 			print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_PUSHL, loc, -1, 0);
+		} else if (line->memory_size == 2) {
+			char *f_value = add_asm_float(line->arg1, asm_head);
+			print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FLDL, f_value);
+			// TODO replace hardcoded -4 stack location
+			print_asm_instruction_store_float(out, MCC_ASM_INSTRUCTION_FSTPL, MCC_ASM_REGISTER_EBP, -4);
+			print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_PUSHL, MCC_ASM_REGISTER_EBP, -4, -1, 0);
 		} else {
 			print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_PUSHL, line->arg1, -1, 0);
 		}
@@ -226,7 +271,7 @@ void create_asm_pop(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *as
 
 }
 
-void create_asm_binary_op(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *asm_head)
+void create_asm_binary_op_int(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *asm_head)
 {
 	int stack_position_arg1 = -1;
 	int stack_position_arg2 = -1;
@@ -307,6 +352,28 @@ void create_asm_binary_op(FILE *out, struct mcc_ir_line *line, struct mcc_asm_he
 	                          asm_head->offset);
 }
 
+void create_asm_binary_op_float(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *asm_head)
+{
+
+	char *arg1 = lookup_data_section(line->arg1, asm_head);
+	char *arg2 = lookup_data_section(line->arg2, asm_head);
+
+	print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FLDL, arg1);
+	print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FADDL, arg2);
+
+	print_asm_instruction_store_float(out, MCC_ASM_INSTRUCTION_FSTPL, MCC_ASM_REGISTER_EBP, -4);
+}
+
+void create_asm_binary_op(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *asm_head)
+{
+
+	if (line->memory_size > 1) {
+		create_asm_binary_op_float(out, line, asm_head);
+	} else {
+		create_asm_binary_op_int(out, line, asm_head);
+	}
+}
+
 void create_asm_unary(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *head)
 {
 	head->offset = head->offset - 4;
@@ -335,7 +402,7 @@ char *add_string_to_datasection(char *name, char *value, struct mcc_asm_head *he
 		current = current->next_data_section;
 	}
 	struct mcc_asm_data_section *new_data_section = malloc(sizeof(*new_data_section));
-	new_data_section->id = strdup(name);
+	new_data_section->id = name;
 	new_data_section->next_data_section = NULL;
 	current->next_data_section = new_data_section;
 
@@ -346,6 +413,38 @@ char *add_string_to_datasection(char *name, char *value, struct mcc_asm_head *he
 
 	data_index_root->value = strdup(".string ");
 	data_index_root->next_data_index = new_data_index;
+	new_data_section->index = data_index_root;
+
+	return name;
+}
+
+char *add_asm_float(char *arg, struct mcc_asm_head *head)
+{
+	char var[64];
+	sprintf(var, "tmp_%d", head->temp_variable_id);
+	head->temp_variable_id = head->temp_variable_id + 1;
+	char *name = strdup(var);
+
+	struct mcc_asm_data_section *current = head->data_section;
+	while (current->next_data_section != NULL) {
+		current = current->next_data_section;
+	}
+
+	struct mcc_asm_data_section *new_data_section = malloc(sizeof(*new_data_section));
+	new_data_section->id = strdup(var);
+	new_data_section->next_data_section = NULL;
+
+	current->next_data_section = new_data_section;
+
+	struct mcc_asm_data_index *data_index_root = malloc(sizeof(*data_index_root));
+	data_index_root->value = strdup(".float ");
+
+	struct mcc_asm_data_index *data_index_next = malloc(sizeof(*data_index_next));
+	data_index_next->value = strdup(arg);
+	data_index_next->next_data_index = NULL;
+
+	data_index_root->next_data_index = data_index_next;
+
 	new_data_section->index = data_index_root;
 
 	return name;
@@ -557,6 +656,7 @@ void mcc_create_asm(struct mcc_ir_table_head *ir, FILE *out, int destination)
 	asm_head->offset = 0;
 	asm_head->current_stack_size_parameters = 0;
 	asm_head->temp_variable_id = 0;
+	asm_head->stack = NULL;
 
 	struct mcc_asm_data_section *data_root = malloc(sizeof(*data_root));
 	data_root->id = strdup("\n.data\n");
@@ -610,14 +710,41 @@ void mcc_create_asm(struct mcc_ir_table_head *ir, FILE *out, int destination)
 	mcc_delete_asm(asm_head);
 }
 
+void mcc_delete_data_index(struct mcc_asm_data_index *index)
+{
+	if (index->next_data_index != NULL) {
+		mcc_delete_data_index(index->next_data_index);
+	}
+
+	free(index->value);
+	free(index);
+}
+
+void mcc_delete_stack(struct mcc_asm_stack *stack)
+{
+	if (stack->next_stack != NULL) {
+		mcc_delete_stack(stack->next_stack);
+	}
+	free(stack->line_no);
+	free(stack->var);
+	free(stack);
+}
+
 void mcc_delete_asm(struct mcc_asm_head *asm_head)
 {
 	struct mcc_asm_data_section *data = asm_head->data_section;
 	while (data != NULL) {
+
 		struct mcc_asm_data_section *temp = data->next_data_section;
+		if (data->index != NULL) {
+			mcc_delete_data_index(data->index);
+		}
 		free(data->id);
 		free(data);
 		data = temp;
+	}
+	if (asm_head->stack != NULL) {
+		mcc_delete_stack(asm_head->stack);
 	}
 	free(asm_head);
 }
