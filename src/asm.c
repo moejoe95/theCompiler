@@ -330,6 +330,38 @@ char *add_string_to_datasection(char *name, char *value, struct mcc_asm_head *he
 	return name;
 }
 
+void create_asm_float(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *head)
+{
+	assert(out);
+	assert(line);
+	assert(head);
+
+	char var[64];
+	sprintf(var, "%s", line->arg1);
+
+	struct mcc_asm_data_section *current = head->data_section;
+	while (current->next_data_section != NULL) {
+		current = current->next_data_section;
+	}
+
+	struct mcc_asm_data_section *new_data_section = malloc(sizeof(*new_data_section));
+	new_data_section->id = strdup(var);
+	new_data_section->next_data_section = NULL;
+
+	current->next_data_section = new_data_section;
+
+	struct mcc_asm_data_index *data_index_root = malloc(sizeof(*data_index_root));
+	data_index_root->value = strdup(".float ");
+
+	struct mcc_asm_data_index *data_index_next = malloc(sizeof(*data_index_next));
+	data_index_next->value = strdup(line->arg2);
+	data_index_next->next_data_index = NULL;
+
+	data_index_root->next_data_index = data_index_next;
+
+	new_data_section->index = data_index_root;
+}
+
 void create_asm_assignment(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *head)
 {
 	int stack_position = -1;
@@ -346,6 +378,8 @@ void create_asm_assignment(FILE *out, struct mcc_ir_line *line, struct mcc_asm_h
 	if (strncmp(line->arg2, "(", 1) == 0) {
 		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EBP,
 		                          find_stack_position(line->arg2, head->stack), MCC_ASM_REGISTER_EAX, 0);
+	} else if (line->memory_size == 2) {
+		create_asm_float(out, line, head);
 	} else {
 		if (strncmp(line->arg2, "\"", 1) == 0) {
 			add_string_to_datasection(line->arg1, line->arg2, head);

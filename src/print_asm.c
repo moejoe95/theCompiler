@@ -7,13 +7,13 @@ void getAssemblyInstruction(enum mcc_asm_instruction in, char *in_string)
 {
 	switch (in) {
 	case MCC_ASM_INSTRUCTION_MOVL:
-		strcpy(in_string, "movl");
+		strcpy(in_string, "mov");
 		break;
 	case MCC_ASM_INSTRUCTION_PUSHL:
-		strcpy(in_string, "pushl");
+		strcpy(in_string, "push");
 		break;
 	case MCC_ASM_INSTRUCTION_POPL:
-		strcpy(in_string, "popl");
+		strcpy(in_string, "pop");
 		break;
 	case MCC_ASM_INSTRUCTION_LEAVE:
 		strcpy(in_string, "leave");
@@ -22,28 +22,28 @@ void getAssemblyInstruction(enum mcc_asm_instruction in, char *in_string)
 		strcpy(in_string, "ret");
 		break;
 	case MCC_ASM_INSTRUCTION_SUBL:
-		strcpy(in_string, "subl");
+		strcpy(in_string, "sub");
 		break;
 	case MCC_ASM_INSTRUCTION_ADDL:
-		strcpy(in_string, "addl");
+		strcpy(in_string, "add");
 		break;
 	case MCC_ASM_INSTRUCTION_MULL:
 		strcpy(in_string, "imul");
 		break;
 	case MCC_ASM_INSTRUCTION_DIVL:
-		strcpy(in_string, "idivl");
+		strcpy(in_string, "idiv");
 		break;
 	case MCC_ASM_INSTRUCTION_ANDL:
-		strcpy(in_string, "andl");
+		strcpy(in_string, "and");
 		break;
 	case MCC_ASM_INSTRUCTION_ORL:
-		strcpy(in_string, "orl");
+		strcpy(in_string, "or");
 		break;
 	case MCC_ASM_INSTRUCTION_NOTL:
-		strcpy(in_string, "notl");
+		strcpy(in_string, "not");
 		break;
 	case MCC_ASM_INSTRUCTION_CALL:
-		strcpy(in_string, "calll");
+		strcpy(in_string, "call");
 		break;
 	case MCC_ASM_INSTRUCTION_JZ:
 		strcpy(in_string, "jz");

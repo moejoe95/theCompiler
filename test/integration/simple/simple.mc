@@ -1,7 +1,7 @@
 int main() {  
-
-    print("test");
-    print_nl();
+    
+    float a;
+    a = 3.4;
 
     return 0;
 }
