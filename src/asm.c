@@ -380,6 +380,7 @@ void create_asm_assignment(FILE *out, struct mcc_ir_line *line, struct mcc_asm_h
 		                          find_stack_position(line->arg2, head->stack), MCC_ASM_REGISTER_EAX, 0);
 	} else if (line->memory_size == 2) {
 		create_asm_float(out, line, head);
+		print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, line->arg1, MCC_ASM_REGISTER_EAX, 0);
 	} else {
 		if (strncmp(line->arg2, "\"", 1) == 0) {
 			add_string_to_datasection(line->arg1, line->arg2, head);
