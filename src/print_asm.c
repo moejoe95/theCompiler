@@ -3,7 +3,7 @@
 #define INSTRUCTION_SIZE 64
 #define OPERAND_SIZE 64
 
-void getAssemblyInstruction(enum mcc_asm_instruction in, char *in_string)
+void get_assembly_instruction(enum mcc_asm_instruction in, char *in_string)
 {
 	switch (in) {
 	case MCC_ASM_INSTRUCTION_MOVL:
@@ -72,6 +72,12 @@ void getAssemblyInstruction(enum mcc_asm_instruction in, char *in_string)
 	case MCC_ASM_INSTRUCTION_JMP:
 		strcpy(in_string, "jmp");
 		break;
+	case MCC_ASM_INSTRUCTION_FLDL:
+		strcpy(in_string, "fldl");
+		break;
+	case MCC_ASM_INSTRUCTION_FSTPL:
+		strcpy(in_string, "fstpl");
+		break;
 	default:
 		strcpy(in_string, "UNDEF");
 		break;
@@ -82,10 +88,12 @@ void print_asm_line(FILE *out, char *op, char *arg1, char *arg2)
 {
 	if (strcmp(arg1, "") == 0)
 		fprintf(out, "\t%s\n", op);
-	else if (strcmp(arg2, "") == 0)
+	else if (arg2 != NULL && strcmp(arg2, "") == 0)
 		fprintf(out, "\t%s\t%s\n", op, arg1);
-	else
+	else if (arg2 != NULL)
 		fprintf(out, "\t%s\t%s, %s\n", op, arg1, arg2);
+	else
+		fprintf(out, "\t%s\t%s\n", op, arg1);
 }
 
 void print_asm_instruction_call(FILE *out, enum mcc_asm_instruction in, char *lit)
@@ -93,13 +101,13 @@ void print_asm_instruction_call(FILE *out, enum mcc_asm_instruction in, char *li
 	char op[INSTRUCTION_SIZE] = {0};
 	char arg1[OPERAND_SIZE] = {0};
 
-	getAssemblyInstruction(in, op);
+	get_assembly_instruction(in, op);
 	sprintf(arg1, "%s", lit);
 
 	print_asm_line(out, op, arg1, "");
 }
 
-void getAssemblyOperand(enum mcc_asm_operand op, int offset, char *arg)
+void get_assembly_operand(enum mcc_asm_operand op, int offset, char *arg)
 {
 	switch (op) {
 	case MCC_ASM_REGISTER_EAX:
@@ -141,9 +149,9 @@ void print_asm_instruction_reg(FILE *out,
 	char arg1[OPERAND_SIZE] = {0};
 	char arg2[OPERAND_SIZE] = {0};
 
-	getAssemblyInstruction(in, op);
-	getAssemblyOperand(op1, op1_offset, arg1);
-	getAssemblyOperand(op2, op2_offset, arg2);
+	get_assembly_instruction(in, op);
+	get_assembly_operand(op1, op1_offset, arg1);
+	get_assembly_operand(op2, op2_offset, arg2);
 
 	print_asm_line(out, op, arg1, arg2);
 }
@@ -156,11 +164,33 @@ void print_asm_instruction_lit(
 	char arg1[OPERAND_SIZE] = {0};
 	char arg2[OPERAND_SIZE] = {0};
 
-	getAssemblyInstruction(in, op);
+	get_assembly_instruction(in, op);
 	sprintf(arg1, "$%s", lit);
-	getAssemblyOperand(op2, op2_offset, arg2);
+	get_assembly_operand(op2, op2_offset, arg2);
 
 	print_asm_line(out, op, arg1, arg2);
+}
+
+void print_asm_instruction_load_float(FILE *out, enum mcc_asm_instruction in, char *lit)
+{
+	char op[INSTRUCTION_SIZE] = {0};
+	char arg1[OPERAND_SIZE] = {0};
+
+	get_assembly_instruction(in, op);
+	sprintf(arg1, "%s", lit);
+
+	print_asm_line(out, op, arg1, NULL);
+}
+
+void print_asm_instruction_store_float(FILE *out, enum mcc_asm_instruction in, enum mcc_asm_operand reg, int offset)
+{
+	char op[INSTRUCTION_SIZE] = {0};
+	char arg1[OPERAND_SIZE] = {0};
+
+	get_assembly_instruction(in, op);
+	get_assembly_operand(reg, offset, arg1);
+
+	print_asm_line(out, op, arg1, NULL);
 }
 
 void create_asm_header(FILE *out)

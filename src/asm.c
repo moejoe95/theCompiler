@@ -375,22 +375,28 @@ void create_asm_assignment(FILE *out, struct mcc_ir_line *line, struct mcc_asm_h
 		update_stack(line, head->stack);
 	}
 
-	if (strncmp(line->arg2, "(", 1) == 0) {
-		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EBP,
-		                          find_stack_position(line->arg2, head->stack), MCC_ASM_REGISTER_EAX, 0);
-	} else if (line->memory_size == 2) {
+	if (line->memory_size == 2) {
 		create_asm_float(out, line, head);
-		print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, line->arg1, MCC_ASM_REGISTER_EAX, 0);
+		print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FLDL, line->arg1);
+		print_asm_instruction_store_float(out, MCC_ASM_INSTRUCTION_FSTPL, MCC_ASM_REGISTER_EBP, -4);
 	} else {
-		if (strncmp(line->arg2, "\"", 1) == 0) {
-			add_string_to_datasection(line->arg1, line->arg2, head);
-			print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, line->arg1, MCC_ASM_REGISTER_EAX, 0);
+		if (strncmp(line->arg2, "(", 1) == 0) {
+			print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EBP,
+			                          find_stack_position(line->arg2, head->stack), MCC_ASM_REGISTER_EAX,
+			                          0);
 		} else {
-			print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, line->arg2, MCC_ASM_REGISTER_EAX, 0);
+			if (strncmp(line->arg2, "\"", 1) == 0) {
+				add_string_to_datasection(line->arg1, line->arg2, head);
+				print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, line->arg1,
+				                          MCC_ASM_REGISTER_EAX, 0);
+			} else {
+				print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, line->arg2,
+				                          MCC_ASM_REGISTER_EAX, 0);
+			}
 		}
+		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EAX, 0, MCC_ASM_REGISTER_EBP,
+		                          stack_position);
 	}
-	print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EAX, 0, MCC_ASM_REGISTER_EBP,
-	                          stack_position);
 }
 
 void create_asm_array(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *head)
