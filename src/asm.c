@@ -15,7 +15,7 @@ int find_stack_position(char *arg, struct mcc_asm_stack *stack)
 	assert(stack);
 
 	struct mcc_asm_stack *current = stack->next_stack;
-	while (current != NULL) {
+	while (current != NULL && (current->line_no != NULL && current->var != NULL)) {
 		if (strcmp(arg, current->line_no) == 0 || strcmp(arg, current->var) == 0) {
 			return current->stack_position;
 		}
@@ -49,6 +49,9 @@ void update_stack(struct mcc_ir_line *line, struct mcc_asm_stack *stack)
 	struct mcc_asm_stack *current = stack->next_stack;
 	while (current != NULL) {
 		if (strcmp(line->arg1, current->var) == 0) {
+			if (current->line_no != NULL) {
+				free(current->line_no);
+			}
 			char value[14] = {0};
 			sprintf(value, "(%d)", line->index);
 			current->line_no = strdup(value);
@@ -83,7 +86,18 @@ void create_function_label(FILE *out, struct mcc_ir_table *current_func, struct 
 	struct mcc_asm_stack *stack = malloc(sizeof(*stack));
 	stack->stack_position = 0;
 	stack->next_stack = NULL;
-	asm_head->stack = stack;
+	stack->var = NULL;
+	stack->line_no = NULL;
+
+	if (asm_head->stack == NULL) {
+		asm_head->stack = stack;
+	} else {
+		struct mcc_asm_stack *current = asm_head->stack;
+		while (current->next_stack != NULL) {
+			current = current->next_stack;
+		}
+		current->next_stack = stack;
+	}
 
 	fprintf(out, "\n\t.globl %s\n\n", current_func->func_name);
 
@@ -91,8 +105,10 @@ void create_function_label(FILE *out, struct mcc_ir_table *current_func, struct 
 
 	print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_PUSHL, MCC_ASM_REGISTER_EBP, 0, -1, 0);
 	print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_ESP, 0, MCC_ASM_REGISTER_EBP, 0);
-	print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_SUBL, get_stack_size(current_func->line_head->root),
-	                          MCC_ASM_REGISTER_ESP, 0);
+
+	char *stack_size = get_stack_size(current_func->line_head->root);
+	print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_SUBL, stack_size, MCC_ASM_REGISTER_ESP, 0);
+	free(stack_size);
 }
 
 void create_asm_jumpfalse(FILE *out,
@@ -157,10 +173,11 @@ void create_asm_return(FILE *out, struct mcc_ir_line *line, struct mcc_ir_table 
 	print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, line->arg1, MCC_ASM_REGISTER_EAX, 0);
 
 	if (strcmp(current_func->func_name, "main") != 0) { // main has own return procedure
-		print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_ADDL, get_stack_size(current_func->line_head->root),
-		                          MCC_ASM_REGISTER_ESP, 0);
+		char *stack_size = get_stack_size(current_func->line_head->root);
+		print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_ADDL, stack_size, MCC_ASM_REGISTER_ESP, 0);
 		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_POPL, MCC_ASM_REGISTER_EBP, 0, -1, 0);
 		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_RETL, -1, 0, -1, 0);
+		free(stack_size);
 	}
 }
 
@@ -322,7 +339,7 @@ char *add_string_to_datasection(char *name, char *value, struct mcc_asm_head *he
 		current = current->next_data_section;
 	}
 	struct mcc_asm_data_section *new_data_section = malloc(sizeof(*new_data_section));
-	new_data_section->id = strdup(name);
+	new_data_section->id = name;
 	new_data_section->next_data_section = NULL;
 	current->next_data_section = new_data_section;
 
@@ -573,6 +590,7 @@ void mcc_create_asm(struct mcc_ir_table_head *ir, FILE *out, int destination)
 	asm_head->offset = 0;
 	asm_head->current_stack_size_parameters = 0;
 	asm_head->temp_variable_id = 0;
+	asm_head->stack = NULL;
 
 	struct mcc_asm_data_section *data_root = malloc(sizeof(*data_root));
 	data_root->id = strdup("\n.data\n");
@@ -626,14 +644,41 @@ void mcc_create_asm(struct mcc_ir_table_head *ir, FILE *out, int destination)
 	mcc_delete_asm(asm_head);
 }
 
+void mcc_delete_data_index(struct mcc_asm_data_index *index)
+{
+	if (index->next_data_index != NULL) {
+		mcc_delete_data_index(index->next_data_index);
+	}
+
+	free(index->value);
+	free(index);
+}
+
+void mcc_delete_stack(struct mcc_asm_stack *stack)
+{
+	if (stack->next_stack != NULL) {
+		mcc_delete_stack(stack->next_stack);
+	}
+	free(stack->line_no);
+	free(stack->var);
+	free(stack);
+}
+
 void mcc_delete_asm(struct mcc_asm_head *asm_head)
 {
 	struct mcc_asm_data_section *data = asm_head->data_section;
 	while (data != NULL) {
+
 		struct mcc_asm_data_section *temp = data->next_data_section;
+		if (data->index != NULL) {
+			mcc_delete_data_index(data->index);
+		}
 		free(data->id);
 		free(data);
 		data = temp;
+	}
+	if (asm_head->stack != NULL) {
+		mcc_delete_stack(asm_head->stack);
 	}
 	free(asm_head);
 }
