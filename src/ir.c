@@ -374,7 +374,7 @@ static void generate_ir_identifier(struct mcc_ast_expression *expr,
                                    enum ir_table_operation_type type)
 {
 	char *value = lookup_table_args(head, expr->identifier->name, NULL, expr->expression_type);
-	generate_ir_table_line(head, strdup(value), NULL, type, -1, -1);
+	generate_ir_table_line(head, value, NULL, type, -1, -1);
 }
 
 static void generate_ir_expression(struct mcc_ast_expression *expr,
@@ -785,7 +785,7 @@ struct mcc_ir_table_head *mcc_create_ir(struct mcc_ast_program *program, FILE *o
 		char *func_id = list->function->func_identifier->identifier->name;
 
 		struct mcc_ir_line_head *line_head = create_line_head(program);
-		line_head->func_name = strdup(func_id);
+		line_head->func_name = func_id;
 		generate_function_definition(list->function, line_head);
 		line_head->current->next_line = NULL;
 
