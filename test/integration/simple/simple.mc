@@ -1,12 +1,16 @@
-int test(){
-    int x;
-    x = 4;
-    print_int(4);
-    print_nl();
-    return 0;
-}
-
 int main() {  
-    test();
+    
+    string x;
+    x = "test";
+
+    print(x);
+    print_nl();
+
+    int y;
+    y = 4;
+
+    print_int(y);
+    print_nl();
+
     return 0;
 }

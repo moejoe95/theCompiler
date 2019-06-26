@@ -157,30 +157,6 @@ static char *generate_ir_literal_entity(struct mcc_ast_literal *lit)
 	return entity;
 }
 
-static void generate_ir_identifier(struct mcc_ast_identifier *id,
-                                   enum mcc_ast_type id_type,
-                                   struct mcc_ir_line_head *head,
-                                   enum ir_table_operation_type type)
-{
-	head->index++;
-	struct mcc_ir_line *new_table = create_new_ir_line();
-	char *entity;
-	if (id->type == MCC_AST_TYPE_ARRAY) {
-		char value[64] = {0};
-		sprintf(value, "%s[]", id->name);
-		entity = strdup(value);
-	} else {
-		entity = strdup(id->name);
-	}
-	new_table->arg1 = entity;
-	new_table->arg2 = NULL;
-	new_table->op_type = type;
-	new_table->memory_size = get_memory_size_type(id_type);
-
-	head->current->next_line = new_table;
-	head->current = new_table;
-}
-
 static void
 generate_ir_literal(struct mcc_ast_literal *lit, struct mcc_ir_line_head *head, enum ir_table_operation_type type)
 {
@@ -393,6 +369,14 @@ static void generate_ir_function_call(struct mcc_ast_expression *expr_call, stru
 	generate_ir_table_line(head, strdup(func_id), NULL, MCC_IR_TABLE_CALL, -1, -1);
 }
 
+static void generate_ir_identifier(struct mcc_ast_expression *expr,
+                                   struct mcc_ir_line_head *head,
+                                   enum ir_table_operation_type type)
+{
+	char *value = lookup_table_args(head, expr->identifier->name, NULL, expr->expression_type);
+	generate_ir_table_line(head, strdup(value), NULL, type, -1, -1);
+}
+
 static void generate_ir_expression(struct mcc_ast_expression *expr,
                                    struct mcc_ir_line_head *head,
                                    enum ir_table_operation_type type)
@@ -417,7 +401,7 @@ static void generate_ir_expression(struct mcc_ast_expression *expr,
 		generate_ir_literal(expr->literal, head, type);
 		break;
 	case MCC_AST_EXPRESSION_TYPE_IDENTIFIER:
-		generate_ir_identifier(expr->identifier, expr->expression_type, head, type);
+		generate_ir_identifier(expr, head, type);
 		break;
 	case MCC_AST_EXPRESSION_TYPE_FUNCTION_CALL:
 		generate_ir_function_call(expr, head);
