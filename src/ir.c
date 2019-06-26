@@ -71,20 +71,6 @@ static struct mcc_ir_line *create_new_ir_line()
 	return table;
 }
 
-static int lookup_memory_size(struct mcc_ir_line_head *head, int line)
-{
-	assert(head);
-	struct mcc_ir_line *table = head->root->next_line;
-
-	while (table != NULL) {
-		if (table->index == line) {
-			return table->memory_size;
-		}
-		table = table->next_line;
-	}
-	return 0;
-}
-
 static char *lookup_table_args(struct mcc_ir_line_head *head, char *arg1, char *arg2, enum mcc_ast_type type)
 {
 	assert(head);
@@ -126,6 +112,24 @@ static char *lookup_table_args(struct mcc_ir_line_head *head, char *arg1, char *
 	}
 
 	return strdup(value);
+}
+
+static int get_memory_size_line(struct mcc_ir_line_head *head, char *arg1)
+{
+	assert(head);
+	struct mcc_ir_line *table = head->root->next_line;
+
+	while (table != NULL) {
+		char value[128] = {0};
+		sprintf(value, "(%d)", table->index);
+		if (strcmp(value, arg1) == 0) {
+			return table->memory_size;
+		}
+
+		table = table->next_line;
+	}
+
+	return 0;
 }
 
 static char *generate_ir_literal_entity(struct mcc_ast_literal *lit)
@@ -222,7 +226,9 @@ static void generate_ir_table_line(struct mcc_ir_line_head *head,
 	}
 
 	if (arg1[0] == '(') {
-		new_table->memory_size = lookup_memory_size(head, head->index - 1);
+		new_table->memory_size = get_memory_size_line(head, arg1);
+	} else if (arg2 != NULL && arg2[0] == '(') {
+		new_table->memory_size = get_memory_size_line(head, arg2);
 	} else {
 		new_table->memory_size = get_memory_size_literal_type(lit_type);
 	}
