@@ -173,8 +173,7 @@ void create_asm_function_call(FILE *out,
 
 	print_asm_instruction_call(out, MCC_ASM_INSTRUCTION_CALL, line->arg1);
 
-	if (asm_head->current_stack_size_parameters >
-	    0) { // Note that after the call returns, the caller cleans up the stack using the add instruction.
+	if (asm_head->current_stack_size_parameters > 0) { // Note that after the call returns, the caller cleans up the stack using the add instruction.
 		char memory_size_str[12] = {0};
 		sprintf(memory_size_str, "%d", asm_head->current_stack_size_parameters);
 		print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_ADDL, memory_size_str, MCC_ASM_REGISTER_ESP, 0);
@@ -201,8 +200,30 @@ void create_asm_push(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *a
 			print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_PUSHL, line->arg1, -1, 0);
 		}
 	}
-	asm_head->current_stack_size_parameters +=
-	    4 * line->memory_size; // store used stack by parameters for function call clean up
+	asm_head->current_stack_size_parameters += 4 * line->memory_size; // store used stack by parameters for function call clean up
+}
+
+
+void create_asm_pop(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *asm_head, struct mcc_ir_table *current_func)
+{
+	assert(out);
+	assert(line);
+	assert(asm_head);
+	assert(current_func);
+
+	struct mcc_ir_function_signature_parameters *params = current_func->line_head->parameters; 
+
+	while(params != NULL && strcmp(params->arg_name, line->arg1) != 0){
+		params = params->next_parameter;
+	}
+
+	print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EBP, 8 + (params->index * params->size * 4), MCC_ASM_REGISTER_EAX, 0);
+
+	asm_head->offset = asm_head->offset - 4;
+	push_on_stack(line, asm_head);
+
+	print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EAX, 0, MCC_ASM_REGISTER_EBP, asm_head->offset);
+
 }
 
 void create_asm_binary_op(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *asm_head)
@@ -492,6 +513,9 @@ void create_asm_line(FILE *out,
 		break;
 	case MCC_IR_TABLE_PUSH:
 		create_asm_push(out, line, asm_head);
+		break;
+	case MCC_IR_TABLE_POP:
+		create_asm_pop(out, line, asm_head, current_func);
 		break;
 	case MCC_IR_TABLE_CALL:
 		create_asm_function_call(out, line, current_func, asm_head);

@@ -724,6 +724,14 @@ static void generate_ir_param(struct mcc_ast_parameter *param, struct mcc_ir_lin
 	new_table->op_type = MCC_IR_TABLE_POP;
 	new_table->index = head->index;
 
+	struct mcc_ir_function_signature_parameters *params = head->parameters;
+	while(params != NULL){
+		if(strcmp(params->arg_name, param->parameter->declare_id->identifier->name) == 0){
+			new_table->memory_size = head->parameters->size;
+		}
+		params = params->next_parameter;
+	}
+
 	head->current->next_line = new_table;
 	head->current = new_table;
 }
@@ -756,6 +764,45 @@ static void generate_function_definition(struct mcc_ast_func_definition *func, s
 	}
 }
 
+struct mcc_ir_function_signature_parameters *get_function_parameter_size(struct mcc_ast_parameter *parameter_list){
+	assert(parameter_list);
+	
+	struct mcc_ir_function_signature_parameters *root = malloc(sizeof(*root));
+	if (!root)
+		return NULL;
+
+	struct mcc_ir_function_signature_parameters *current = malloc(sizeof(*current));
+	if (!current)
+		return NULL;
+
+	int counter = 0;
+
+	while(parameter_list != NULL){
+		struct mcc_ir_function_signature_parameters *new_params = malloc(sizeof(*new_params));
+		if (!new_params)
+			return NULL;
+						
+		new_params->arg_name = strdup(parameter_list->parameter->declare_id->identifier->name);
+		new_params->size = get_memory_size_type(parameter_list->parameter->declare_type);
+		new_params->next_parameter = NULL;
+		new_params->index = counter;
+
+		if(counter == 0){
+			root = new_params;
+			current = root;
+		}
+		else{
+			current->next_parameter = new_params;
+			current = new_params;
+		}
+		
+		parameter_list = parameter_list->next_parameter;
+		counter++;
+	}
+
+	return root;
+}
+
 struct mcc_ir_line_head *create_line_head(struct mcc_ast_program *program)
 {
 	struct mcc_ir_line_head *head = malloc(sizeof(*head));
@@ -786,6 +833,8 @@ struct mcc_ir_table_head *mcc_create_ir(struct mcc_ast_program *program, FILE *o
 
 		struct mcc_ir_line_head *line_head = create_line_head(program);
 		line_head->func_name = strdup(func_id);
+		if(list->function->parameter_list)
+			line_head->parameters = get_function_parameter_size(list->function->parameter_list);
 		generate_function_definition(list->function, line_head);
 		line_head->current->next_line = NULL;
 

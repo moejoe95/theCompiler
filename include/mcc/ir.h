@@ -63,8 +63,18 @@ struct mcc_ir_line_head {
 	struct mcc_ast_program *program;
 
 	char *func_name;
+	struct mcc_ir_function_signature_parameters *parameters;
+
 
 	int index;
+};
+
+struct mcc_ir_function_signature_parameters{
+	int size;
+	char *arg_name;
+	int index;
+
+	struct mcc_ir_function_signature_parameters *next_parameter;
 };
 
 struct mcc_ast_visitor generate_ir_visitor(struct mcc_ir_line_head *head);
