@@ -49,6 +49,7 @@ enum mcc_asm_instruction {
 	// floating point instructions
 	MCC_ASM_INSTRUCTION_FLDL,
 	MCC_ASM_INSTRUCTION_FSTPL,
+	MCC_ASM_INSTRUCTION_FADDL
 
 };
 
