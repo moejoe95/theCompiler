@@ -55,7 +55,8 @@ void update_stack(struct mcc_ir_line *line, struct mcc_asm_stack *stack)
 	}
 }
 
-char* get_stack_size(struct mcc_ir_line* root){
+char *get_stack_size(struct mcc_ir_line *root)
+{
 	int memory_size = 0;
 	while (root != NULL) {
 		memory_size = memory_size + 4 * root->memory_size;
@@ -88,7 +89,8 @@ void create_function_label(FILE *out, struct mcc_ir_table *current_func, struct 
 
 	print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_PUSHL, MCC_ASM_REGISTER_EBP, 0, -1, 0);
 	print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_ESP, 0, MCC_ASM_REGISTER_EBP, 0);
-	print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_SUBL, get_stack_size(current_func->line_head->root), MCC_ASM_REGISTER_ESP, 0);
+	print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_SUBL, get_stack_size(current_func->line_head->root),
+	                          MCC_ASM_REGISTER_ESP, 0);
 }
 
 void create_asm_jumpfalse(FILE *out,
@@ -153,7 +155,8 @@ void create_asm_return(FILE *out, struct mcc_ir_line *line, struct mcc_ir_table 
 	print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, line->arg1, MCC_ASM_REGISTER_EAX, 0);
 
 	if (strcmp(current_func->func_name, "main") != 0) { // main has own return procedure
-		print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_ADDL, get_stack_size(current_func->line_head->root), MCC_ASM_REGISTER_ESP, 0);
+		print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_ADDL, get_stack_size(current_func->line_head->root),
+		                          MCC_ASM_REGISTER_ESP, 0);
 		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_POPL, MCC_ASM_REGISTER_EBP, 0, -1, 0);
 		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_RETL, -1, 0, -1, 0);
 	}
@@ -188,11 +191,16 @@ void create_asm_push(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *a
 	int stack_pos = -1;
 	stack_pos = find_stack_position(line->arg1, asm_head->stack);
 
-	if (strncmp(line->arg1, "(", 1) == 0)
+	if (strncmp(line->arg1, "(", 1) == 0) {
 		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_PUSHL, MCC_ASM_REGISTER_EBP, stack_pos, -1, 0);
-	else
-		print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_PUSHL, line->arg1, -1, 0);
-
+	} else {
+		if (strncmp(line->arg1, "\"", 1) == 0) {
+			char *loc = add_string_to_datasection(NULL, line->arg1, asm_head);
+			print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_PUSHL, loc, -1, 0);
+		} else {
+			print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_PUSHL, line->arg1, -1, 0);
+		}
+	}
 	asm_head->current_stack_size_parameters +=
 	    4 * line->memory_size; // store used stack by parameters for function call clean up
 }
