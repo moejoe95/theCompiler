@@ -8,6 +8,8 @@
 #include "mcc/ir.h"
 #include "mcc/print_asm.h"
 
+char *add_asm_float(struct mcc_ir_line *line, struct mcc_asm_head *head);
+
 int find_stack_position(char *arg, struct mcc_asm_stack *stack)
 {
 	assert(stack);
@@ -197,6 +199,12 @@ void create_asm_push(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *a
 		if (strncmp(line->arg1, "\"", 1) == 0) {
 			char *loc = add_string_to_datasection(NULL, line->arg1, asm_head);
 			print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_PUSHL, loc, -1, 0);
+		} else if (line->memory_size == 2) {
+			char *f_value = add_asm_float(line, asm_head);
+			print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FLDL, f_value);
+			// TODO replace hardcoded -4 stack location
+			print_asm_instruction_store_float(out, MCC_ASM_INSTRUCTION_FSTPL, MCC_ASM_REGISTER_EBP, -4);
+			print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_PUSHL, MCC_ASM_REGISTER_EBP, -4, -1, 0);
 		} else {
 			print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_PUSHL, line->arg1, -1, 0);
 		}
@@ -325,6 +333,38 @@ char *add_string_to_datasection(char *name, char *value, struct mcc_asm_head *he
 
 	data_index_root->value = strdup(".string ");
 	data_index_root->next_data_index = new_data_index;
+	new_data_section->index = data_index_root;
+
+	return name;
+}
+
+char *add_asm_float(struct mcc_ir_line *line, struct mcc_asm_head *head)
+{
+	char var[64];
+	sprintf(var, "tmp_%d", head->temp_variable_id);
+	head->temp_variable_id = head->temp_variable_id + 1;
+	char *name = strdup(var);
+
+	struct mcc_asm_data_section *current = head->data_section;
+	while (current->next_data_section != NULL) {
+		current = current->next_data_section;
+	}
+
+	struct mcc_asm_data_section *new_data_section = malloc(sizeof(*new_data_section));
+	new_data_section->id = strdup(var);
+	new_data_section->next_data_section = NULL;
+
+	current->next_data_section = new_data_section;
+
+	struct mcc_asm_data_index *data_index_root = malloc(sizeof(*data_index_root));
+	data_index_root->value = strdup(".float ");
+
+	struct mcc_asm_data_index *data_index_next = malloc(sizeof(*data_index_next));
+	data_index_next->value = strdup(line->arg1);
+	data_index_next->next_data_index = NULL;
+
+	data_index_root->next_data_index = data_index_next;
+
 	new_data_section->index = data_index_root;
 
 	return name;

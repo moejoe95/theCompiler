@@ -1,9 +1,12 @@
 int main() {  
 
-    float a;
-    a = 3.4;
 
-    print_float(a);
+    print_float(3.4);
+
+    float x;
+    x = 5.5;
+
+    print_float(x);
 
     return 0;
 }
