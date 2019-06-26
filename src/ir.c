@@ -476,17 +476,15 @@ static void generate_ir_return(struct mcc_ast_expression *expr, struct mcc_ir_li
 
 	if (expr) { // needed if function returns void (nothing)
 		generate_ir_expression(expr, head, MCC_IR_TABLE_RETURN);
-	}
 
-	// insert additional line in IR table
-	if (expr && expr->type != MCC_AST_EXPRESSION_TYPE_LITERAL && expr->type != MCC_AST_EXPRESSION_TYPE_IDENTIFIER) {
-		sprintf(value, "(%d)", head->index - 1);
-		generate_ir_table_line(head, strdup(value), NULL, MCC_IR_TABLE_PUSH, -1, -1);
-	}
+		// insert additional line in IR table
+		if (expr->type != MCC_AST_EXPRESSION_TYPE_LITERAL && expr->type != MCC_AST_EXPRESSION_TYPE_IDENTIFIER) {
+			sprintf(value, "(%d)", head->index);
+			generate_ir_table_line(head, strdup(value), NULL, MCC_IR_TABLE_PUSH, -1, -1);
 
-	if (expr) {
-		sprintf(value, "(%d)", head->index);
-		generate_ir_table_line(head, strdup(value), NULL, MCC_IR_TABLE_RETURN, -1, -1);
+			sprintf(value, "(%d)", head->index);
+			generate_ir_table_line(head, strdup(value), NULL, MCC_IR_TABLE_RETURN, -1, -1);
+		}
 	} else {
 		sprintf(value, "-");
 		generate_ir_table_line(head, strdup(value), NULL, MCC_IR_TABLE_RETURN, -1, -1);
@@ -528,7 +526,7 @@ static void generate_ir_if(struct mcc_ast_statement *stmt, struct mcc_ir_line_he
 
 	// generate jump table
 	struct mcc_ir_line *jump_table = NULL;
-	if (!hasStatementReturn(stmt->if_stat) && stmt->else_stat) {
+	if (stmt->else_stat) {
 		jump_table = create_new_ir_line();
 		head->index++;
 		jump_table->arg1 = jump_loc;
@@ -743,6 +741,10 @@ static void generate_function_definition(struct mcc_ast_func_definition *func, s
 	while (list != NULL) {
 		generate_ir_statement(list->statement, head);
 		list = list->next_statement;
+	}
+
+	if (!hasStatementReturn(func->func_compound)) {
+		generate_ir_return(NULL, head);
 	}
 }
 
