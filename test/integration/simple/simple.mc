@@ -1,11 +1,8 @@
-int main() {  
+int main() {
+    
+    int x;
+    x = 5;
 
-  
-    float x;
-
-    x = 1.2 + 3.4;
-
-    print_float(x);
-
+    print_int(x);
     return 0;
 }
