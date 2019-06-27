@@ -510,6 +510,9 @@ void create_asm_assignment(FILE *out, struct mcc_ir_line *line, struct mcc_asm_h
 	int stack_position = -1;
 	stack_position = find_stack_position(line->arg1, head->stack);
 
+	if (line->arg2 != NULL && line->arg2[0] == '(')
+		return;
+
 	if (stack_position == -1) {
 		head->offset = head->offset - 4;
 		stack_position = head->offset;

@@ -1,8 +1,8 @@
 int main() {
     
-    int x;
-    x = 5;
+    float x;
+    x = 3.4 - 1.1;
 
-    print_int(x);
+    print_float(x);
     return 0;
 }
