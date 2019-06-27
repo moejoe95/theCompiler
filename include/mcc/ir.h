@@ -65,11 +65,10 @@ struct mcc_ir_line_head {
 	char *func_name;
 	struct mcc_ir_function_signature_parameters *parameters;
 
-
 	int index;
 };
 
-struct mcc_ir_function_signature_parameters{
+struct mcc_ir_function_signature_parameters {
 	int size;
 	char *arg_name;
 	int index;
