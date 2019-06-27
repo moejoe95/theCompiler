@@ -15,9 +15,11 @@ int find_stack_position(char *arg, struct mcc_asm_stack *stack)
 	assert(stack);
 
 	struct mcc_asm_stack *current = stack->next_stack;
-	while (current != NULL && (current->line_no != NULL && current->var != NULL)) {
-		if (strcmp(arg, current->line_no) == 0 || strcmp(arg, current->var) == 0) {
-			return current->stack_position;
+	while (current != NULL) {
+		if (current->line_no != NULL && current->var != NULL) {
+			if (strcmp(arg, current->line_no) == 0 || strcmp(arg, current->var) == 0) {
+				return current->stack_position;
+			}
 		}
 		current = current->next_stack;
 	}
@@ -289,6 +291,7 @@ void create_asm_binary_op_int(FILE *out, struct mcc_ir_line *line, struct mcc_as
 	if (strncmp(line->arg2, "(", 1) == 0)
 		stack_position_arg2 = find_stack_position(line->arg2, asm_head->stack);
 
+	printf("stack pos %d\n", stack_position_arg1);
 	if (stack_position_arg1 != -1) // stack pos not found -> must be literal
 		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EBP, stack_position_arg1,
 		                          MCC_ASM_REGISTER_EAX, 0);
