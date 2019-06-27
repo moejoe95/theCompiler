@@ -291,7 +291,6 @@ void create_asm_binary_op_int(FILE *out, struct mcc_ir_line *line, struct mcc_as
 	if (strncmp(line->arg2, "(", 1) == 0)
 		stack_position_arg2 = find_stack_position(line->arg2, asm_head->stack);
 
-	printf("stack pos %d\n", stack_position_arg1);
 	if (stack_position_arg1 != -1) // stack pos not found -> must be literal
 		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EBP, stack_position_arg1,
 		                          MCC_ASM_REGISTER_EAX, 0);
