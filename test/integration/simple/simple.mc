@@ -1,11 +1,11 @@
 int main() {  
 
+  
     float x;
 
-    x = 5.3;
-    
+    x = 1.2 + 3.4;
+
     print_float(x);
-    print_nl();
 
     return 0;
 }

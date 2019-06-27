@@ -7,13 +7,13 @@ void get_assembly_instruction(enum mcc_asm_instruction in, char *in_string)
 {
 	switch (in) {
 	case MCC_ASM_INSTRUCTION_MOVL:
-		strcpy(in_string, "mov");
+		strcpy(in_string, "movl");
 		break;
 	case MCC_ASM_INSTRUCTION_PUSHL:
-		strcpy(in_string, "push");
+		strcpy(in_string, "pushl");
 		break;
 	case MCC_ASM_INSTRUCTION_POPL:
-		strcpy(in_string, "pop");
+		strcpy(in_string, "popl");
 		break;
 	case MCC_ASM_INSTRUCTION_LEAVE:
 		strcpy(in_string, "leave");
@@ -22,10 +22,10 @@ void get_assembly_instruction(enum mcc_asm_instruction in, char *in_string)
 		strcpy(in_string, "ret");
 		break;
 	case MCC_ASM_INSTRUCTION_SUBL:
-		strcpy(in_string, "sub");
+		strcpy(in_string, "subl");
 		break;
 	case MCC_ASM_INSTRUCTION_ADDL:
-		strcpy(in_string, "add");
+		strcpy(in_string, "addl");
 		break;
 	case MCC_ASM_INSTRUCTION_MULL:
 		strcpy(in_string, "imul");
@@ -43,7 +43,7 @@ void get_assembly_instruction(enum mcc_asm_instruction in, char *in_string)
 		strcpy(in_string, "not");
 		break;
 	case MCC_ASM_INSTRUCTION_CALL:
-		strcpy(in_string, "call");
+		strcpy(in_string, "calll");
 		break;
 	case MCC_ASM_INSTRUCTION_JZ:
 		strcpy(in_string, "jz");
@@ -79,7 +79,7 @@ void get_assembly_instruction(enum mcc_asm_instruction in, char *in_string)
 		strcpy(in_string, "fstpl");
 		break;
 	case MCC_ASM_INSTRUCTION_FADDL:
-		strcpy(in_string, "faddl");
+		strcpy(in_string, "faddp");
 		break;
 	default:
 		strcpy(in_string, "UNDEF");
@@ -180,7 +180,8 @@ void print_asm_instruction_load_float(FILE *out, enum mcc_asm_instruction in, ch
 	char arg1[OPERAND_SIZE] = {0};
 
 	get_assembly_instruction(in, op);
-	sprintf(arg1, "%s", lit);
+	if (lit != NULL)
+		sprintf(arg1, "%s", lit);
 
 	print_asm_line(out, op, arg1, NULL);
 }

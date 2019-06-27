@@ -230,6 +230,10 @@ void create_asm_push(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *a
 	int stack_pos = -1;
 	stack_pos = find_stack_position(line->arg1, asm_head->stack);
 
+	if (stack_pos == -1) {
+		return;
+	}
+
 	if (strncmp(line->arg1, "(", 1) == 0) {
 		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_PUSHL, MCC_ASM_REGISTER_EBP, stack_pos, -1, 0);
 	} else {
@@ -333,14 +337,26 @@ void create_asm_binary_op_int(FILE *out, struct mcc_ir_line *line, struct mcc_as
 
 void create_asm_binary_op_float(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *asm_head)
 {
+	asm_head->offset = asm_head->offset - 4;
 
 	char *arg1 = lookup_data_section(line->arg1, asm_head);
 	char *arg2 = lookup_data_section(line->arg2, asm_head);
 
 	print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FLDL, arg1);
-	print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FADDL, arg2);
+	print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FLDL, arg2);
 
-	print_asm_instruction_store_float(out, MCC_ASM_INSTRUCTION_FSTPL, MCC_ASM_REGISTER_EBP, -4);
+	switch (line->bin_op) {
+	case MCC_AST_BINARY_OP_ADD:
+		print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FADDL, NULL);
+		break;
+
+	default:
+		break;
+	}
+
+	print_asm_instruction_store_float(out, MCC_ASM_INSTRUCTION_FSTPL, MCC_ASM_REGISTER_EBP, asm_head->offset);
+
+	print_asm_instruction_store_float(out, MCC_ASM_INSTRUCTION_PUSHL, MCC_ASM_REGISTER_EBP, asm_head->offset);
 }
 
 void create_asm_binary_op(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *asm_head)
@@ -465,6 +481,10 @@ void create_asm_assignment(FILE *out, struct mcc_ir_line *line, struct mcc_asm_h
 {
 	int stack_position = -1;
 	stack_position = find_stack_position(line->arg1, head->stack);
+
+	if (stack_position == -1) {
+		return;
+	}
 
 	if (stack_position == -1) {
 		head->offset = head->offset - 4;
