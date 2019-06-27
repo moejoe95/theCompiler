@@ -421,6 +421,9 @@ static void generate_ir_declaration_array(struct mcc_ast_declare_assign *decl, s
 	assert(decl);
 	assert(head);
 
+	if (decl->declare_array_size == NULL || *decl->declare_array_size <= 0)
+		return;
+
 	char value[64] = {0};
 	sprintf(value, "%ld", *decl->declare_array_size);
 	generate_ir_table_line(head, strdup(decl->declare_id->identifier->name), strdup(value), MCC_IR_TABLE_ARRAY, -1,
@@ -664,8 +667,7 @@ static void generate_ir_statement(struct mcc_ast_statement *stmt, struct mcc_ir_
 		generate_ir_assignment(stmt->declare_assign, head);
 		break;
 	case MCC_AST_STATEMENT_DECLARATION:
-		if (stmt->declare_assign->declare_array_size != NULL && *stmt->declare_assign->declare_array_size > 0)
-			generate_ir_declaration_array(stmt->declare_assign, head);
+		generate_ir_declaration_array(stmt->declare_assign, head);
 		break;
 	case MCC_AST_STATEMENT_RETURN:
 		generate_ir_return(stmt->expression, head);
@@ -719,8 +721,8 @@ static void generate_ir_param(struct mcc_ast_parameter *param, struct mcc_ir_lin
 	new_table->index = head->index;
 
 	struct mcc_ir_function_signature_parameters *params = head->parameters;
-	while(params != NULL){
-		if(strcmp(params->arg_name, param->parameter->declare_id->identifier->name) == 0){
+	while (params != NULL) {
+		if (strcmp(params->arg_name, param->parameter->declare_id->identifier->name) == 0) {
 			new_table->memory_size = head->parameters->size;
 		}
 		params = params->next_parameter;
@@ -762,9 +764,10 @@ static void generate_function_definition(struct mcc_ast_func_definition *func, s
 	}
 }
 
-struct mcc_ir_function_signature_parameters *get_function_parameter_size(struct mcc_ast_parameter *parameter_list){
+struct mcc_ir_function_signature_parameters *get_function_parameter_size(struct mcc_ast_parameter *parameter_list)
+{
 	assert(parameter_list);
-	
+
 	struct mcc_ir_function_signature_parameters *root = malloc(sizeof(*root));
 	if (!root)
 		return NULL;
@@ -775,25 +778,24 @@ struct mcc_ir_function_signature_parameters *get_function_parameter_size(struct 
 
 	int counter = 0;
 
-	while(parameter_list != NULL){
+	while (parameter_list != NULL) {
 		struct mcc_ir_function_signature_parameters *new_params = malloc(sizeof(*new_params));
 		if (!new_params)
 			return NULL;
-						
+
 		new_params->arg_name = strdup(parameter_list->parameter->declare_id->identifier->name);
 		new_params->size = get_memory_size_type(parameter_list->parameter->declare_type);
 		new_params->next_parameter = NULL;
 		new_params->index = counter;
 
-		if(counter == 0){
+		if (counter == 0) {
 			root = new_params;
 			current = root;
-		}
-		else{
+		} else {
 			current->next_parameter = new_params;
 			current = new_params;
 		}
-		
+
 		parameter_list = parameter_list->next_parameter;
 		counter++;
 	}
@@ -831,7 +833,7 @@ struct mcc_ir_table_head *mcc_create_ir(struct mcc_ast_program *program, FILE *o
 
 		struct mcc_ir_line_head *line_head = create_line_head(program);
 		line_head->func_name = strdup(func_id);
-		if(list->function->parameter_list)
+		if (list->function->parameter_list)
 			line_head->parameters = get_function_parameter_size(list->function->parameter_list);
 		generate_function_definition(list->function, line_head);
 		line_head->current->next_line = NULL;
