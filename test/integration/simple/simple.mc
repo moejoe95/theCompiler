@@ -1,10 +1,10 @@
 int main() {
-    
-    float x;
 
-    x = 10.0 * 2.0;
-
-    print_float(x);
+    if (10 == 10){
+        print("1");
+    } else {
+        print("2");
+    }
 
     return 0;
 }

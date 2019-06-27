@@ -90,6 +90,9 @@ void get_assembly_instruction(enum mcc_asm_instruction in, char *in_string)
 	case MCC_ASM_INSTRUCTION_FDIVS:
 		strcpy(in_string, "fdivs");
 		break;
+	case MCC_ASM_INSTRUCTION_FCOMPS:
+		strcpy(in_string, "fcomp");
+		break;
 	default:
 		strcpy(in_string, "UNDEF");
 		break;

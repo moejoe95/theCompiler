@@ -369,7 +369,8 @@ void create_asm_binary_op_float(FILE *out, struct mcc_ir_line *line, struct mcc_
 	case MCC_AST_BINARY_OP_DIV:
 		print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FDIVS, arg2);
 		break;
-	default:
+	default: // floating point comparisons
+		print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FCOMPS, arg2);
 		break;
 	}
 
