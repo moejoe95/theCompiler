@@ -48,7 +48,7 @@ void update_stack(struct mcc_ir_line *line, struct mcc_asm_stack *stack)
 
 	struct mcc_asm_stack *current = stack->next_stack;
 	while (current != NULL) {
-		if (strcmp(line->arg1, current->var) == 0) {
+		if (current->var != NULL && strcmp(line->arg1, current->var) == 0) {
 			if (current->line_no != NULL) {
 				free(current->line_no);
 			}
