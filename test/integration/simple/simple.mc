@@ -1,10 +1,9 @@
 int main() {
 
-    if (10 == 10){
-        print("1");
-    } else {
-        print("2");
-    }
+    string s;
+    s = "asdf";
+    s = "adasdasasf";
+    print(s);
 
     return 0;
 }
