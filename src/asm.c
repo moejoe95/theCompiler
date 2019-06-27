@@ -249,7 +249,7 @@ void create_asm_push(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *a
 		}
 	}
 	asm_head->current_stack_size_parameters +=
-	    4 * line->memory_size; // store used stack by parameters for function call clean up
+	    4 * 1;//line->memory_size; // store used stack by parameters for function call clean up
 }
 
 void create_asm_pop(FILE *out,
@@ -263,13 +263,16 @@ void create_asm_pop(FILE *out,
 	assert(current_func);
 
 	struct mcc_ir_function_signature_parameters *params = current_func->line_head->parameters;
+	int top = 4 + params->total_size * 4;
+	int offset = 0;
 
 	while (params != NULL && strcmp(params->arg_name, line->arg1) != 0) {
+		offset = offset + (4 * 1);//params->size);
 		params = params->next_parameter;
 	}
 
 	print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EBP,
-	                          8 + (params->index * params->size * 4), MCC_ASM_REGISTER_EAX, 0);
+	                          top - offset, MCC_ASM_REGISTER_EAX, 0);
 
 	asm_head->offset = asm_head->offset - 4;
 	push_on_stack(line, asm_head);

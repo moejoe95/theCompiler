@@ -70,6 +70,7 @@ struct mcc_ir_line_head {
 
 struct mcc_ir_function_signature_parameters {
 	int size;
+	int total_size;
 	char *arg_name;
 	int index;
 
