@@ -77,6 +77,7 @@ struct mcc_asm_data_index {
 
 struct mcc_asm_data_section {
 	char *id;
+	char *line_no;
 	struct mcc_asm_data_index *index;
 	struct mcc_asm_data_section *next_data_section;
 };
