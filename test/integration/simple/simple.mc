@@ -1,16 +1,10 @@
 int main() {
     
     float x;
-    x = 3.3 + 3.5;
+
+    x = 10.0 * 2.0;
 
     print_float(x);
-
-    int y;
-
-    y = 3+4;
-
-    print_nl();
-    print_int(y);
 
     return 0;
 }
