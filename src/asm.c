@@ -411,13 +411,24 @@ void create_asm_binary_op(FILE *out, struct mcc_ir_line *line, struct mcc_asm_he
 	}
 }
 
+void create_asm_unary_minus(FILE *out, struct mcc_ir_line *line)
+{
+	char value[64] = {0};
+	sprintf(value, "%s%s", get_un_op_string(line->un_op), line->arg1);
+	print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, value, MCC_ASM_REGISTER_EAX, 0);
+}
+
 void create_asm_unary(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *head)
 {
 	head->offset = head->offset - 4;
-	print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, line->arg1, MCC_ASM_REGISTER_EAX, 0);
+
 	switch (line->un_op) {
 	case MCC_AST_UNARY_OP_NOT:
+		print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, line->arg1, MCC_ASM_REGISTER_EAX, 0);
 		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_NOTL, MCC_ASM_REGISTER_EAX, 0, -1, 0);
+		break;
+	case MCC_AST_UNARY_OP_MINUS:
+		create_asm_unary_minus(out, line);
 		break;
 	default:
 		break;
