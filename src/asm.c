@@ -204,7 +204,10 @@ void create_asm_jumpfalse(FILE *out,
 This line stores zero (return value) in EAX. The C calling convention is to store return values in EAX when exiting
 a routine.
 */
-void create_asm_return(FILE *out, struct mcc_ir_line *line, struct mcc_ir_table *current_func, struct mcc_asm_head *asm_head)
+void create_asm_return(FILE *out,
+                       struct mcc_ir_line *line,
+                       struct mcc_ir_table *current_func,
+                       struct mcc_asm_head *asm_head)
 {
 	assert(out);
 	assert(line);
@@ -212,11 +215,11 @@ void create_asm_return(FILE *out, struct mcc_ir_line *line, struct mcc_ir_table 
 
 	int stack_pos = find_stack_position(line->arg1, asm_head->stack);
 
-	if(line->arg1[0] != '(')
+	if (line->arg1[0] != '(')
 		print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, line->arg1, MCC_ASM_REGISTER_EAX, 0);
 	else
-		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EBP, stack_pos, MCC_ASM_REGISTER_EAX, 0);
-	
+		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EBP, stack_pos,
+		                          MCC_ASM_REGISTER_EAX, 0);
 
 	if (strcmp(current_func->func_name, "main") != 0) { // main has own return procedure
 		char *stack_size = get_stack_size(current_func->line_head->root);
@@ -246,10 +249,11 @@ void create_asm_function_call(FILE *out,
 		asm_head->current_stack_size_parameters = 0;
 	}
 
-	if(line->memory_size > 0){
+	if (line->memory_size > 0) {
 		asm_head->offset = asm_head->offset - (4 * line->memory_size);
 
-		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EAX, 0, MCC_ASM_REGISTER_EBP, asm_head->offset);
+		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EAX, 0, MCC_ASM_REGISTER_EBP,
+		                          asm_head->offset);
 	}
 }
 
@@ -353,7 +357,7 @@ void create_asm_binary_op_int(FILE *out, struct mcc_ir_line *line, struct mcc_as
 
 	case MCC_AST_BINARY_OP_DIV:
 		print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, "0", MCC_ASM_REGISTER_EDX, 0);
-		print_asm_instruction(out, MCC_ASM_INSTRUCTION_MOVL, stack_position_arg2, line->arg2);
+		print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, line->arg2, MCC_ASM_REGISTER_ECX, 0);
 		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_DIVL, MCC_ASM_REGISTER_ECX, 0, -1, 0);
 		break;
 
