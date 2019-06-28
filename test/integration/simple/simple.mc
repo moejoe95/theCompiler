@@ -1,10 +1,10 @@
 int main() {
 
-    int x;
+    float x;
 
-    x = -1;
+    x = -3.3;
 
-    print_int(x);
+    print_float(x);
 
     return 0;
 }

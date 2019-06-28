@@ -93,6 +93,9 @@ void get_assembly_instruction(enum mcc_asm_instruction in, char *in_string)
 	case MCC_ASM_INSTRUCTION_FCOMPS:
 		strcpy(in_string, "fcomp");
 		break;
+	case MCC_ASM_INSTRUCTION_NEGL:
+		strcpy(in_string, "negs");
+		break;
 	default:
 		strcpy(in_string, "UNDEF");
 		break;
@@ -224,8 +227,8 @@ void print_asm_data_section(FILE *out, struct mcc_asm_data_section *data)
 	current = current->next_data_section;
 	int label_counter = 0;
 	while (current != NULL) {
-		if(strncmp(current->id, "tmp_", 4) == 0)
-			fprintf(out, "\n%s:\n", current->id);	
+		if (strncmp(current->id, "tmp_", 4) == 0)
+			fprintf(out, "\n%s:\n", current->id);
 		else
 			fprintf(out, "\n%s_%d:\n", current->id, label_counter);
 		struct mcc_asm_data_index *index = current->index;
