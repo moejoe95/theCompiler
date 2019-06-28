@@ -495,9 +495,6 @@ static void generate_ir_return(struct mcc_ast_expression *expr, struct mcc_ir_li
 		// insert additional line in IR table
 		if (expr->type != MCC_AST_EXPRESSION_TYPE_LITERAL && expr->type != MCC_AST_EXPRESSION_TYPE_IDENTIFIER) {
 			sprintf(value, "(%d)", head->index);
-			generate_ir_table_line(head, strdup(value), NULL, MCC_IR_TABLE_PUSH, -1, -1, -1);
-
-			sprintf(value, "(%d)", head->index);
 			generate_ir_table_line(head, strdup(value), NULL, MCC_IR_TABLE_RETURN, -1, -1, -1);
 		}
 	} else {
