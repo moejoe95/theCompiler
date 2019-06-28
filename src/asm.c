@@ -204,13 +204,19 @@ void create_asm_jumpfalse(FILE *out,
 This line stores zero (return value) in EAX. The C calling convention is to store return values in EAX when exiting
 a routine.
 */
-void create_asm_return(FILE *out, struct mcc_ir_line *line, struct mcc_ir_table *current_func)
+void create_asm_return(FILE *out, struct mcc_ir_line *line, struct mcc_ir_table *current_func, struct mcc_asm_head *asm_head)
 {
 	assert(out);
 	assert(line);
 	assert(current_func);
 
-	print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, line->arg1, MCC_ASM_REGISTER_EAX, 0);
+	int stack_pos = find_stack_position(line->arg1, asm_head->stack);
+
+	if(line->arg1[0] != '(')
+		print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, line->arg1, MCC_ASM_REGISTER_EAX, 0);
+	else
+		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EBP, stack_pos, MCC_ASM_REGISTER_EAX, 0);
+	
 
 	if (strcmp(current_func->func_name, "main") != 0) { // main has own return procedure
 		char *stack_size = get_stack_size(current_func->line_head->root);
@@ -707,7 +713,7 @@ void create_asm_line(FILE *out,
 		create_asm_store(out, line, asm_head);
 		break;
 	case MCC_IR_TABLE_RETURN:
-		create_asm_return(out, line, current_func);
+		create_asm_return(out, line, current_func, asm_head);
 		break;
 	case MCC_IR_TABLE_PUSH:
 		create_asm_push(out, line, asm_head);
