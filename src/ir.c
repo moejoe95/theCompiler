@@ -317,7 +317,15 @@ static void generate_ir_unary_expression(struct mcc_ast_expression *un_expr,
 	head->index++;
 	struct mcc_ir_line *new_table = create_new_ir_line();
 
-	char *entity1 = generate_ir_entity(head, un_expr->rhs);
+	char value[64] = {0};
+	char *entity1;
+
+	if (un_expr->rhs->type == MCC_AST_EXPRESSION_TYPE_LITERAL) {
+		entity1 = generate_ir_entity(head, un_expr->rhs);
+	} else {
+		sprintf(value, "(%d)", head->current->index);
+		entity1 = strdup(value);
+	}
 
 	new_table->arg1 = entity1;
 	new_table->arg2 = NULL;
