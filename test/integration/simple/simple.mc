@@ -1,9 +1,10 @@
 int main() {
 
-    string s;
-    s = "asdf";
-    s = "adasdasasf";
-    print(s);
+    float x;
+
+    x = -3.3;
+
+    print_float(x);
 
     return 0;
 }
