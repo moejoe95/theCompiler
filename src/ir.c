@@ -210,7 +210,7 @@ static void generate_ir_table_line(struct mcc_ir_line_head *head,
                                    enum ir_table_operation_type type,
                                    int jump_loc,
                                    enum mcc_ast_literal_type lit_type,
-								   int mem_size)
+                                   int mem_size)
 {
 	assert(head);
 
@@ -234,9 +234,9 @@ static void generate_ir_table_line(struct mcc_ir_line_head *head,
 		new_table->memory_size = get_memory_size_literal_type(lit_type);
 	}
 
-	if(mem_size>0)
+	if (mem_size > 0)
 		new_table->memory_size = mem_size;
-		
+
 	head->current->next_line = new_table;
 	head->current = new_table;
 }
@@ -376,7 +376,8 @@ static void generate_ir_function_call(struct mcc_ast_expression *expr_call, stru
 	generate_function_arguments(expr_call, head);
 
 	// call function line
-	generate_ir_table_line(head, strdup(func_id), NULL, MCC_IR_TABLE_CALL, -1, -1, get_memory_size_type(expr_call->expression_type));
+	generate_ir_table_line(head, strdup(func_id), NULL, MCC_IR_TABLE_CALL, -1, -1,
+	                       get_memory_size_type(expr_call->expression_type));
 }
 
 static void generate_ir_identifier(struct mcc_ast_expression *expr,
@@ -518,8 +519,7 @@ static void generate_ir_if(struct mcc_ast_statement *stmt, struct mcc_ir_line_he
 	char *entity1;
 
 	// if condition
-	if (stmt->if_cond->type == MCC_AST_EXPRESSION_TYPE_IDENTIFIER ||
-	    stmt->if_cond->type == MCC_AST_EXPRESSION_TYPE_LITERAL) {
+	if (stmt->if_cond->type == MCC_AST_EXPRESSION_TYPE_LITERAL) {
 		entity1 = generate_ir_entity(head, stmt->if_cond);
 	} else {
 		generate_ir_expression(stmt->if_cond, head, -1);
@@ -792,7 +792,7 @@ struct mcc_ir_function_signature_parameters *get_function_parameter_size(struct 
 		new_params->size = get_memory_size_type(parameter_list->parameter->declare_type);
 		new_params->next_parameter = NULL;
 		new_params->index = counter;
-		total_size = total_size + 1;//new_params->size;
+		total_size = total_size + 1; // new_params->size;
 
 		if (counter == 0) {
 			root = new_params;
