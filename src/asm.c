@@ -82,16 +82,35 @@ char *lookup_data_section(char *arg, struct mcc_asm_head *asm_head)
 	struct mcc_asm_data_section *data_section = asm_head->data_section;
 	while (data_section != NULL) {
 		if (strcmp(arg, data_section->id) == 0 || strcmp(arg, data_section->line_no) == 0) {
-			is_in_data_section = 1;
-			break;
+			is_in_data_section++;
 		}
 		data_section = data_section->next_data_section;
 	}
 	if (is_in_data_section) {
-		return data_section->id;
+		char val[64] = {0};
+		sprintf(val, "%s_%d", arg, is_in_data_section - 1);
+		return strdup(val);
 	}
 	return NULL;
 }
+
+int get_last_data_section(char *arg, struct mcc_asm_head *asm_head)
+{
+
+	int is_in_data_section = 0;
+	struct mcc_asm_data_section *data_section = asm_head->data_section;
+	while (data_section != NULL) {
+		if (strcmp(arg, data_section->id) == 0 || strcmp(arg, data_section->line_no) == 0) {
+			is_in_data_section++;
+		}
+		data_section = data_section->next_data_section;
+	}
+	if (is_in_data_section) {
+		return is_in_data_section;
+	}
+	return -1;
+}
+
 
 /*
 This sequence of instructions is typical at the start of a subroutine to save space on the stack for local variables;
@@ -249,7 +268,7 @@ void create_asm_push(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *a
 		}
 	}
 	asm_head->current_stack_size_parameters +=
-	    4 * line->memory_size; // store used stack by parameters for function call clean up
+	    4 * 1;//line->memory_size; // store used stack by parameters for function call clean up
 }
 
 void create_asm_pop(FILE *out,
@@ -263,13 +282,16 @@ void create_asm_pop(FILE *out,
 	assert(current_func);
 
 	struct mcc_ir_function_signature_parameters *params = current_func->line_head->parameters;
+	int top = 4 + params->total_size * 4;
+	int offset = 0;
 
 	while (params != NULL && strcmp(params->arg_name, line->arg1) != 0) {
+		offset = offset + (4 * 1);//params->size);
 		params = params->next_parameter;
 	}
 
 	print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EBP,
-	                          8 + (params->index * params->size * 4), MCC_ASM_REGISTER_EAX, 0);
+	                          top - offset, MCC_ASM_REGISTER_EAX, 0);
 
 	asm_head->offset = asm_head->offset - 4;
 	push_on_stack(line, asm_head);
@@ -512,6 +534,8 @@ void create_asm_float(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *
 
 	sprintf(var, "(%d)", line->index);
 	new_data_section->line_no = strdup(var);
+
+	return;
 }
 
 void create_asm_assignment(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *head)
@@ -533,10 +557,16 @@ void create_asm_assignment(FILE *out, struct mcc_ir_line *line, struct mcc_asm_h
 	}
 
 	if (line->memory_size == 2) {
+		char label[64] = {0};
+		int pos = get_last_data_section(line->arg1, head);
+		if(pos == -1)
+			sprintf(label, "%s_0", line->arg1);
+		else
+			sprintf(label, "%s_%d", line->arg1, pos);
+		
 		create_asm_float(out, line, head);
-		print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FLDS, line->arg1);
-		int pos = find_stack_position(line->arg1, head->stack);
-		print_asm_instruction_store_float(out, MCC_ASM_INSTRUCTION_FSTPS, MCC_ASM_REGISTER_EBP, pos);
+		print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FLDS, label);
+		print_asm_instruction_store_float(out, MCC_ASM_INSTRUCTION_FSTPS, MCC_ASM_REGISTER_EBP, stack_position);
 	} else {
 		if (strncmp(line->arg2, "(", 1) == 0) {
 			int pos = find_stack_position(line->arg2, head->stack);
@@ -545,7 +575,15 @@ void create_asm_assignment(FILE *out, struct mcc_ir_line *line, struct mcc_asm_h
 		} else {
 			if (strncmp(line->arg2, "\"", 1) == 0) {
 				add_string_to_datasection(line->arg1, line->arg2, head);
-				print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, line->arg1,
+
+				char label[64] = {0};
+				int pos = get_last_data_section(line->arg1, head) - 1;
+				if(pos == -1)
+					sprintf(label, "%s_0", line->arg1);
+				else
+					sprintf(label, "%s_%d", line->arg1, pos);
+
+				print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, label,
 				                          MCC_ASM_REGISTER_EAX, 0);
 			} else {
 				print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, line->arg2,

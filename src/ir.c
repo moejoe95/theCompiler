@@ -777,7 +777,7 @@ struct mcc_ir_function_signature_parameters *get_function_parameter_size(struct 
 		return NULL;
 
 	int counter = 0;
-
+	int total_size = 0;
 	while (parameter_list != NULL) {
 		struct mcc_ir_function_signature_parameters *new_params = malloc(sizeof(*new_params));
 		if (!new_params)
@@ -787,6 +787,7 @@ struct mcc_ir_function_signature_parameters *get_function_parameter_size(struct 
 		new_params->size = get_memory_size_type(parameter_list->parameter->declare_type);
 		new_params->next_parameter = NULL;
 		new_params->index = counter;
+		total_size = total_size + 1;//new_params->size;
 
 		if (counter == 0) {
 			root = new_params;
@@ -800,6 +801,7 @@ struct mcc_ir_function_signature_parameters *get_function_parameter_size(struct 
 		counter++;
 	}
 
+	root->total_size = total_size;
 	return root;
 }
 
