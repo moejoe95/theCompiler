@@ -238,6 +238,10 @@ void create_asm_function_call(FILE *out,
 		print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_ADDL, memory_size_str, MCC_ASM_REGISTER_ESP, 0);
 		asm_head->current_stack_size_parameters = 0;
 	}
+
+	asm_head->offset = asm_head->offset - (4 * line->memory_size);
+
+	print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EAX, 0, MCC_ASM_REGISTER_EBP, asm_head->offset);
 }
 
 void create_asm_push(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *asm_head)
