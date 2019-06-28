@@ -81,7 +81,8 @@ char *lookup_data_section(char *arg, struct mcc_asm_head *asm_head)
 	int is_in_data_section = 0;
 	struct mcc_asm_data_section *data_section = asm_head->data_section;
 	while (data_section != NULL) {
-		if (strcmp(arg, data_section->id) == 0 || strcmp(arg, data_section->line_no) == 0) {
+		if ((data_section->id != NULL && strcmp(arg, data_section->id) == 0) ||
+		    (data_section->line_no != NULL && strcmp(arg, data_section->line_no) == 0)) {
 			is_in_data_section++;
 		}
 		data_section = data_section->next_data_section;
@@ -100,7 +101,8 @@ int get_last_data_section(char *arg, struct mcc_asm_head *asm_head)
 	int is_in_data_section = 0;
 	struct mcc_asm_data_section *data_section = asm_head->data_section;
 	while (data_section != NULL) {
-		if (strcmp(arg, data_section->id) == 0 || strcmp(arg, data_section->line_no) == 0) {
+		if ((data_section->id != NULL && strcmp(arg, data_section->id) == 0) ||
+		    (data_section->line_no != NULL && strcmp(arg, data_section->line_no) == 0)) {
 			is_in_data_section++;
 		}
 		data_section = data_section->next_data_section;
@@ -465,6 +467,7 @@ char *add_string_to_datasection(char *name, char *value, struct mcc_asm_head *he
 	}
 	struct mcc_asm_data_section *new_data_section = malloc(sizeof(*new_data_section));
 	new_data_section->id = name;
+	new_data_section->line_no = NULL;
 	new_data_section->next_data_section = NULL;
 	current->next_data_section = new_data_section;
 
@@ -494,6 +497,7 @@ char *add_asm_float(char *arg, int line_no, struct mcc_asm_head *head)
 
 	struct mcc_asm_data_section *new_data_section = malloc(sizeof(*new_data_section));
 	new_data_section->id = strdup(var);
+	new_data_section->line_no = NULL;
 	new_data_section->next_data_section = NULL;
 
 	current->next_data_section = new_data_section;
@@ -531,6 +535,7 @@ void create_asm_float(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *
 
 	struct mcc_asm_data_section *new_data_section = malloc(sizeof(*new_data_section));
 	new_data_section->id = strdup(var);
+	new_data_section->line_no = NULL;
 	new_data_section->next_data_section = NULL;
 
 	current->next_data_section = new_data_section;
@@ -624,6 +629,7 @@ void create_asm_array(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *
 	}
 	struct mcc_asm_data_section *new_data_section = malloc(sizeof(*new_data_section));
 	new_data_section->id = strdup(var);
+	new_data_section->line_no = NULL;
 	new_data_section->next_data_section = NULL;
 
 	struct mcc_asm_data_index *new_data_index_current = malloc(sizeof(*new_data_index_current));
@@ -749,6 +755,7 @@ void mcc_create_asm(struct mcc_ir_table_head *ir, FILE *out, int destination)
 
 	struct mcc_asm_data_section *data_root = malloc(sizeof(*data_root));
 	data_root->id = strdup("\n.data\n");
+	data_root->line_no = NULL;
 	data_root->index = NULL;
 	data_root->next_data_section = NULL;
 
