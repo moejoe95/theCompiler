@@ -218,9 +218,9 @@ void create_asm_return(FILE *out,
 
 	int stack_pos = find_stack_position(line->arg1, asm_head->stack);
 
-	if (line->arg1[0] != '(')
+	if (line->arg1[0] != '(' && line->arg1[0] != '-')
 		print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, line->arg1, MCC_ASM_REGISTER_EAX, 0);
-	else
+	else if(stack_pos != -1)
 		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EBP, stack_pos,
 		                          MCC_ASM_REGISTER_EAX, 0);
 
