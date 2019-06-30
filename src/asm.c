@@ -197,6 +197,9 @@ void create_asm_jumpfalse(FILE *out,
 				break;
 			}
 		}
+		else{
+			print_asm_instruction_call(out, MCC_ASM_INSTRUCTION_JE, line->arg2);
+		}
 	}
 }
 
@@ -452,10 +455,22 @@ void create_asm_unary(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *
 
 	switch (line->un_op) {
 	case MCC_AST_UNARY_OP_NOT:
-		print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, line->arg1, MCC_ASM_REGISTER_EAX, 0);
-		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_NOTL, MCC_ASM_REGISTER_EAX, 0, -1, 0);
-		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EAX, 0, MCC_ASM_REGISTER_EBP,
-		                          head->offset);
+		if(line->arg1[0] == '('){
+			int stack_pos = find_stack_position(line->arg1, head->stack);
+			print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EBP, stack_pos, MCC_ASM_REGISTER_EAX, 0);
+			print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_XORL, "1", MCC_ASM_REGISTER_EAX, 0);
+			print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EAX, 0, MCC_ASM_REGISTER_EBP,
+									head->offset);
+			print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EBP, head->offset, MCC_ASM_REGISTER_EAX,
+			0);
+			print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_CMP, "0", MCC_ASM_REGISTER_EAX, 0);
+			}
+		else{
+			print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, line->arg1, MCC_ASM_REGISTER_EAX, 0);
+			print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_NOTL, MCC_ASM_REGISTER_EAX, 0, -1, 0);
+			print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EAX, 0, MCC_ASM_REGISTER_EBP,
+									head->offset);
+		}
 		break;
 	case MCC_AST_UNARY_OP_MINUS:
 		create_asm_unary_minus(out, line, head);

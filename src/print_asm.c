@@ -42,6 +42,9 @@ void get_assembly_instruction(enum mcc_asm_instruction in, char *in_string)
 	case MCC_ASM_INSTRUCTION_NOTL:
 		strcpy(in_string, "not");
 		break;
+	case MCC_ASM_INSTRUCTION_XORL:
+		strcpy(in_string, "xorl");
+		break;
 	case MCC_ASM_INSTRUCTION_CALL:
 		strcpy(in_string, "calll");
 		break;

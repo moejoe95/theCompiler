@@ -28,6 +28,7 @@ enum mcc_asm_instruction {
 	// logical arithmetic
 	MCC_ASM_INSTRUCTION_ANDL,
 	MCC_ASM_INSTRUCTION_ORL,
+	MCC_ASM_INSTRUCTION_XORL,
 	MCC_ASM_INSTRUCTION_NOTL,
 
 	// compare
