@@ -780,7 +780,6 @@ void mcc_create_asm(struct mcc_ir_table_head *ir, FILE *out, int destination)
 	struct mcc_asm_head *asm_head = malloc(sizeof(*asm_head));
 	asm_head->current_stack_size_parameters = 0;
 	asm_head->temp_variable_id = 0;
-	asm_head->stack = NULL;
 
 	struct mcc_asm_data_section *data_root = malloc(sizeof(*data_root));
 	data_root->id = strdup("\n.data\n");
@@ -794,6 +793,7 @@ void mcc_create_asm(struct mcc_ir_table_head *ir, FILE *out, int destination)
 	while (current_func != NULL) {
 		struct mcc_ir_line *current_line = current_func->line_head->root;
 		asm_head->offset = 0;
+		asm_head->stack = NULL;
 		create_function_label(tmpfile, current_func, asm_head);
 		while (current_line != NULL) {
 			create_asm_line(tmpfile, current_line, asm_head, current_func);
