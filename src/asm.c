@@ -592,7 +592,7 @@ void create_asm_assignment(FILE *out, struct mcc_ir_line *line, struct mcc_asm_h
 	int stack_position = -1;
 	stack_position = find_stack_position(line->arg1, head->stack);
 
-	if (line->arg2 != NULL && line->arg2[0] == '(') {
+	if (line->arg2 != NULL && line->arg2[0] == '(' && stack_position == -1) {
 		push_on_stack(line, head);
 		return;
 	}
