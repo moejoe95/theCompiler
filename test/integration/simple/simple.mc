@@ -1,11 +1,17 @@
-int main() {
+int is_prime(int n)
+{
+	int i;
+	i = 2;
+    print_int(i);
+	return 1;
+}
 
-    bool x;
-    x = false;
-
-    if(!true){
-        print_int(2);
-    }
-
-    return 0;
+int main()
+{
+	int result;
+	result = is_prime(4);
+    int x;
+    x = 5;
+    print_int(5);
+	return 0;
 }
