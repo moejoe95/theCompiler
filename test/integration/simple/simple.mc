@@ -1,19 +1,11 @@
-int idiv(int x, int y){
-    return x / y;
-}
-
 int main() {
 
-    int x;
+    bool x;
+    x = false;
 
-    print("give an int number: ");
-    x = read_int();
-
-    x = idiv(x, 2);
-    
-    print_nl();
-    print_int(x);
-    print_nl();
+    if(!true){
+        print_int(2);
+    }
 
     return 0;
 }
