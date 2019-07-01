@@ -611,14 +611,11 @@ void create_asm_assignment(FILE *out, struct mcc_ir_line *line, struct mcc_asm_h
 	}
 
 	if (line->memory_size == 2) {
-		char label[64] = {0};
-		int pos = get_last_data_section(line->arg1, head);
-		if (pos == -1)
-			sprintf(label, "%s_0", line->arg1);
-		else
-			sprintf(label, "%s_%d", line->arg1, pos);
-
 		create_asm_float(out, line, head);
+
+		char label[64] = {0};
+		sprintf(label, "%s_%d", line->arg1, head->temp_variable_id - 1);
+
 		print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FLDS, label);
 		print_asm_instruction_store_float(out, MCC_ASM_INSTRUCTION_FSTPS, MCC_ASM_REGISTER_EBP, stack_position);
 	} else {
