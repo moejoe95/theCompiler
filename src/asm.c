@@ -78,18 +78,17 @@ char *get_stack_size(struct mcc_ir_line *root)
 char *lookup_data_section(char *arg, struct mcc_asm_head *asm_head)
 {
 
-	int is_in_data_section = 0;
+	int data_section_label_count = -1;
 	struct mcc_asm_data_section *data_section = asm_head->data_section;
 	while (data_section != NULL) {
-		if ((data_section->id != NULL && strcmp(arg, data_section->id) == 0) ||
-		    (data_section->line_no != NULL && strcmp(arg, data_section->line_no) == 0)) {
-			is_in_data_section++;
+		if (data_section->id != NULL && strcmp(arg, data_section->id) == 0) {
+			data_section_label_count = data_section->label_count;
 		}
 		data_section = data_section->next_data_section;
 	}
-	if (is_in_data_section) {
+	if (data_section_label_count >= 0) {
 		char val[64] = {0};
-		sprintf(val, "%s_%d", arg, is_in_data_section - 1);
+		sprintf(val, "%s_%d", arg, data_section_label_count);
 		return strdup(val);
 	}
 	return NULL;
@@ -397,6 +396,7 @@ void create_asm_binary_op_float(FILE *out, struct mcc_ir_line *line, struct mcc_
 		arg2 = add_asm_float(line->arg2, line->index, asm_head);
 	}
 
+	printf("debug %s\n", arg1);
 	print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FLDS, arg1);
 
 	switch (line->bin_op) {
@@ -484,14 +484,9 @@ void create_asm_unary(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *
 
 char *add_string_to_datasection(char *name, char *value, struct mcc_asm_head *head)
 {
-	char var[64];
 	if (name == NULL) {
+		char var[64];
 		sprintf(var, "tmp_%d", head->temp_variable_id);
-		head->temp_variable_id = head->temp_variable_id + 1;
-		name = strdup(var);
-	} else {
-		sprintf(var, "%s_%d", name, head->temp_variable_id);
-		head->temp_variable_id = head->temp_variable_id + 1;
 		name = strdup(var);
 	}
 
@@ -503,6 +498,7 @@ char *add_string_to_datasection(char *name, char *value, struct mcc_asm_head *he
 	new_data_section->id = name;
 	new_data_section->line_no = NULL;
 	new_data_section->next_data_section = NULL;
+	new_data_section->label_count = head->temp_variable_id;
 	current->next_data_section = new_data_section;
 
 	struct mcc_asm_data_index *data_index_root = malloc(sizeof(*data_index_root));
@@ -514,6 +510,8 @@ char *add_string_to_datasection(char *name, char *value, struct mcc_asm_head *he
 	data_index_root->next_data_index = new_data_index;
 	new_data_section->index = data_index_root;
 
+	head->temp_variable_id = head->temp_variable_id + 1;
+
 	return name;
 }
 
@@ -521,7 +519,7 @@ char *add_asm_float(char *arg, int line_no, struct mcc_asm_head *head)
 {
 	char var[64];
 	sprintf(var, "tmp_%d", head->temp_variable_id);
-	head->temp_variable_id = head->temp_variable_id + 1;
+
 	char *name = strdup(var);
 
 	struct mcc_asm_data_section *current = head->data_section;
@@ -533,6 +531,7 @@ char *add_asm_float(char *arg, int line_no, struct mcc_asm_head *head)
 	new_data_section->id = strdup(var);
 	new_data_section->line_no = NULL;
 	new_data_section->next_data_section = NULL;
+	new_data_section->label_count = head->temp_variable_id;
 
 	current->next_data_section = new_data_section;
 
@@ -550,6 +549,8 @@ char *add_asm_float(char *arg, int line_no, struct mcc_asm_head *head)
 	sprintf(var, "(%d)", line_no);
 	new_data_section->line_no = strdup(var);
 
+	head->temp_variable_id = head->temp_variable_id + 1;
+
 	return name;
 }
 
@@ -559,19 +560,16 @@ void create_asm_float(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *
 	assert(line);
 	assert(head);
 
-	char var[64];
-	sprintf(var, "%s_%d", line->arg1, head->temp_variable_id);
-	head->temp_variable_id = head->temp_variable_id + 1;
-
 	struct mcc_asm_data_section *current = head->data_section;
 	while (current->next_data_section != NULL) {
 		current = current->next_data_section;
 	}
 
 	struct mcc_asm_data_section *new_data_section = malloc(sizeof(*new_data_section));
-	new_data_section->id = strdup(var);
+	new_data_section->id = strdup(line->arg1);
 	new_data_section->line_no = NULL;
 	new_data_section->next_data_section = NULL;
+	new_data_section->label_count = head->temp_variable_id;
 
 	current->next_data_section = new_data_section;
 
@@ -586,8 +584,11 @@ void create_asm_float(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *
 
 	new_data_section->index = data_index_root;
 
+	char var[64];
 	sprintf(var, "(%d)", line->index);
 	new_data_section->line_no = strdup(var);
+
+	head->temp_variable_id = head->temp_variable_id + 1;
 
 	return;
 }

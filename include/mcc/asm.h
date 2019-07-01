@@ -84,6 +84,7 @@ struct mcc_asm_data_section {
 	char *line_no;
 	struct mcc_asm_data_index *index;
 	struct mcc_asm_data_section *next_data_section;
+	int label_count;
 };
 
 struct mcc_asm_stack {

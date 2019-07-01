@@ -230,7 +230,11 @@ void print_asm_data_section(FILE *out, struct mcc_asm_data_section *data)
 	current = current->next_data_section;
 
 	while (current != NULL) {
-		fprintf(out, "\n%s:\n", current->id);
+		if (strncmp(current->id, "tmp_", 4) == 0)
+			fprintf(out, "\n%s:\n", current->id);
+		else
+			fprintf(out, "\n%s_%d:\n", current->id, current->label_count);
+
 		struct mcc_asm_data_index *index = current->index;
 		fprintf(out, "\t");
 		int i = 0;
