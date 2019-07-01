@@ -269,6 +269,7 @@ static void generate_ir_binary_expression(struct mcc_ast_expression *bin_expr,
 			char *arg2 = generate_ir_entity(head, bin_expr->lhs->array_access_exp);
 			entity1 = lookup_table_args(head, bin_expr->lhs->array_access_id->identifier->name, arg2,
 			                            MCC_AST_TYPE_ARRAY);
+			free(arg2);
 		} else {
 			char value[14];
 			sprintf(value, "(%d)", head->index - 1);
@@ -287,6 +288,7 @@ static void generate_ir_binary_expression(struct mcc_ast_expression *bin_expr,
 			char *arg2 = generate_ir_entity(head, bin_expr->rhs->array_access_exp);
 			entity2 = lookup_table_args(head, bin_expr->rhs->array_access_id->identifier->name, arg2,
 			                            MCC_AST_TYPE_ARRAY);
+			free(arg2);
 		} else {
 			char value[14];
 			sprintf(value, "(%d)", head->index - 1);
@@ -778,13 +780,8 @@ struct mcc_ir_function_signature_parameters *get_function_parameter_size(struct 
 {
 	assert(parameter_list);
 
-	struct mcc_ir_function_signature_parameters *root = malloc(sizeof(*root));
-	if (!root)
-		return NULL;
-
-	struct mcc_ir_function_signature_parameters *current = malloc(sizeof(*current));
-	if (!current)
-		return NULL;
+	struct mcc_ir_function_signature_parameters *root;
+	struct mcc_ir_function_signature_parameters *current;
 
 	int counter = 0;
 	int total_size = 0;
@@ -845,8 +842,11 @@ struct mcc_ir_table_head *mcc_create_ir(struct mcc_ast_program *program, FILE *o
 
 		struct mcc_ir_line_head *line_head = create_line_head(program);
 		line_head->func_name = strdup(func_id);
-		if (list->function->parameter_list)
+		if (list->function->parameter_list) {
 			line_head->parameters = get_function_parameter_size(list->function->parameter_list);
+		} else {
+			line_head->parameters = NULL;
+		}
 		generate_function_definition(list->function, line_head);
 		line_head->current->next_line = NULL;
 
@@ -884,9 +884,23 @@ void mcc_delete_line(struct mcc_ir_line *line)
 	free(line);
 }
 
+void mcc_delete_func_sign_parameters(struct mcc_ir_function_signature_parameters *param)
+{
+	if (param->next_parameter != NULL) {
+		mcc_delete_func_sign_parameters(param->next_parameter);
+	}
+	free(param->arg_name);
+	free(param);
+}
+
 void mcc_delete_line_head(struct mcc_ir_line_head *line_head)
 {
 	mcc_delete_line(line_head->root);
+
+	if (line_head->parameters != NULL)
+		mcc_delete_func_sign_parameters(line_head->parameters);
+
+	free(line_head->func_name);
 	free(line_head);
 }
 
