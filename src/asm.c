@@ -396,7 +396,6 @@ void create_asm_binary_op_float(FILE *out, struct mcc_ir_line *line, struct mcc_
 		arg2 = add_asm_float(line->arg2, line->index, asm_head);
 	}
 
-	printf("debug %s\n", arg1);
 	print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FLDS, arg1);
 
 	switch (line->bin_op) {
@@ -659,6 +658,7 @@ void create_asm_array(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *
 	new_data_section->id = strdup(var);
 	new_data_section->line_no = NULL;
 	new_data_section->next_data_section = NULL;
+	new_data_section->label_count = -1;
 
 	struct mcc_asm_data_index *new_data_index_current = malloc(sizeof(*new_data_index_current));
 	struct mcc_asm_data_index *new_data_index_root = new_data_index_current;
