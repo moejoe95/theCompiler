@@ -420,7 +420,8 @@ static void generate_ir_expression(struct mcc_ast_expression *expr,
 		generate_ir_literal(expr->literal, head, type);
 		break;
 	case MCC_AST_EXPRESSION_TYPE_IDENTIFIER:
-		generate_ir_identifier(expr, head, type);
+		// TKK: I don't think this is necessary
+		// generate_ir_identifier(expr, head, type);
 		break;
 	case MCC_AST_EXPRESSION_TYPE_FUNCTION_CALL:
 		generate_ir_function_call(expr, head);
