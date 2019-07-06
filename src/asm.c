@@ -283,6 +283,7 @@ void create_asm_push(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *a
 			// TODO replace hardcoded -4 stack location
 			print_asm_instruction_store_float(out, MCC_ASM_INSTRUCTION_FSTPS, MCC_ASM_REGISTER_EBP, -4);
 			print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_PUSHL, MCC_ASM_REGISTER_EBP, -4, -1, 0);
+			free(loc);
 		} else {
 			print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_PUSHL, line->arg1, -1, 0);
 		}
@@ -398,7 +399,6 @@ void create_asm_binary_op_float(FILE *out, struct mcc_ir_line *line, struct mcc_
 		arg2 = add_asm_float(line->arg2, line->index, asm_head);
 	}
 
-	printf("debug %s\n", arg1);
 	print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FLDS, arg1);
 
 	switch (line->bin_op) {
@@ -421,6 +421,9 @@ void create_asm_binary_op_float(FILE *out, struct mcc_ir_line *line, struct mcc_
 
 	print_asm_instruction_store_float(out, MCC_ASM_INSTRUCTION_FSTPS, MCC_ASM_REGISTER_EBP, asm_head->offset);
 	push_on_stack(line, asm_head);
+
+	free(arg1);
+	free(arg2);
 }
 
 void create_asm_binary_op(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *asm_head)
@@ -448,6 +451,7 @@ void create_asm_unary_minus(FILE *out, struct mcc_ir_line *line, struct mcc_asm_
 		print_asm_instruction_store_float(out, MCC_ASM_INSTRUCTION_FSTPS, MCC_ASM_REGISTER_EBP,
 		                                  asm_head->offset);
 		push_on_stack(line, asm_head);
+		free(arg1);
 	} else { // int
 		sprintf(value, "%s%s", get_un_op_string(line->un_op), line->arg1);
 		print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, value, MCC_ASM_REGISTER_EAX, 0);
@@ -661,6 +665,7 @@ void create_asm_array(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *
 	new_data_section->id = strdup(var);
 	new_data_section->line_no = NULL;
 	new_data_section->next_data_section = NULL;
+	new_data_section->label_count = -1;
 
 	struct mcc_asm_data_index *new_data_index_current = malloc(sizeof(*new_data_index_current));
 	struct mcc_asm_data_index *new_data_index_root = new_data_index_current;
@@ -758,6 +763,16 @@ void create_asm_line(FILE *out,
 	}
 }
 
+void mcc_delete_stack(struct mcc_asm_stack *stack)
+{
+	if (stack->next_stack != NULL) {
+		mcc_delete_stack(stack->next_stack);
+	}
+	free(stack->line_no);
+	free(stack->var);
+	free(stack);
+}
+
 void mcc_create_asm(struct mcc_ir_table_head *ir, FILE *out, int destination)
 {
 	assert(ir);
@@ -780,6 +795,7 @@ void mcc_create_asm(struct mcc_ir_table_head *ir, FILE *out, int destination)
 	struct mcc_asm_head *asm_head = malloc(sizeof(*asm_head));
 	asm_head->current_stack_size_parameters = 0;
 	asm_head->temp_variable_id = 0;
+	asm_head->stack = NULL;
 
 	struct mcc_asm_data_section *data_root = malloc(sizeof(*data_root));
 	data_root->id = strdup("\n.data\n");
@@ -793,7 +809,6 @@ void mcc_create_asm(struct mcc_ir_table_head *ir, FILE *out, int destination)
 	while (current_func != NULL) {
 		struct mcc_ir_line *current_line = current_func->line_head->root;
 		asm_head->offset = 0;
-		asm_head->stack = NULL;
 		create_function_label(tmpfile, current_func, asm_head);
 		while (current_line != NULL) {
 			create_asm_line(tmpfile, current_line, asm_head, current_func);
@@ -815,6 +830,8 @@ void mcc_create_asm(struct mcc_ir_table_head *ir, FILE *out, int destination)
 			print_asm_instruction_reg(tmpfile, MCC_ASM_INSTRUCTION_RETL, -1, 0, -1, 0);
 		}
 		current_func = current_func->next_table;
+		mcc_delete_stack(asm_head->stack);
+		asm_head->stack = NULL;
 	}
 
 	print_asm_data_section(tmpfile, data_root);
@@ -846,16 +863,6 @@ void mcc_delete_data_index(struct mcc_asm_data_index *index)
 	free(index);
 }
 
-void mcc_delete_stack(struct mcc_asm_stack *stack)
-{
-	if (stack->next_stack != NULL) {
-		mcc_delete_stack(stack->next_stack);
-	}
-	free(stack->line_no);
-	free(stack->var);
-	free(stack);
-}
-
 void mcc_delete_asm(struct mcc_asm_head *asm_head)
 {
 	struct mcc_asm_data_section *data = asm_head->data_section;
@@ -866,6 +873,7 @@ void mcc_delete_asm(struct mcc_asm_head *asm_head)
 			mcc_delete_data_index(data->index);
 		}
 		free(data->id);
+		free(data->line_no);
 		free(data);
 		data = temp;
 	}
