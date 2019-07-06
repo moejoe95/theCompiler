@@ -252,13 +252,6 @@ static void generate_ir_binary_expression(struct mcc_ast_expression *bin_expr,
 	    bin_expr->lhs->type != MCC_AST_EXPRESSION_TYPE_LITERAL) {
 		generate_ir_expression(bin_expr->lhs, head, type);
 	}
-	if (bin_expr->rhs->type != MCC_AST_EXPRESSION_TYPE_IDENTIFIER &&
-	    bin_expr->rhs->type != MCC_AST_EXPRESSION_TYPE_LITERAL) {
-		generate_ir_expression(bin_expr->rhs, head, type);
-	}
-
-	head->index++;
-	struct mcc_ir_line *new_table = create_new_ir_line();
 
 	char *entity1;
 	if (bin_expr->lhs->type != MCC_AST_EXPRESSION_TYPE_LITERAL) {
@@ -271,13 +264,19 @@ static void generate_ir_binary_expression(struct mcc_ast_expression *bin_expr,
 			                            MCC_AST_TYPE_ARRAY);
 		} else {
 			char value[14];
-			sprintf(value, "(%d)", head->index - 1);
+			sprintf(value, "(%d)", head->index);
 			entity1 = strdup(value);
 		}
 
 	} else {
 		entity1 = generate_ir_entity(head, bin_expr->lhs);
 	}
+
+	if (bin_expr->rhs->type != MCC_AST_EXPRESSION_TYPE_IDENTIFIER &&
+	    bin_expr->rhs->type != MCC_AST_EXPRESSION_TYPE_LITERAL) {
+		generate_ir_expression(bin_expr->rhs, head, type);
+	}
+
 	char *entity2;
 	if (bin_expr->rhs->type != MCC_AST_EXPRESSION_TYPE_LITERAL) {
 		if (bin_expr->rhs->type == MCC_AST_EXPRESSION_TYPE_IDENTIFIER) {
@@ -289,12 +288,15 @@ static void generate_ir_binary_expression(struct mcc_ast_expression *bin_expr,
 			                            MCC_AST_TYPE_ARRAY);
 		} else {
 			char value[14];
-			sprintf(value, "(%d)", head->index - 1);
+			sprintf(value, "(%d)", head->index);
 			entity2 = strdup(value);
 		}
 	} else {
 		entity2 = generate_ir_entity(head, bin_expr->rhs);
 	}
+
+	head->index++;
+	struct mcc_ir_line *new_table = create_new_ir_line();
 
 	new_table->arg1 = entity1;
 	new_table->arg2 = entity2;
