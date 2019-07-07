@@ -185,7 +185,7 @@ char *generate_ir_array_access(struct mcc_ir_line_head *head, struct mcc_ast_exp
 	if (expr->array_access_exp->type == MCC_AST_EXPRESSION_TYPE_LITERAL)
 		sprintf(value, "%s[%s]", id, pos);
 	else
-		sprintf(value, "%s", pos);
+		sprintf(value, "(%d)", head->index);
 	return strdup(value);
 }
 
