@@ -16,6 +16,7 @@ static void generate_ir_function_call(struct mcc_ast_expression *e, struct mcc_i
 static void
 generate_ir_expression(struct mcc_ast_expression *e, struct mcc_ir_line_head *head, enum ir_table_operation_type t);
 static int hasStatementReturn(struct mcc_ast_statement *stmt);
+static char *generate_ir_entity(struct mcc_ir_line_head *head, struct mcc_ast_expression *expr);
 
 static int get_memory_size_literal_type(enum mcc_ast_literal_type type)
 {
@@ -176,6 +177,18 @@ generate_ir_literal(struct mcc_ast_literal *lit, struct mcc_ir_line_head *head, 
 	head->current = new_table;
 }
 
+char *generate_ir_array_access(struct mcc_ir_line_head *head, struct mcc_ast_expression *expr)
+{
+	char value[64] = {0};
+	char *id = expr->array_access_id->identifier->name;
+	char *pos = generate_ir_entity(head, expr->array_access_exp);
+	if (expr->array_access_exp->type == MCC_AST_EXPRESSION_TYPE_LITERAL)
+		sprintf(value, "%s[%s]", id, pos);
+	else
+		sprintf(value, "(%d)", head->index);
+	return strdup(value);
+}
+
 static char *generate_ir_entity(struct mcc_ir_line_head *head, struct mcc_ast_expression *expr)
 {
 	char *entity = NULL;
@@ -189,7 +202,12 @@ static char *generate_ir_entity(struct mcc_ir_line_head *head, struct mcc_ast_ex
 		                 : lookup_table_args(head, expr->identifier->name, NULL, MCC_AST_TYPE_STRING);
 		break;
 	case MCC_AST_EXPRESSION_TYPE_ARRAY_ACCESS:
+		entity = generate_ir_array_access(head, expr);
+		break;
 	case MCC_AST_EXPRESSION_TYPE_BINARY_OP:
+		sprintf(value, "(%d)", head->index);
+		entity = strdup(value);
+		break;
 	case MCC_AST_EXPRESSION_TYPE_PARENTH:
 		sprintf(value, "(%d)", head->index - 1);
 		entity = strdup(value);
@@ -252,13 +270,6 @@ static void generate_ir_binary_expression(struct mcc_ast_expression *bin_expr,
 	    bin_expr->lhs->type != MCC_AST_EXPRESSION_TYPE_LITERAL) {
 		generate_ir_expression(bin_expr->lhs, head, type);
 	}
-	if (bin_expr->rhs->type != MCC_AST_EXPRESSION_TYPE_IDENTIFIER &&
-	    bin_expr->rhs->type != MCC_AST_EXPRESSION_TYPE_LITERAL) {
-		generate_ir_expression(bin_expr->rhs, head, type);
-	}
-
-	head->index++;
-	struct mcc_ir_line *new_table = create_new_ir_line();
 
 	char *entity1;
 	if (bin_expr->lhs->type != MCC_AST_EXPRESSION_TYPE_LITERAL) {
@@ -269,15 +280,22 @@ static void generate_ir_binary_expression(struct mcc_ast_expression *bin_expr,
 			char *arg2 = generate_ir_entity(head, bin_expr->lhs->array_access_exp);
 			entity1 = lookup_table_args(head, bin_expr->lhs->array_access_id->identifier->name, arg2,
 			                            MCC_AST_TYPE_ARRAY);
+			free(arg2);
 		} else {
 			char value[14];
-			sprintf(value, "(%d)", head->index - 1);
+			sprintf(value, "(%d)", head->index);
 			entity1 = strdup(value);
 		}
 
 	} else {
 		entity1 = generate_ir_entity(head, bin_expr->lhs);
 	}
+
+	if (bin_expr->rhs->type != MCC_AST_EXPRESSION_TYPE_IDENTIFIER &&
+	    bin_expr->rhs->type != MCC_AST_EXPRESSION_TYPE_LITERAL) {
+		generate_ir_expression(bin_expr->rhs, head, type);
+	}
+
 	char *entity2;
 	if (bin_expr->rhs->type != MCC_AST_EXPRESSION_TYPE_LITERAL) {
 		if (bin_expr->rhs->type == MCC_AST_EXPRESSION_TYPE_IDENTIFIER) {
@@ -287,14 +305,18 @@ static void generate_ir_binary_expression(struct mcc_ast_expression *bin_expr,
 			char *arg2 = generate_ir_entity(head, bin_expr->rhs->array_access_exp);
 			entity2 = lookup_table_args(head, bin_expr->rhs->array_access_id->identifier->name, arg2,
 			                            MCC_AST_TYPE_ARRAY);
+			free(arg2);
 		} else {
 			char value[14];
-			sprintf(value, "(%d)", head->index - 1);
+			sprintf(value, "(%d)", head->index);
 			entity2 = strdup(value);
 		}
 	} else {
 		entity2 = generate_ir_entity(head, bin_expr->rhs);
 	}
+
+	head->index++;
+	struct mcc_ir_line *new_table = create_new_ir_line();
 
 	new_table->arg1 = entity1;
 	new_table->arg2 = entity2;
@@ -362,9 +384,11 @@ static void generate_function_arguments(struct mcc_ast_expression *expr, struct 
 		generate_ir_expression(list->expression, head, MCC_IR_TABLE_PUSH);
 		// insert additional line in IR table
 
-		if (expr->type != MCC_AST_EXPRESSION_TYPE_LITERAL && expr->type != MCC_AST_EXPRESSION_TYPE_IDENTIFIER &&
+		if (list->expression->type != MCC_AST_EXPRESSION_TYPE_LITERAL &&
+		    list->expression->type != MCC_AST_EXPRESSION_TYPE_IDENTIFIER &&
 		    head->current->op_type != MCC_IR_TABLE_PUSH) {
-			char *value = generate_ir_entity(head, expr);
+			char *value = generate_ir_entity(head, list->expression);
+
 			generate_ir_table_line(head, strdup(value), NULL, MCC_IR_TABLE_PUSH, -1, -1, -1);
 			free(value);
 		}
@@ -780,13 +804,8 @@ struct mcc_ir_function_signature_parameters *get_function_parameter_size(struct 
 {
 	assert(parameter_list);
 
-	struct mcc_ir_function_signature_parameters *root = malloc(sizeof(*root));
-	if (!root)
-		return NULL;
-
-	struct mcc_ir_function_signature_parameters *current = malloc(sizeof(*current));
-	if (!current)
-		return NULL;
+	struct mcc_ir_function_signature_parameters *root;
+	struct mcc_ir_function_signature_parameters *current;
 
 	int counter = 0;
 	int total_size = 0;
@@ -847,8 +866,11 @@ struct mcc_ir_table_head *mcc_create_ir(struct mcc_ast_program *program, FILE *o
 
 		struct mcc_ir_line_head *line_head = create_line_head(program);
 		line_head->func_name = strdup(func_id);
-		if (list->function->parameter_list)
+		if (list->function->parameter_list) {
 			line_head->parameters = get_function_parameter_size(list->function->parameter_list);
+		} else {
+			line_head->parameters = NULL;
+		}
 		generate_function_definition(list->function, line_head);
 		line_head->current->next_line = NULL;
 
@@ -886,9 +908,23 @@ void mcc_delete_line(struct mcc_ir_line *line)
 	free(line);
 }
 
+void mcc_delete_func_sign_parameters(struct mcc_ir_function_signature_parameters *param)
+{
+	if (param->next_parameter != NULL) {
+		mcc_delete_func_sign_parameters(param->next_parameter);
+	}
+	free(param->arg_name);
+	free(param);
+}
+
 void mcc_delete_line_head(struct mcc_ir_line_head *line_head)
 {
 	mcc_delete_line(line_head->root);
+
+	if (line_head->parameters != NULL)
+		mcc_delete_func_sign_parameters(line_head->parameters);
+
+	free(line_head->func_name);
 	free(line_head);
 }
 

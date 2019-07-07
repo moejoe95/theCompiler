@@ -1,10 +1,11 @@
 int main()
 {
-	int i;
-	i = 2;
-	while(i<10){
-		i = i + 1;
-		print_int(i);
-	}
+	int[2] z;
+
+	z[0] = -5;
+	z[1] = 2 * 3;
+	
+	print_int(z[0] + z[1] + 1);
 	return 0;
 }
+

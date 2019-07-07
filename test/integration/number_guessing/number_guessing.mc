@@ -1,5 +1,5 @@
 /* Test booleans and greater/smaller comparisons */
-
+/*
 void guessNumber(int number, int max) {
     bool success;
     success = false;
@@ -10,13 +10,16 @@ void guessNumber(int number, int max) {
         int guess;
         guess = read_int();
         success = guess == number;
-        if(success)
+        if(success) {
             print("you guessed correct");
+        }
         else {
-            if(guess < number)
+            if(guess < number) {
                 print("the number is bigger");
-            else
+            }
+            else {
                 print("the number is smaller");
+            }
             print_nl();
         }
     }
@@ -29,3 +32,4 @@ int main() {
     guessNumber(test, 10);
     return 0;
 }
+*/

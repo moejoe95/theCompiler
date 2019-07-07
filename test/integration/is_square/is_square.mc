@@ -4,7 +4,7 @@ bool is_square(int n)
 {
 	int i;
 	i = 0;
-	while(i*i < n){
+	while(i*i <= n){
 		if(i*i == n){
 			return true;
 		}
