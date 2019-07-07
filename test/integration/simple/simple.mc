@@ -4,9 +4,9 @@ int main()
 	arr[1-1] = 7;
 	
 	int x;
-	x = 4;
+	x = arr[0];
 
-	print_int(arr[]);
+	print_int(x);
 	return 0;
 }
 

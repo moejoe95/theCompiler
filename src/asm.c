@@ -113,6 +113,22 @@ int get_last_data_section(char *arg, struct mcc_asm_head *asm_head)
 	return current_pos - 1;
 }
 
+char *get_value_by_index(char *id, int i, struct mcc_asm_head *head)
+{
+	struct mcc_asm_data_section *data = head->data_section;
+	while (data != NULL) {
+		if (strcmp(data->id, id) == 0) {
+			struct mcc_asm_data_index *index = data->index;
+			for (int j = 0; j <= i; j++) {
+				index = index->next_data_index;
+			}
+			return index->value;
+		}
+		data = data->next_data_section;
+	}
+	return NULL;
+}
+
 /*
 This sequence of instructions is typical at the start of a subroutine to save space on the stack for local variables;
 EBP is used as the base register to reference the local variables, and a value is subtracted from ESP to reserve space
@@ -286,7 +302,17 @@ void create_asm_push(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *a
 			print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_PUSHL, MCC_ASM_REGISTER_EBP, -4, -1, 0);
 			free(loc);
 		} else {
-			print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_PUSHL, line->arg1, -1, 0);
+			char *load = strdup(line->arg1);
+			char *id = strtok(load, "[");
+			char *access_position = strtok(NULL, "]");
+			if (id == NULL || access_position == NULL) {
+				print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_PUSHL, line->arg1, -1, 0);
+			} else {
+				char *ptr;
+				int access_position_int = strtol(access_position, &ptr, 10);
+				char *value = get_value_by_index(id, access_position_int, asm_head);
+				print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_PUSHL, value, -1, 0);
+			}
 		}
 	}
 	asm_head->current_stack_size_parameters +=
