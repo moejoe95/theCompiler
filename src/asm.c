@@ -77,7 +77,6 @@ char *get_stack_size(struct mcc_ir_line *root)
 
 char *lookup_data_section(char *arg, struct mcc_asm_head *asm_head)
 {
-
 	int is_in_data_section = 0;
 	struct mcc_asm_data_section *data_section = asm_head->data_section;
 	while (data_section != NULL) {
@@ -99,18 +98,20 @@ int get_last_data_section(char *arg, struct mcc_asm_head *asm_head)
 {
 
 	int is_in_data_section = 0;
+	int current_pos = 0;
 	struct mcc_asm_data_section *data_section = asm_head->data_section;
 	while (data_section != NULL) {
 		if ((data_section->id != NULL && strcmp(arg, data_section->id) == 0) ||
 		    (data_section->line_no != NULL && strcmp(arg, data_section->line_no) == 0)) {
 			is_in_data_section++;
 		}
+		current_pos++;
 		data_section = data_section->next_data_section;
 	}
 	if (is_in_data_section) {
 		return is_in_data_section;
 	}
-	return -1;
+	return current_pos - 1;
 }
 
 /*
@@ -358,8 +359,12 @@ void create_asm_binary_op_int(FILE *out, struct mcc_ir_line *line, struct mcc_as
 	case MCC_AST_BINARY_OP_DIV:
 		print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, "0", MCC_ASM_REGISTER_EDX, 0);
 		int loc = find_stack_position(line->arg2, asm_head->stack);
-		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EBP, loc,
-		                          MCC_ASM_REGISTER_ECX, 0);
+		if (loc == -1) {
+			print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, line->arg1, MCC_ASM_REGISTER_ECX, 0);
+		} else {
+			print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EBP, loc,
+			                          MCC_ASM_REGISTER_ECX, 0);
+		}
 		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_DIVL, MCC_ASM_REGISTER_ECX, 0, -1, 0);
 		break;
 
