@@ -367,9 +367,11 @@ static void generate_function_arguments(struct mcc_ast_expression *expr, struct 
 		generate_ir_expression(list->expression, head, MCC_IR_TABLE_PUSH);
 		// insert additional line in IR table
 
-		if (expr->type != MCC_AST_EXPRESSION_TYPE_LITERAL && expr->type != MCC_AST_EXPRESSION_TYPE_IDENTIFIER &&
+		if (list->expression->type != MCC_AST_EXPRESSION_TYPE_LITERAL &&
+		    list->expression->type != MCC_AST_EXPRESSION_TYPE_IDENTIFIER &&
 		    head->current->op_type != MCC_IR_TABLE_PUSH) {
-			char *value = generate_ir_entity(head, expr);
+			char *value = generate_ir_entity(head, list->expression);
+
 			generate_ir_table_line(head, strdup(value), NULL, MCC_IR_TABLE_PUSH, -1, -1, -1);
 			free(value);
 		}
