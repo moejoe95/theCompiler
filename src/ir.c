@@ -16,6 +16,7 @@ static void generate_ir_function_call(struct mcc_ast_expression *e, struct mcc_i
 static void
 generate_ir_expression(struct mcc_ast_expression *e, struct mcc_ir_line_head *head, enum ir_table_operation_type t);
 static int hasStatementReturn(struct mcc_ast_statement *stmt);
+static char *generate_ir_entity(struct mcc_ir_line_head *head, struct mcc_ast_expression *expr);
 
 static int get_memory_size_literal_type(enum mcc_ast_literal_type type)
 {
@@ -176,6 +177,18 @@ generate_ir_literal(struct mcc_ast_literal *lit, struct mcc_ir_line_head *head, 
 	head->current = new_table;
 }
 
+char *generate_ir_array_access(struct mcc_ir_line_head *head, struct mcc_ast_expression *expr)
+{
+	char value[64] = {0};
+	char *id = expr->array_access_id->identifier->name;
+	char *pos = generate_ir_entity(head, expr->array_access_exp);
+	if (expr->array_access_exp->type == MCC_AST_EXPRESSION_TYPE_LITERAL)
+		sprintf(value, "%s[%s]", id, pos);
+	else
+		sprintf(value, "%s", pos);
+	return strdup(value);
+}
+
 static char *generate_ir_entity(struct mcc_ir_line_head *head, struct mcc_ast_expression *expr)
 {
 	char *entity = NULL;
@@ -189,6 +202,8 @@ static char *generate_ir_entity(struct mcc_ir_line_head *head, struct mcc_ast_ex
 		                 : lookup_table_args(head, expr->identifier->name, NULL, MCC_AST_TYPE_STRING);
 		break;
 	case MCC_AST_EXPRESSION_TYPE_ARRAY_ACCESS:
+		entity = generate_ir_array_access(head, expr);
+		break;
 	case MCC_AST_EXPRESSION_TYPE_BINARY_OP:
 	case MCC_AST_EXPRESSION_TYPE_PARENTH:
 		sprintf(value, "(%d)", head->index - 1);
