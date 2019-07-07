@@ -205,6 +205,9 @@ static char *generate_ir_entity(struct mcc_ir_line_head *head, struct mcc_ast_ex
 		entity = generate_ir_array_access(head, expr);
 		break;
 	case MCC_AST_EXPRESSION_TYPE_BINARY_OP:
+		sprintf(value, "(%d)", head->index);
+		entity = strdup(value);
+		break;
 	case MCC_AST_EXPRESSION_TYPE_PARENTH:
 		sprintf(value, "(%d)", head->index - 1);
 		entity = strdup(value);

@@ -1,9 +1,11 @@
 int main()
 {
-	int[3] arr;
-	arr[1-1] = 7;
+	int[2] z;
+
+	z[0] = -5;
+	z[1] = 2 * 3;
 	
-	print_int(arr[1-1]);
+	print_int(z[0] + z[1] + 1);
 	return 0;
 }
 
