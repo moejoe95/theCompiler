@@ -28,6 +28,7 @@ enum mcc_asm_instruction {
 	// logical arithmetic
 	MCC_ASM_INSTRUCTION_ANDL,
 	MCC_ASM_INSTRUCTION_ORL,
+	MCC_ASM_INSTRUCTION_XORL,
 	MCC_ASM_INSTRUCTION_NOTL,
 
 	// compare
@@ -83,6 +84,7 @@ struct mcc_asm_data_section {
 	char *line_no;
 	struct mcc_asm_data_index *index;
 	struct mcc_asm_data_section *next_data_section;
+	int label_count;
 };
 
 struct mcc_asm_stack {
