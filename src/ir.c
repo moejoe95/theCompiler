@@ -317,13 +317,12 @@ static void generate_ir_unary_expression(struct mcc_ast_expression *un_expr,
 	head->index++;
 	struct mcc_ir_line *new_table = create_new_ir_line();
 
-	char value[64] = {0};
 	char *entity1;
 
 	if (un_expr->rhs->type == MCC_AST_EXPRESSION_TYPE_LITERAL) {
 		entity1 = generate_ir_entity(head, un_expr->rhs);
 	} else {
-		sprintf(value, "(%d)", head->current->index);
+		char *value = lookup_table_args(head, un_expr->rhs->identifier->name, NULL, un_expr->expression_type);
 		entity1 = strdup(value);
 	}
 
@@ -390,10 +389,14 @@ static void generate_ir_function_call(struct mcc_ast_expression *expr_call, stru
 
 static void generate_ir_identifier(struct mcc_ast_expression *expr,
                                    struct mcc_ir_line_head *head,
-                                   enum ir_table_operation_type type)
+								   enum ir_table_operation_type type)
 {
 	char *value = lookup_table_args(head, expr->identifier->name, NULL, expr->expression_type);
-	generate_ir_table_line(head, value, NULL, type, -1, -1, -1);
+	if(expr->expression_type == MCC_AST_TYPE_BOOL)
+		generate_ir_table_line(head, value, NULL, MCC_IR_TABLE_BOOL, -1, -1, -1);
+	else
+		generate_ir_table_line(head, value, NULL, type, -1, -1, -1);
+	
 }
 
 static void generate_ir_expression(struct mcc_ast_expression *expr,
@@ -607,8 +610,7 @@ static void generate_ir_while(struct mcc_ast_statement *stmt, struct mcc_ir_line
 	int jump_target = head->current->index + 1;
 
 	// while condition
-	if (stmt->while_cond->type == MCC_AST_EXPRESSION_TYPE_IDENTIFIER ||
-	    stmt->while_cond->type == MCC_AST_EXPRESSION_TYPE_LITERAL) {
+	if (stmt->while_cond->type == MCC_AST_EXPRESSION_TYPE_LITERAL) {
 		entity1 = generate_ir_entity(head, stmt->while_cond);
 	} else {
 		generate_ir_expression(stmt->while_cond, head, -1);

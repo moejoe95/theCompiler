@@ -75,6 +75,9 @@ void print_row(struct mcc_ir_line *table, FILE *out)
 	case MCC_IR_TABLE_CALL:
 		sprintf(operation, "%s", "call\t");
 		break;
+	case MCC_IR_TABLE_BOOL:
+		sprintf(operation, "%s", "bool\t");
+		break;
 	default:
 		sprintf(operation, "%s", "undef op");
 		break;

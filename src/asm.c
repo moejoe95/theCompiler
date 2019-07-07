@@ -483,6 +483,20 @@ void create_asm_unary(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *
 	}
 }
 
+void create_asm_standalone(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *head)
+{
+	head->offset = head->offset - 4;
+
+	if(line->arg1[0] == '('){
+		int stack_pos = find_stack_position(line->arg1, head->stack);
+		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EBP, stack_pos, MCC_ASM_REGISTER_EAX, 0);
+	}
+	else{
+		print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, line->arg1, MCC_ASM_REGISTER_EAX, 0);
+	}
+	print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_CMP, "0", MCC_ASM_REGISTER_EAX, 0);
+}
+
 char *add_string_to_datasection(char *name, char *value, struct mcc_asm_head *head)
 {
 	if (name == NULL) {
@@ -752,6 +766,9 @@ void create_asm_line(FILE *out,
 		break;
 	case MCC_IR_TABLE_BR_LABEL:
 		fprintf(out, "%s:\n", line->arg1);
+		break;
+	case MCC_IR_TABLE_BOOL:
+		create_asm_standalone(out, line, asm_head);
 		break;
 	default:
 		break;

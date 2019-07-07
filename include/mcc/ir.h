@@ -22,7 +22,8 @@ enum ir_table_operation_type {
 	MCC_IR_TABLE_STORE,
 	MCC_IR_TABLE_LOAD,
 	MCC_IR_TABLE_NULL,
-	MCC_IR_TABLE_RETURN
+	MCC_IR_TABLE_RETURN,
+	MCC_IR_TABLE_BOOL
 };
 
 struct mcc_ir_table_head {
