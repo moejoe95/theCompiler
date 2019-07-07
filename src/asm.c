@@ -256,6 +256,8 @@ void create_asm_function_call(FILE *out,
 		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EAX, 0, MCC_ASM_REGISTER_EBP,
 		                          asm_head->offset);
 	}
+
+	push_on_stack(line, asm_head);
 }
 
 void create_asm_push(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *asm_head)
