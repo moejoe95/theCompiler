@@ -360,8 +360,12 @@ void create_asm_binary_op_int(FILE *out, struct mcc_ir_line *line, struct mcc_as
 	case MCC_AST_BINARY_OP_DIV:
 		print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, "0", MCC_ASM_REGISTER_EDX, 0);
 		int loc = find_stack_position(line->arg2, asm_head->stack);
-		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EBP, loc,
-		                          MCC_ASM_REGISTER_ECX, 0);
+		if (loc == -1) {
+			print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, line->arg2, MCC_ASM_REGISTER_ECX, 0);
+		} else {
+			print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EBP, loc,
+			                          MCC_ASM_REGISTER_ECX, 0);
+		}
 		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_DIVL, MCC_ASM_REGISTER_ECX, 0, -1, 0);
 		break;
 
