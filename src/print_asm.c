@@ -9,6 +9,9 @@ void get_assembly_instruction(enum mcc_asm_instruction in, char *in_string)
 	case MCC_ASM_INSTRUCTION_MOVL:
 		strcpy(in_string, "movl");
 		break;
+	case MCC_ASM_INSTRUCTION_MOVZBL:
+		strcpy(in_string, "movzbl");
+		break;
 	case MCC_ASM_INSTRUCTION_PUSHL:
 		strcpy(in_string, "pushl");
 		break;
@@ -99,6 +102,24 @@ void get_assembly_instruction(enum mcc_asm_instruction in, char *in_string)
 	case MCC_ASM_INSTRUCTION_NEGL:
 		strcpy(in_string, "negs");
 		break;
+	case MCC_ASM_INSTRUCTION_SET_EQ:
+		strcpy(in_string, "sete");
+		break;
+	case MCC_ASM_INSTRUCTION_SET_NEQ:
+		strcpy(in_string, "setne");
+		break;
+	case MCC_ASM_INSTRUCTION_SET_ST:
+		strcpy(in_string, "setl");
+		break;
+	case MCC_ASM_INSTRUCTION_SET_GT:
+		strcpy(in_string, "setg");
+		break;
+	case MCC_ASM_INSTRUCTION_SET_SE:
+		strcpy(in_string, "setle");
+		break;
+	case MCC_ASM_INSTRUCTION_SET_GE:
+		strcpy(in_string, "setge");
+		break;
 	default:
 		strcpy(in_string, "UNDEF");
 		break;
@@ -145,6 +166,9 @@ void get_assembly_operand(enum mcc_asm_operand op, int offset, char *arg)
 		break;
 	case MCC_ASM_REGISTER_ECX:
 		strcpy(arg, "%ecx");
+		break;
+	case MCC_ASM_REGISTER_CL:
+		strcpy(arg, "%cl");
 		break;
 	default:
 		arg = "";

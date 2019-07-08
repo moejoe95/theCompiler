@@ -177,6 +177,8 @@ void create_asm_jumpfalse(FILE *out,
 	assert(current_func);
 	assert(asm_head);
 
+	print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_CMP, "0", MCC_ASM_REGISTER_EAX, 0);
+
 	if (strncmp(line->arg1, "(", 1) != 0) {
 		print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, line->arg1, 0, MCC_ASM_REGISTER_EAX);
 		print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_ADDL, "0", 0, MCC_ASM_REGISTER_EAX);
@@ -188,33 +190,7 @@ void create_asm_jumpfalse(FILE *out,
 			temp_line = temp_line->next_line;
 		}
 
-		if (temp_line->op_type == MCC_IR_TABLE_BINARY_OP) {
-			switch (temp_line->bin_op) {
-			case MCC_AST_BINARY_OP_ST:
-				print_asm_instruction_call(out, MCC_ASM_INSTRUCTION_JGE, line->arg2);
-				break;
-			case MCC_AST_BINARY_OP_GT:
-				print_asm_instruction_call(out, MCC_ASM_INSTRUCTION_JLE, line->arg2);
-				break;
-			case MCC_AST_BINARY_OP_SE:
-				print_asm_instruction_call(out, MCC_ASM_INSTRUCTION_JG, line->arg2);
-				break;
-			case MCC_AST_BINARY_OP_GE:
-				print_asm_instruction_call(out, MCC_ASM_INSTRUCTION_JL, line->arg2);
-				break;
-			case MCC_AST_BINARY_OP_EQ:
-				print_asm_instruction_call(out, MCC_ASM_INSTRUCTION_JNE, line->arg2);
-				break;
-			case MCC_AST_BINARY_OP_NEQ:
-				print_asm_instruction_call(out, MCC_ASM_INSTRUCTION_JE, line->arg2);
-				break;
-
-			default:
-				break;
-			}
-		} else {
-			print_asm_instruction_call(out, MCC_ASM_INSTRUCTION_JE, line->arg2);
-		}
+		print_asm_instruction_call(out, MCC_ASM_INSTRUCTION_JE, line->arg2);
 	}
 }
 
@@ -358,6 +334,19 @@ void print_asm_instruction(FILE *out, enum mcc_asm_instruction instruction, int 
 	}
 }
 
+void create_asm_comparison(FILE *out, enum mcc_asm_instruction type,  int stack_position_arg2, struct mcc_ir_line *line, struct mcc_asm_head *asm_head){
+	assert(out);
+	assert(line);
+	assert(asm_head);
+
+	print_asm_instruction(out, MCC_ASM_INSTRUCTION_CMP, stack_position_arg2, line->arg2);
+
+	print_asm_instruction_reg(out, type, MCC_ASM_REGISTER_CL, 0, -1, 0);
+	print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_ANDL, "1", MCC_ASM_REGISTER_CL, 0);
+
+	print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVZBL, MCC_ASM_REGISTER_CL, 0, MCC_ASM_REGISTER_EAX, 0);
+}
+
 void create_asm_binary_op_int(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *asm_head)
 {
 	int stack_position_arg1 = -1;
@@ -406,8 +395,31 @@ void create_asm_binary_op_int(FILE *out, struct mcc_ir_line *line, struct mcc_as
 		print_asm_instruction(out, MCC_ASM_INSTRUCTION_ORL, stack_position_arg2, line->arg2);
 		break;
 
-	default: // all compare bin op (MCC_AST_BINARY_OP_ST, MCC_AST_BINARY_OP_GT, ...)
-		print_asm_instruction(out, MCC_ASM_INSTRUCTION_CMP, stack_position_arg2, line->arg2);
+	case MCC_AST_BINARY_OP_EQ:
+		create_asm_comparison(out, MCC_ASM_INSTRUCTION_SET_EQ, stack_position_arg2, line, asm_head);
+		break;
+
+	case MCC_AST_BINARY_OP_NEQ:
+		create_asm_comparison(out, MCC_ASM_INSTRUCTION_SET_NEQ, stack_position_arg2, line, asm_head);
+		break;
+
+	case MCC_AST_BINARY_OP_GT:
+		create_asm_comparison(out, MCC_ASM_INSTRUCTION_SET_GT, stack_position_arg2, line, asm_head);
+		break;
+
+	case MCC_AST_BINARY_OP_ST:
+		create_asm_comparison(out, MCC_ASM_INSTRUCTION_SET_ST, stack_position_arg2, line, asm_head);
+		break;
+
+	case MCC_AST_BINARY_OP_GE:
+		create_asm_comparison(out, MCC_ASM_INSTRUCTION_SET_GE, stack_position_arg2, line, asm_head);
+		break;
+
+	case MCC_AST_BINARY_OP_SE:
+		create_asm_comparison(out, MCC_ASM_INSTRUCTION_SET_SE, stack_position_arg2, line, asm_head);
+		break;
+
+	default:
 		break;
 	}
 

@@ -9,6 +9,7 @@
 enum mcc_asm_instruction {
 	// moving instruction
 	MCC_ASM_INSTRUCTION_MOVL,
+	MCC_ASM_INSTRUCTION_MOVZBL,
 
 	// stack instructions
 	MCC_ASM_INSTRUCTION_PUSHL,
@@ -33,6 +34,13 @@ enum mcc_asm_instruction {
 
 	// compare
 	MCC_ASM_INSTRUCTION_CMP,
+	MCC_ASM_INSTRUCTION_SET_ST,
+	MCC_ASM_INSTRUCTION_SET_GT,
+	MCC_ASM_INSTRUCTION_SET_SE,
+	MCC_ASM_INSTRUCTION_SET_GE,
+	MCC_ASM_INSTRUCTION_SET_EQ,
+	MCC_ASM_INSTRUCTION_SET_NEQ,
+
 
 	// calls
 	MCC_ASM_INSTRUCTION_CALL,
@@ -72,6 +80,9 @@ enum mcc_asm_operand {
 	// Stack pointers (32 bit)
 	MCC_ASM_REGISTER_EBP,
 	MCC_ASM_REGISTER_ESP,
+
+	//
+	MCC_ASM_REGISTER_CL
 };
 
 struct mcc_asm_data_index {
