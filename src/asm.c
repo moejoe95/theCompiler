@@ -775,13 +775,21 @@ void create_asm_array(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *
 	int len = strtol(line->arg2, &ptr, 10);
 	for (int i = 0; i < len; i++) {
 		struct mcc_asm_data_index *new_data_index_tmp = malloc(sizeof(*new_data_index_tmp));
-		new_data_index_tmp->value = strdup("0");
+		if (line->memory_size != 2) {
+			new_data_index_tmp->value = strdup("0");
+		} else {
+			new_data_index_tmp->value = strdup("0.0");
+		}
 		new_data_index_current->next_data_index = new_data_index_tmp;
 		new_data_index_current = new_data_index_tmp;
 	}
 	new_data_index_current->next_data_index = NULL;
 
-	new_data_index_root->value = strdup(".long ");
+	if (line->memory_size != 2) {
+		new_data_index_root->value = strdup(".long ");
+	} else {
+		new_data_index_root->value = strdup(".float ");
+	}
 	new_data_section->index = new_data_index_root;
 	current->next_data_section = new_data_section;
 }

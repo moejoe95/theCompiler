@@ -389,7 +389,9 @@ static void generate_function_arguments(struct mcc_ast_expression *expr, struct 
 		    head->current->op_type != MCC_IR_TABLE_PUSH) {
 			char *value = generate_ir_entity(head, list->expression);
 
-			generate_ir_table_line(head, strdup(value), NULL, MCC_IR_TABLE_PUSH, -1, -1, -1);
+			int mem_size = list->expression->expression_type == MCC_AST_TYPE_FLOAT ? 2 : 0;
+
+			generate_ir_table_line(head, strdup(value), NULL, MCC_IR_TABLE_PUSH, -1, -1, mem_size);
 			free(value);
 		}
 		list = list->next_argument;
@@ -413,14 +415,13 @@ static void generate_ir_function_call(struct mcc_ast_expression *expr_call, stru
 
 static void generate_ir_identifier(struct mcc_ast_expression *expr,
                                    struct mcc_ir_line_head *head,
-								   enum ir_table_operation_type type)
+                                   enum ir_table_operation_type type)
 {
 	char *value = lookup_table_args(head, expr->identifier->name, NULL, expr->expression_type);
-	if(expr->expression_type == MCC_AST_TYPE_BOOL)
+	if (expr->expression_type == MCC_AST_TYPE_BOOL)
 		generate_ir_table_line(head, value, NULL, MCC_IR_TABLE_BOOL, -1, -1, -1);
 	else
 		generate_ir_table_line(head, value, NULL, type, -1, -1, -1);
-	
 }
 
 static void generate_ir_expression(struct mcc_ast_expression *expr,
@@ -465,10 +466,12 @@ static void generate_ir_declaration_array(struct mcc_ast_declare_assign *decl, s
 	if (decl->declare_array_size == NULL || *decl->declare_array_size <= 0)
 		return;
 
+	int mem_size = decl->declare_type == MCC_AST_TYPE_FLOAT ? 2 : 0;
+
 	char value[64] = {0};
 	sprintf(value, "%ld", *decl->declare_array_size);
 	generate_ir_table_line(head, strdup(decl->declare_id->identifier->name), strdup(value), MCC_IR_TABLE_ARRAY, -1,
-	                       -1, -1);
+	                       -1, mem_size);
 }
 
 static void generate_ir_assignment(struct mcc_ast_declare_assign *assign, struct mcc_ir_line_head *head)
@@ -515,7 +518,9 @@ static void generate_ir_assignment(struct mcc_ast_declare_assign *assign, struct
 		type = MCC_IR_TABLE_STORE;
 	}
 
-	generate_ir_table_line(head, entity1, entity2, type, -1, lit_type, -1);
+	int mem_size = assign->assign_lhs->expression_type == MCC_AST_TYPE_FLOAT ? 2 : 0;
+
+	generate_ir_table_line(head, entity1, entity2, type, -1, lit_type, mem_size);
 }
 
 static void generate_ir_return(struct mcc_ast_expression *expr, struct mcc_ir_line_head *head)

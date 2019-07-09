@@ -1,11 +1,10 @@
 int main()
 {
-    float s;
-    s = 0.1;
+    float[2] x;
 
-    s = s + 1.0;
+    x[0] = 1.11;
 
-	print_float(s);
+    print_float(x[0]);
 
 	return 0;
 }
