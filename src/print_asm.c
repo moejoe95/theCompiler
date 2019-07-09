@@ -167,6 +167,9 @@ void get_assembly_operand(enum mcc_asm_operand op, int offset, char *arg)
 	case MCC_ASM_REGISTER_ECX:
 		strcpy(arg, "%ecx");
 		break;
+	case MCC_ASM_REGISTER_EDI:
+		strcpy(arg, "%edi");
+		break;
 	case MCC_ASM_REGISTER_CL:
 		strcpy(arg, "%cl");
 		break;
