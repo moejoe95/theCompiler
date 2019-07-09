@@ -737,14 +737,14 @@ void create_asm_assignment(FILE *out, struct mcc_ir_line *line, struct mcc_asm_h
 		update_stack(line, head->stack);
 	}
 
-	if (line->op_type == MCC_IR_TABLE_STORE) {
+	if (line->op_type == MCC_IR_TABLE_STORE && line->memory_size == 2) { // float arrays
 		char *index = lookup_data_section_float(out, line->arg1, head);
 		print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FLDS, index);
 		print_asm_instruction_store_float(out, MCC_ASM_INSTRUCTION_FSTPS, MCC_ASM_REGISTER_EBP, stack_position);
 		return;
 	}
 
-	if (line->memory_size == 2) {
+	if (line->memory_size == 2) { // single float values
 		char *assignment = create_asm_float(out, line, head);
 
 		char label[64] = {0};
