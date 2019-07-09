@@ -103,6 +103,8 @@ struct mcc_asm_stack {
 	char *line_no;
 	int stack_position;
 	struct mcc_asm_stack *next_stack;
+
+	int result;
 };
 
 struct mcc_asm_head {
