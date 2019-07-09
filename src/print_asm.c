@@ -228,6 +228,17 @@ void print_asm_instruction_load_float(FILE *out, enum mcc_asm_instruction in, ch
 	print_asm_line(out, op, arg1, NULL);
 }
 
+void print_asm_instruction_load_float_reg(FILE *out, enum mcc_asm_instruction in, enum mcc_asm_operand reg, int offset)
+{
+	char op[INSTRUCTION_SIZE] = {0};
+	char arg1[OPERAND_SIZE] = {0};
+
+	get_assembly_instruction(in, op);
+	get_assembly_operand(reg, offset, arg1);
+
+	print_asm_line(out, op, arg1, NULL);
+}
+
 void print_asm_instruction_store_float(FILE *out, enum mcc_asm_instruction in, enum mcc_asm_operand reg, int offset)
 {
 	char op[INSTRUCTION_SIZE] = {0};

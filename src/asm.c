@@ -243,11 +243,19 @@ void create_asm_function_call(FILE *out,
 		asm_head->current_stack_size_parameters = 0;
 	}
 
-	if (line->memory_size > 0) {
+	if (line->memory_size == 1) {
 		asm_head->offset = asm_head->offset - (4 * line->memory_size);
 
 		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EAX, 0, MCC_ASM_REGISTER_EBP,
 		                          asm_head->offset);
+	} else if (line->memory_size == 2) {
+
+		asm_head->offset = asm_head->offset - (4 * line->memory_size);
+
+		print_asm_instruction_store_float(out, MCC_ASM_INSTRUCTION_FSTPS, MCC_ASM_REGISTER_EBP,
+		                                  asm_head->offset);
+		print_asm_instruction_load_float_reg(out, MCC_ASM_INSTRUCTION_FLDS, MCC_ASM_REGISTER_EBP,
+		                                     asm_head->offset);
 	}
 
 	push_on_stack(line, asm_head);
@@ -334,7 +342,12 @@ void print_asm_instruction(FILE *out, enum mcc_asm_instruction instruction, int 
 	}
 }
 
-void create_asm_comparison(FILE *out, enum mcc_asm_instruction type,  int stack_position_arg2, struct mcc_ir_line *line, struct mcc_asm_head *asm_head){
+void create_asm_comparison(FILE *out,
+                           enum mcc_asm_instruction type,
+                           int stack_position_arg2,
+                           struct mcc_ir_line *line,
+                           struct mcc_asm_head *asm_head)
+{
 	assert(out);
 	assert(line);
 	assert(asm_head);
@@ -535,11 +548,11 @@ void create_asm_standalone(FILE *out, struct mcc_ir_line *line, struct mcc_asm_h
 {
 	head->offset = head->offset - 4;
 
-	if(line->arg1[0] == '('){
+	if (line->arg1[0] == '(') {
 		int stack_pos = find_stack_position(line->arg1, head->stack);
-		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EBP, stack_pos, MCC_ASM_REGISTER_EAX, 0);
-	}
-	else{
+		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EBP, stack_pos,
+		                          MCC_ASM_REGISTER_EAX, 0);
+	} else {
 		print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, line->arg1, MCC_ASM_REGISTER_EAX, 0);
 	}
 	print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_CMP, "0", MCC_ASM_REGISTER_EAX, 0);

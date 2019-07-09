@@ -17,6 +17,7 @@ void print_asm_instruction_call(FILE *out, enum mcc_asm_instruction in, char *li
 void print_asm_instruction_lit(
     FILE *out, enum mcc_asm_instruction in, char *lit, enum mcc_asm_operand op2, int op2_offset);
 void print_asm_instruction_load_float(FILE *out, enum mcc_asm_instruction in, char *lit);
+void print_asm_instruction_load_float_reg(FILE *out, enum mcc_asm_instruction in, enum mcc_asm_operand reg, int offset);
 void print_asm_instruction_store_float(FILE *out, enum mcc_asm_instruction in, enum mcc_asm_operand reg, int offset);
 
 void create_asm_header(FILE *out);
