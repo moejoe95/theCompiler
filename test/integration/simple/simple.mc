@@ -1,10 +1,12 @@
 int main()
 {
-    float[2] x;
+    float x;
 
-    x[0] = 1.11;
+    x = 1.1;
 
-    print_float(x[0]);
+    if (x < 2.2){
+        print("hello world");
+    }
 
 	return 0;
 }
