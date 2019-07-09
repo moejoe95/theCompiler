@@ -336,18 +336,23 @@ static void generate_ir_unary_expression(struct mcc_ast_expression *un_expr,
 	assert(un_expr);
 	assert(head);
 
-	head->index++;
 	struct mcc_ir_line *new_table = create_new_ir_line();
 
 	char *entity1;
+	char value[64] = {0};
 
 	if (un_expr->rhs->type == MCC_AST_EXPRESSION_TYPE_LITERAL) {
 		entity1 = generate_ir_entity(head, un_expr->rhs);
+	} else if (un_expr->rhs->type == MCC_AST_EXPRESSION_TYPE_FUNCTION_CALL) {
+		generate_ir_function_call(un_expr->rhs, head);
+		sprintf(value, "(%d)", head->index);
+		entity1 = strdup(value);
 	} else {
 		char *value = lookup_table_args(head, un_expr->rhs->identifier->name, NULL, un_expr->expression_type);
 		entity1 = strdup(value);
 	}
 
+	head->index++;
 	new_table->arg1 = entity1;
 	new_table->arg2 = NULL;
 	new_table->op_type = type;
