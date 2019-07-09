@@ -1,5 +1,5 @@
 /* Test booleans and greater/smaller comparisons */
-/*
+
 void guessNumber(int number, int max) {
     bool success;
     success = false;
@@ -32,4 +32,3 @@ int main() {
     guessNumber(test, 10);
     return 0;
 }
-*/
