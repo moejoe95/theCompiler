@@ -75,8 +75,32 @@ char *get_stack_size(struct mcc_ir_line *root)
 	return strdup(memory_size_str);
 }
 
+char *get_id_by_line_ref(char *arg, struct mcc_asm_head *asm_head)
+{
+	if (arg[0] == '(') { // search for line number and return literal value
+		struct mcc_ir_line *current_line = asm_head->ir->line_head->root;
+		while (current_line != NULL) {
+			char value[64] = {0};
+			sprintf(value, "(%d)", current_line->index);
+			if (strcmp(arg, value) == 0) {
+				return current_line->arg1;
+			}
+			current_line = current_line->next_line;
+		}
+	}
+	return arg;
+}
+
 char *lookup_data_section(char *arg, struct mcc_asm_head *asm_head)
 {
+
+	float f = atof(arg);
+	if (f != 0) { // return if arg is a literal
+		return arg;
+	}
+
+	arg = get_id_by_line_ref(arg, asm_head);
+
 	int data_section_label_count = 0;
 	struct mcc_asm_data_section *data_section = asm_head->data_section;
 	while (data_section != NULL) {
@@ -653,7 +677,7 @@ void create_asm_float(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *
 	data_index_root->value = strdup(".float ");
 
 	struct mcc_asm_data_index *data_index_next = malloc(sizeof(*data_index_next));
-	data_index_next->value = strdup(line->arg2);
+	data_index_next->value = line->arg2;
 	data_index_next->next_data_index = NULL;
 
 	data_index_root->next_data_index = data_index_next;
@@ -882,6 +906,7 @@ void mcc_create_asm(struct mcc_ir_table_head *ir, FILE *out, int destination)
 	while (current_func != NULL) {
 		struct mcc_ir_line *current_line = current_func->line_head->root;
 		asm_head->offset = 0;
+		asm_head->ir = current_func;
 		create_function_label(tmpfile, current_func, asm_head);
 		while (current_line != NULL) {
 			create_asm_line(tmpfile, current_line, asm_head, current_func);

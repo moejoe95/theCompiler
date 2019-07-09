@@ -111,6 +111,7 @@ struct mcc_asm_head {
 	int current_stack_size_parameters;
 	struct mcc_asm_stack *stack;
 	int temp_variable_id;
+	struct mcc_ir_table *ir;
 };
 
 char *add_string_to_datasection(char *name, char *value, struct mcc_asm_head *head);

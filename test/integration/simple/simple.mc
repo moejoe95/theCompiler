@@ -1,11 +1,11 @@
 int main()
 {
-	int[2] z;
+    float s;
+    s = 0.1;
 
-	z[0] = -5;
-	z[1] = 2 * 3;
-	
-	print_int(z[0] + z[1] + 1);
+    s = s + 1.0;
+
+	print_float(s);
+
 	return 0;
 }
-
