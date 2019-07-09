@@ -96,7 +96,7 @@ char *lookup_data_section(char *arg, struct mcc_asm_head *asm_head)
 
 	float f = atof(arg);
 	if (f != 0) { // return if arg is a literal
-		return arg;
+		return NULL;
 	}
 
 	arg = get_id_by_line_ref(arg, asm_head);
@@ -654,11 +654,14 @@ char *add_asm_float(char *arg, int line_no, struct mcc_asm_head *head)
 	return name;
 }
 
-void create_asm_float(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *head)
+char *create_asm_float(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *head)
 {
 	assert(out);
 	assert(line);
 	assert(head);
+
+	if (line->arg2[0] == '(')
+		return NULL;
 
 	struct mcc_asm_data_section *current = head->data_section;
 	while (current->next_data_section != NULL) {
@@ -690,7 +693,7 @@ void create_asm_float(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *
 
 	head->temp_variable_id = head->temp_variable_id + 1;
 
-	return;
+	return line->arg2;
 }
 
 void create_asm_assignment(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *head)
@@ -712,12 +715,17 @@ void create_asm_assignment(FILE *out, struct mcc_ir_line *line, struct mcc_asm_h
 	}
 
 	if (line->memory_size == 2) {
-		create_asm_float(out, line, head);
+		char *assignment = create_asm_float(out, line, head);
 
 		char label[64] = {0};
-		sprintf(label, "%s_%d", line->arg1, head->temp_variable_id - 1);
+		if (assignment) {
+			sprintf(label, "%s_%d", line->arg1, head->temp_variable_id - 1);
+			print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FLDS, label);
+		} else { // re-assignment
+			print_asm_instruction_load_float_reg(out, MCC_ASM_INSTRUCTION_FLDS, MCC_ASM_REGISTER_EBP,
+			                                     head->offset);
+		}
 
-		print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FLDS, label);
 		print_asm_instruction_store_float(out, MCC_ASM_INSTRUCTION_FSTPS, MCC_ASM_REGISTER_EBP, stack_position);
 	} else {
 		if (strncmp(line->arg2, "(", 1) == 0) {
