@@ -133,6 +133,14 @@ char *lookup_data_section(FILE *out, char *arg, struct mcc_asm_head *asm_head)
 		return lookup_data_section_float(out, arg, asm_head);
 	}
 
+	char val[64] = {0};
+
+	int stack_pos = find_stack_position(arg, asm_head->stack);
+	if (stack_pos != -1) {
+		sprintf(val, "%d(%%ebp)", stack_pos);
+		return strdup(val);
+	}
+
 	arg = get_id_by_line_ref(arg, asm_head);
 
 	int data_section_label_count = 0;
@@ -144,7 +152,6 @@ char *lookup_data_section(FILE *out, char *arg, struct mcc_asm_head *asm_head)
 		data_section = data_section->next_data_section;
 	}
 	if (data_section_label_count >= 0) {
-		char val[64] = {0};
 		sprintf(val, "%s_%d", arg, data_section_label_count);
 		return strdup(val);
 	}
