@@ -1,17 +1,12 @@
 int main()
 {
-
-    int[20] arr;
+    int[4] arr;
 
     int i;
-    i = 1;
+    i = 2;
 
-
-    arr[i] = i;
-
-
-    print_int(arr[1]);
-    print_nl();
+    arr[1+1] = 7;
+    print_int(arr[i]);
 
     return 0;
 }

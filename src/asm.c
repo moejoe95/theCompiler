@@ -104,6 +104,7 @@ int is_number(char *str)
 
 char *lookup_data_section_array(FILE *out, char *arg, struct mcc_asm_head *asm_head, int factor)
 {
+	arg = get_id_by_line_ref(arg, asm_head);
 	char *load = strdup(arg);
 	char *id = strtok(load, "[");
 	char *access_position = strtok(NULL, "]");
@@ -322,16 +323,16 @@ void create_asm_push(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *a
 	assert(line);
 	assert(asm_head);
 
-	if (strchr(line->arg1, '[')) { // array
+	int stack_pos = -1;
+	stack_pos = find_stack_position(line->arg1, asm_head->stack);
+
+	if (strchr(line->arg1, '[') || strchr(get_id_by_line_ref(line->arg1, asm_head), '[')) { // array
 		char *index = lookup_data_section_array(out, line->arg1, asm_head, 1);
 		print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_PUSHL, index);
 		return;
 	}
 
-	int stack_pos = -1;
-	stack_pos = find_stack_position(line->arg1, asm_head->stack);
-
-	if (strncmp(line->arg1, "(", 1) == 0 || strchr(line->arg1, '[')) {
+	if (strncmp(line->arg1, "(", 1) == 0) {
 		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_PUSHL, MCC_ASM_REGISTER_EBP, stack_pos, -1, 0);
 	} else {
 		if (strncmp(line->arg1, "\"", 1) == 0) {
@@ -728,9 +729,15 @@ void create_asm_array_assignment(FILE *out, struct mcc_ir_line *line, struct mcc
 		print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FLDS, index);
 		print_asm_instruction_store_float(out, MCC_ASM_INSTRUCTION_FSTPS, MCC_ASM_REGISTER_EBP, stack_position);
 	} else if (line->memory_size == 1) { // int arrays
-		int stack_position_arg2 = find_stack_position(line->arg2, head->stack);
-		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EBP, stack_position_arg2,
-		                          MCC_ASM_REGISTER_EAX, 0);
+		int stack_position_arg2 = -1;
+		if (strncmp(line->arg2, "(", 1) == 0) {
+			stack_position_arg2 = find_stack_position(line->arg2, head->stack);
+			print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EBP,
+			                          stack_position_arg2, MCC_ASM_REGISTER_EAX, 0);
+		} else {
+			print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, line->arg2, MCC_ASM_REGISTER_EAX, 0);
+		}
+
 		print_asm_instruction_array_set(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EAX, index);
 		print_asm_instruction_array_get(out, MCC_ASM_INSTRUCTION_MOVL, index, MCC_ASM_REGISTER_EAX);
 	}
@@ -970,16 +977,13 @@ void mcc_create_asm(struct mcc_ir_table_head *ir, FILE *out, int destination)
 		}
 		if (strcmp(current_func->func_name, "main") == 0) {
 			/*
-			leave frees the space saved on the stack by copying EBP into ESP, then popping the saved value
-			of EBP back to EBP.
-			equivalent to:
-			        mov   %ebp, %esp
-			        pop   %ebp
+			leave frees the space saved on the stack by copying EBP into ESP, then popping the saved
+			value of EBP back to EBP. equivalent to: mov   %ebp, %esp pop   %ebp
 			*/
 			print_asm_instruction_reg(tmpfile, MCC_ASM_INSTRUCTION_LEAVE, -1, 0, -1, 0);
 			/*
-			This line returns control to the calling procedure by popping the saved instruction pointer
-			from the stack.
+			This line returns control to the calling procedure by popping the saved instruction
+			pointer from the stack.
 			*/
 			print_asm_instruction_reg(tmpfile, MCC_ASM_INSTRUCTION_RETL, -1, 0, -1, 0);
 		}
