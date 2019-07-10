@@ -185,11 +185,19 @@ char *generate_ir_array_access(struct mcc_ir_line_head *head, struct mcc_ast_exp
 
 	if (expr->array_access_exp->type == MCC_AST_EXPRESSION_TYPE_LITERAL) {
 		pos = generate_ir_entity(head, expr->array_access_exp);
-	} else {
+		sprintf(value, "%s[%s]", id, pos);
+	} else if (expr->array_access_exp->type == MCC_AST_EXPRESSION_TYPE_IDENTIFIER) {
 		pos = lookup_table_args(head, expr->array_access_exp->identifier->name, NULL,
 			                            expr->array_access_exp->type);
+		sprintf(value, "%s[%s]", id, pos);
+	} else {
+		generate_ir_expression(expr->array_access_exp, head, MCC_IR_TABLE_NULL);
+		sprintf(value, "(%d)", head->index);
+		pos = strdup(value);
+		sprintf(value, "%s[%s]", id, pos);
+		free(pos);
 	}
-	sprintf(value, "%s[%s]", id, pos);
+	
 	return strdup(value);
 }
 
