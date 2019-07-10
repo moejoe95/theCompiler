@@ -334,7 +334,7 @@ void create_asm_push(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *a
 	int stack_pos = -1;
 	stack_pos = find_stack_position(line->arg1, asm_head->stack);
 
-	if (strncmp(line->arg1, "(", 1) == 0) {
+	if (strncmp(line->arg1, "(", 1) == 0 || strchr(line->arg1, '[')) {
 		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_PUSHL, MCC_ASM_REGISTER_EBP, stack_pos, -1, 0);
 	} else {
 		if (strncmp(line->arg1, "\"", 1) == 0) {
@@ -349,18 +349,6 @@ void create_asm_push(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *a
 			print_asm_instruction_store_float(out, MCC_ASM_INSTRUCTION_FSTPS, MCC_ASM_REGISTER_EBP, -4);
 			print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_PUSHL, MCC_ASM_REGISTER_EBP, -4, -1, 0);
 			free(loc);
-		} else {
-			char *load = strdup(line->arg1);
-			char *id = strtok(load, "[");
-			char *access_position = strtok(NULL, "]");
-			if (id == NULL || access_position == NULL) {
-				print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_PUSHL, line->arg1, -1, 0);
-			} else {
-				char *ptr;
-				int access_position_int = strtol(access_position, &ptr, 10);
-				char *value = get_value_by_index(id, access_position_int, asm_head);
-				print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_PUSHL, value, -1, 0);
-			}
 		}
 	}
 	asm_head->current_stack_size_parameters +=
@@ -743,8 +731,11 @@ void create_asm_array_assignment(FILE *out, struct mcc_ir_line *line, struct mcc
 		print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FLDS, index);
 		print_asm_instruction_store_float(out, MCC_ASM_INSTRUCTION_FSTPS, MCC_ASM_REGISTER_EBP, stack_position);
 	} else if (line->memory_size == 1) { // int arrays
+		print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, line->arg2, MCC_ASM_REGISTER_EAX, 0);
 		print_asm_instruction_array_set(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EAX, index);
 		print_asm_instruction_array_get(out, MCC_ASM_INSTRUCTION_MOVL, index, MCC_ASM_REGISTER_EAX);
+		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EAX, 0, MCC_ASM_REGISTER_EBP,
+		                          stack_position);
 	}
 }
 
