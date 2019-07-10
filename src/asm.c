@@ -236,7 +236,14 @@ void create_asm_jumpfalse(FILE *out,
 	print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_CMP, "0", MCC_ASM_REGISTER_EAX, 0);
 
 	if (strncmp(line->arg1, "(", 1) != 0) {
-		print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, line->arg1, 0, MCC_ASM_REGISTER_EAX);
+
+		if (strchr(line->arg1, '[') || strchr(get_id_by_line_ref(line->arg1, asm_head), '[')) {
+			char *index = lookup_data_section_array(out, line->arg1, asm_head, 1);
+			print_asm_instruction_array_get(out, MCC_ASM_INSTRUCTION_MOVL, index, MCC_ASM_REGISTER_EAX);
+		} else {
+			print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, line->arg1, 0, MCC_ASM_REGISTER_EAX);
+		}
+
 		print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_ADDL, "0", 0, MCC_ASM_REGISTER_EAX);
 		print_asm_instruction_call(out, MCC_ASM_INSTRUCTION_JZ, line->arg2);
 	} else {
@@ -245,7 +252,6 @@ void create_asm_jumpfalse(FILE *out,
 		while (temp_line->index != atoi(search_index)) {
 			temp_line = temp_line->next_line;
 		}
-
 		if (temp_line->op_type == MCC_IR_TABLE_BINARY_OP && temp_line->memory_size == 2) {
 			switch (temp_line->bin_op) {
 			case MCC_AST_BINARY_OP_ST:
@@ -602,9 +608,13 @@ void create_asm_unary(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *
 			int stack_pos = find_stack_position(line->arg1, head->stack);
 			print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EBP, stack_pos,
 			                          MCC_ASM_REGISTER_EAX, 0);
+		} else if (strchr(line->arg1, '[') || strchr(get_id_by_line_ref(line->arg1, head), '[')) {
+			char *index = lookup_data_section_array(out, line->arg1, head, 1);
+			print_asm_instruction_array_get(out, MCC_ASM_INSTRUCTION_MOVL, index, MCC_ASM_REGISTER_EAX);
 		} else {
 			print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, line->arg1, MCC_ASM_REGISTER_EAX, 0);
 		}
+
 		print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_XORL, "1", MCC_ASM_REGISTER_EAX, 0);
 		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EAX, 0, MCC_ASM_REGISTER_EBP,
 		                          head->offset);
