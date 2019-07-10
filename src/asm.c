@@ -102,7 +102,7 @@ int is_number(char *str)
 	return 1;
 }
 
-char *lookup_data_section_array(FILE *out, char *arg, struct mcc_asm_head *asm_head)
+char *lookup_data_section_array(FILE *out, char *arg, struct mcc_asm_head *asm_head, int factor)
 {
 	char *load = strdup(arg);
 	char *id = strtok(load, "[");
@@ -116,7 +116,7 @@ char *lookup_data_section_array(FILE *out, char *arg, struct mcc_asm_head *asm_h
 				print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EBP,
 				                          stack_pos, MCC_ASM_REGISTER_EDI, 0);
 			} else {
-				sprintf(index, "%d", atoi(access_position) * 4);
+				sprintf(index, "%d", atoi(access_position) * factor);
 				print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, index, MCC_ASM_REGISTER_EDI,
 				                          0);
 			}
@@ -136,7 +136,7 @@ char *lookup_data_section(FILE *out, char *arg, struct mcc_asm_head *asm_head)
 	}
 
 	if (strchr(arg, '[')) {
-		return lookup_data_section_array(out, arg, asm_head);
+		return lookup_data_section_array(out, arg, asm_head, 4);
 	}
 
 	char val[64] = {0};
@@ -321,6 +321,12 @@ void create_asm_push(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *a
 	assert(out);
 	assert(line);
 	assert(asm_head);
+
+	if (strchr(line->arg1, '[')) { // array
+		char *index = lookup_data_section_array(out, line->arg1, asm_head, 1);
+		print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_PUSHL, index);
+		return;
+	}
 
 	int stack_pos = -1;
 	stack_pos = find_stack_position(line->arg1, asm_head->stack);
@@ -717,7 +723,7 @@ char *create_asm_float(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head 
 
 void create_asm_array_assignment(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *head, int stack_position)
 {
-	char *index = lookup_data_section_array(out, line->arg1, head);
+	char *index = lookup_data_section_array(out, line->arg1, head, 1);
 	if (line->memory_size == 2) { // float arrays
 		print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FLDS, index);
 		print_asm_instruction_store_float(out, MCC_ASM_INSTRUCTION_FSTPS, MCC_ASM_REGISTER_EBP, stack_position);
@@ -727,8 +733,6 @@ void create_asm_array_assignment(FILE *out, struct mcc_ir_line *line, struct mcc
 		                          MCC_ASM_REGISTER_EAX, 0);
 		print_asm_instruction_array_set(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EAX, index);
 		print_asm_instruction_array_get(out, MCC_ASM_INSTRUCTION_MOVL, index, MCC_ASM_REGISTER_EAX);
-		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EAX, 0, MCC_ASM_REGISTER_EBP,
-		                          stack_position);
 	}
 }
 

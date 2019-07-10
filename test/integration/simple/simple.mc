@@ -1,9 +1,17 @@
 int main()
 {
-    int[4] arr;
 
-    arr[1+1] = 42;
-    print_int(arr[1+1]);
+    int[20] arr;
+
+    int i;
+    i = 1;
+
+
+    arr[i] = i;
+
+
+    print_int(arr[1]);
+    print_nl();
 
     return 0;
 }
