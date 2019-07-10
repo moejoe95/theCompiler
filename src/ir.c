@@ -426,7 +426,7 @@ static void generate_ir_identifier(struct mcc_ast_expression *expr,
 	if (expr->expression_type == MCC_AST_TYPE_BOOL)
 		generate_ir_table_line(head, value, NULL, MCC_IR_TABLE_BOOL, -1, -1, -1);
 	else
-		generate_ir_table_line(head, value, NULL, type, -1, -1, -1);
+		generate_ir_table_line(head, value, NULL, type, -1, -1, -1); //todo error from here!!
 }
 
 static void generate_ir_expression(struct mcc_ast_expression *expr,
@@ -511,8 +511,10 @@ static void generate_ir_assignment(struct mcc_ast_declare_assign *assign, struct
 	} else if (assign->assign_lhs->type == MCC_AST_EXPRESSION_TYPE_ARRAY_ACCESS) {
 		char *id = assign->assign_lhs->array_access_id->identifier->name;
 		if (assign->assign_lhs->array_access_exp->type != MCC_AST_EXPRESSION_TYPE_LITERAL) {
-			generate_ir_expression(assign->assign_lhs->array_access_exp, head, -1);
-			sprintf(value, "%s[(%d)]", id, head->index);
+			char *id_index = lookup_table_args(head, assign->assign_lhs->array_access_exp->identifier->name, 
+									NULL, assign->assign_lhs->expression_type);
+			sprintf(value, "%s[%s]", id, id_index);
+			free(id_index);
 		} else {
 			char *lit = generate_ir_literal_entity(assign->assign_lhs->array_access_exp->literal);
 			sprintf(value, "%s[%s]", id, lit);
