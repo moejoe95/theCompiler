@@ -2,8 +2,8 @@ int main()
 {
     int[4] arr;
 
-    arr[2] = 7;
-    print_int(arr[2]);
+    arr[1+1] = 42;
+    print_int(arr[1+1]);
 
     return 0;
 }

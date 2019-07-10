@@ -111,8 +111,15 @@ char *lookup_data_section_array(FILE *out, char *arg, struct mcc_asm_head *asm_h
 	struct mcc_asm_data_section *data_section = asm_head->data_section;
 	while (data_section != NULL) {
 		if (data_section->id != NULL && strcmp(id, data_section->id) == 0) {
-			sprintf(index, "%d", atoi(access_position) * 4);
-			print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, index, MCC_ASM_REGISTER_EDI, 0);
+			if (!is_number(access_position)) { // access with expression
+				int stack_pos = find_stack_position(access_position, asm_head->stack);
+				print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EBP,
+				                          stack_pos, MCC_ASM_REGISTER_EDI, 0);
+			} else {
+				sprintf(index, "%d", atoi(access_position) * 4);
+				print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, index, MCC_ASM_REGISTER_EDI,
+				                          0);
+			}
 			break;
 		}
 		data_section = data_section->next_data_section;
