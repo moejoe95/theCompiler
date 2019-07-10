@@ -1,14 +1,9 @@
 int main()
 {
-    float x;
-    float y;
+    int[4] arr;
 
-    x = read_float();
-    y = 2.224;
+    arr[2] = 7;
+    print_int(arr[2]);
 
-    if (x < y){
-        print_float(y);
-    } 
-    
-	return 0;
+    return 0;
 }

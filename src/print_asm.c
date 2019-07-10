@@ -219,6 +219,30 @@ void print_asm_instruction_lit(
 	print_asm_line(out, op, arg1, arg2);
 }
 
+void print_asm_instruction_array_get(FILE *out, enum mcc_asm_instruction in, char *array, enum mcc_asm_operand op2)
+{
+
+	char op[INSTRUCTION_SIZE] = {0};
+	char arg2[OPERAND_SIZE] = {0};
+
+	get_assembly_instruction(in, op);
+	get_assembly_operand(op2, 0, arg2);
+
+	print_asm_line(out, op, array, arg2);
+}
+
+void print_asm_instruction_array_set(FILE *out, enum mcc_asm_instruction in, enum mcc_asm_operand op2, char *array)
+{
+
+	char op[INSTRUCTION_SIZE] = {0};
+	char arg2[OPERAND_SIZE] = {0};
+
+	get_assembly_instruction(in, op);
+	get_assembly_operand(op2, 0, arg2);
+
+	print_asm_line(out, op, arg2, array);
+}
+
 void print_asm_instruction_load_float(FILE *out, enum mcc_asm_instruction in, char *lit)
 {
 	char op[INSTRUCTION_SIZE] = {0};
