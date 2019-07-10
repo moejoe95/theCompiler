@@ -1,10 +1,14 @@
 int main()
 {
-    float[2] x;
+    float x;
+    float y;
 
-    x[0] = 1.11;
+    x = read_float();
+    y = 2.224;
 
-    print_float(x[0]);
-
+    if (x < y){
+        print_float(y);
+    } 
+    
 	return 0;
 }

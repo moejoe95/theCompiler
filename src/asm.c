@@ -1,6 +1,7 @@
 #include "mcc/asm.h"
 
 #include "assert.h"
+#include "ctype.h"
 #include "stdio.h"
 #include "stdlib.h"
 #include "string.h"
@@ -111,16 +112,33 @@ char *lookup_data_section_float(FILE *out, char *arg, struct mcc_asm_head *asm_h
 	return strdup(index);
 }
 
+int is_float_number(char *str)
+{
+	for (size_t i = 0; i < strlen(str); i++) {
+		if (!isdigit(str[i]) && str[i] != '.' && str[i] != '-') {
+			return 0;
+		}
+	}
+	return 1;
+}
+
 char *lookup_data_section(FILE *out, char *arg, struct mcc_asm_head *asm_head)
 {
-
-	float f = atof(arg);
-	if (f != 0) { // return if arg is a literal
+	int is_float = is_float_number(arg);
+	if (is_float) { // return if arg is a literal
 		return NULL;
 	}
 
 	if (strchr(arg, '[')) {
 		return lookup_data_section_float(out, arg, asm_head);
+	}
+
+	char val[64] = {0};
+
+	int stack_pos = find_stack_position(arg, asm_head->stack);
+	if (stack_pos != -1) {
+		sprintf(val, "%d(%%ebp)", stack_pos);
+		return strdup(val);
 	}
 
 	arg = get_id_by_line_ref(arg, asm_head);
@@ -134,7 +152,6 @@ char *lookup_data_section(FILE *out, char *arg, struct mcc_asm_head *asm_head)
 		data_section = data_section->next_data_section;
 	}
 	if (data_section_label_count >= 0) {
-		char val[64] = {0};
 		sprintf(val, "%s_%d", arg, data_section_label_count);
 		return strdup(val);
 	}
@@ -835,11 +852,12 @@ void create_asm_store(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *
 
 	int access_position_int = strtol(access_position, &ptr, 10);
 
-	if(access_position[0] == '('){ //todo
+	if (access_position[0] == '(') { // todo
 		struct mcc_asm_stack *current = head->stack->next_stack;
 		while (current != NULL) {
 			if (current->line_no != NULL && current->var != NULL) {
-				if (strcmp(access_position, current->line_no) == 0 || strcmp(access_position, current->var) == 0) {
+				if (strcmp(access_position, current->line_no) == 0 ||
+				    strcmp(access_position, current->var) == 0) {
 					access_position_int = current->result;
 					break;
 				}
