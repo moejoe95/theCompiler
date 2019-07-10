@@ -864,7 +864,6 @@ void create_asm_store(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *
 			for (int i = 0; i <= access_position_int; i++) {
 				index = index->next_data_index;
 			}
-			index->value = strdup(line->arg2);
 		}
 		data = data->next_data_section;
 	}
