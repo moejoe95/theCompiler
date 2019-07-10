@@ -27,7 +27,7 @@ int find_stack_position(char *arg, struct mcc_asm_stack *stack)
 	return -1;
 }
 
-void push_on_stack(struct mcc_ir_line *line, struct mcc_asm_head *head, int result)
+void push_on_stack(struct mcc_ir_line *line, struct mcc_asm_head *head)
 {
 	struct mcc_asm_stack *new_stack_var = malloc(sizeof(*new_stack_var));
 	new_stack_var->stack_position = head->offset;
@@ -36,7 +36,6 @@ void push_on_stack(struct mcc_ir_line *line, struct mcc_asm_head *head, int resu
 	new_stack_var->line_no = strdup(value);
 	new_stack_var->var = strdup(line->arg1);
 	new_stack_var->next_stack = NULL;
-	new_stack_var->result = result;
 
 	struct mcc_asm_stack *current = head->stack;
 	while (current->next_stack != NULL) {
@@ -323,7 +322,7 @@ void create_asm_function_call(FILE *out,
 		                                     asm_head->offset);
 	}
 
-	push_on_stack(line, asm_head, 0);
+	push_on_stack(line, asm_head);
 }
 
 void create_asm_push(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *asm_head)
@@ -391,7 +390,7 @@ void create_asm_pop(FILE *out,
 	                          MCC_ASM_REGISTER_EAX, 0);
 
 	asm_head->offset = asm_head->offset - 4;
-	push_on_stack(line, asm_head, 0);
+	push_on_stack(line, asm_head);
 
 	print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EAX, 0, MCC_ASM_REGISTER_EBP,
 	                          asm_head->offset);
@@ -427,7 +426,6 @@ void create_asm_comparison(FILE *out,
 
 void create_asm_binary_op_int(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *asm_head)
 {
-	int result;
 	int stack_position_arg1 = -1;
 	int stack_position_arg2 = -1;
 	if (strncmp(line->arg1, "(", 1) == 0)
@@ -444,7 +442,6 @@ void create_asm_binary_op_int(FILE *out, struct mcc_ir_line *line, struct mcc_as
 	switch (line->bin_op) {
 	case MCC_AST_BINARY_OP_ADD:
 		print_asm_instruction(out, MCC_ASM_INSTRUCTION_ADDL, stack_position_arg2, line->arg2);
-		result = atoi(line->arg1) + atoi(line->arg2);
 		break;
 
 	case MCC_AST_BINARY_OP_SUB:
@@ -504,7 +501,7 @@ void create_asm_binary_op_int(FILE *out, struct mcc_ir_line *line, struct mcc_as
 	}
 
 	asm_head->offset = asm_head->offset - 4;
-	push_on_stack(line, asm_head, result);
+	push_on_stack(line, asm_head);
 	print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EAX, 0, MCC_ASM_REGISTER_EBP,
 	                          asm_head->offset);
 }
@@ -543,7 +540,7 @@ void create_asm_binary_op_float(FILE *out, struct mcc_ir_line *line, struct mcc_
 	}
 
 	print_asm_instruction_store_float(out, MCC_ASM_INSTRUCTION_FSTPS, MCC_ASM_REGISTER_EBP, asm_head->offset);
-	push_on_stack(line, asm_head, 0);
+	push_on_stack(line, asm_head);
 
 	free(arg1);
 	free(arg2);
@@ -573,7 +570,7 @@ void create_asm_unary_minus(FILE *out, struct mcc_ir_line *line, struct mcc_asm_
 		print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FLDS, arg1);
 		print_asm_instruction_store_float(out, MCC_ASM_INSTRUCTION_FSTPS, MCC_ASM_REGISTER_EBP,
 		                                  asm_head->offset);
-		push_on_stack(line, asm_head, 0);
+		push_on_stack(line, asm_head);
 		free(arg1);
 	} else { // int
 		sprintf(value, "%s%s", get_un_op_string(line->un_op), line->arg1);
@@ -747,7 +744,7 @@ void create_asm_assignment(FILE *out, struct mcc_ir_line *line, struct mcc_asm_h
 	if (stack_position == -1) {
 		head->offset = head->offset - 4;
 		stack_position = head->offset;
-		push_on_stack(line, head, 0);
+		push_on_stack(line, head);
 	} else {
 		update_stack(line, head->stack);
 	}
@@ -851,20 +848,6 @@ void create_asm_store(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *
 	char *ptr;
 
 	int access_position_int = strtol(access_position, &ptr, 10);
-
-	if (access_position[0] == '(') { // todo
-		struct mcc_asm_stack *current = head->stack->next_stack;
-		while (current != NULL) {
-			if (current->line_no != NULL && current->var != NULL) {
-				if (strcmp(access_position, current->line_no) == 0 ||
-				    strcmp(access_position, current->var) == 0) {
-					access_position_int = current->result;
-					break;
-				}
-			}
-			current = current->next_stack;
-		}
-	}
 
 	struct mcc_asm_data_section *data = head->data_section;
 	while (data != NULL) {
