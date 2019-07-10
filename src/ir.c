@@ -591,6 +591,8 @@ static void generate_ir_if(struct mcc_ast_statement *stmt, struct mcc_ir_line_he
 	// if condition
 	if (stmt->if_cond->type == MCC_AST_EXPRESSION_TYPE_LITERAL) {
 		entity1 = generate_ir_entity(head, stmt->if_cond);
+	} else if (stmt->if_cond->type == MCC_AST_EXPRESSION_TYPE_ARRAY_ACCESS) {
+		entity1 = generate_ir_array_access(head, stmt->if_cond);
 	} else {
 		generate_ir_expression(stmt->if_cond, head, -1);
 		sprintf(value, "(%d)", head->current->index);
