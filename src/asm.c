@@ -184,22 +184,6 @@ int get_last_data_section(char *arg, struct mcc_asm_head *asm_head)
 	return current_pos - 1;
 }
 
-char *get_value_by_index(char *id, int i, struct mcc_asm_head *head)
-{
-	struct mcc_asm_data_section *data = head->data_section;
-	while (data != NULL) {
-		if (strcmp(data->id, id) == 0) {
-			struct mcc_asm_data_index *index = data->index;
-			for (int j = 0; j <= i; j++) {
-				index = index->next_data_index;
-			}
-			return index->value;
-		}
-		data = data->next_data_section;
-	}
-	return NULL;
-}
-
 /*
 This sequence of instructions is typical at the start of a subroutine to save space on the stack for local variables;
 EBP is used as the base register to reference the local variables, and a value is subtracted from ESP to reserve space
