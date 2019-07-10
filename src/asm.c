@@ -246,7 +246,33 @@ void create_asm_jumpfalse(FILE *out,
 			temp_line = temp_line->next_line;
 		}
 
-		print_asm_instruction_call(out, MCC_ASM_INSTRUCTION_JE, line->arg2);
+		if (temp_line->op_type == MCC_IR_TABLE_BINARY_OP && temp_line->memory_size == 2) {
+			switch (temp_line->bin_op) {
+			case MCC_AST_BINARY_OP_ST:
+				print_asm_instruction_call(out, MCC_ASM_INSTRUCTION_JGE, line->arg2);
+				break;
+			case MCC_AST_BINARY_OP_GT:
+				print_asm_instruction_call(out, MCC_ASM_INSTRUCTION_JLE, line->arg2);
+				break;
+			case MCC_AST_BINARY_OP_SE:
+				print_asm_instruction_call(out, MCC_ASM_INSTRUCTION_JG, line->arg2);
+				break;
+			case MCC_AST_BINARY_OP_GE:
+				print_asm_instruction_call(out, MCC_ASM_INSTRUCTION_JL, line->arg2);
+				break;
+			case MCC_AST_BINARY_OP_EQ:
+				print_asm_instruction_call(out, MCC_ASM_INSTRUCTION_JNE, line->arg2);
+				break;
+			case MCC_AST_BINARY_OP_NEQ:
+				print_asm_instruction_call(out, MCC_ASM_INSTRUCTION_JE, line->arg2);
+				break;
+
+			default:
+				break;
+			}
+		} else {
+			print_asm_instruction_call(out, MCC_ASM_INSTRUCTION_JE, line->arg2);
+		}
 	}
 }
 
