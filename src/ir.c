@@ -181,11 +181,15 @@ char *generate_ir_array_access(struct mcc_ir_line_head *head, struct mcc_ast_exp
 {
 	char value[64] = {0};
 	char *id = expr->array_access_id->identifier->name;
-	char *pos = generate_ir_entity(head, expr->array_access_exp);
-	if (expr->array_access_exp->type == MCC_AST_EXPRESSION_TYPE_LITERAL)
-		sprintf(value, "%s[%s]", id, pos);
-	else
-		sprintf(value, "(%d)", head->index);
+	char *pos;
+
+	if (expr->array_access_exp->type == MCC_AST_EXPRESSION_TYPE_LITERAL) {
+		pos = generate_ir_entity(head, expr->array_access_exp);
+	} else {
+		pos = lookup_table_args(head, expr->array_access_exp->identifier->name, NULL,
+			                            expr->array_access_exp->type);
+	}
+	sprintf(value, "%s[%s]", id, pos);
 	return strdup(value);
 }
 
@@ -511,8 +515,18 @@ static void generate_ir_assignment(struct mcc_ast_declare_assign *assign, struct
 	} else if (assign->assign_lhs->type == MCC_AST_EXPRESSION_TYPE_ARRAY_ACCESS) {
 		char *id = assign->assign_lhs->array_access_id->identifier->name;
 		if (assign->assign_lhs->array_access_exp->type != MCC_AST_EXPRESSION_TYPE_LITERAL) {
-			generate_ir_expression(assign->assign_lhs->array_access_exp, head, -1);
-			sprintf(value, "%s[(%d)]", id, head->index);
+			if (assign->assign_lhs->array_access_exp->type != MCC_AST_EXPRESSION_TYPE_IDENTIFIER) {
+				generate_ir_expression(assign->assign_lhs->array_access_exp, head, -1);
+				sprintf(value, "%s[(%d)]", id, head->index);
+			} else {
+				char *id_index =
+				    lookup_table_args(head, assign->assign_lhs->array_access_exp->identifier->name,
+
+				                      NULL, assign->assign_lhs->expression_type);
+
+				sprintf(value, "%s[%s]", id, id_index);
+				free(id_index);
+			}
 		} else {
 			char *lit = generate_ir_literal_entity(assign->assign_lhs->array_access_exp->literal);
 			sprintf(value, "%s[%s]", id, lit);
