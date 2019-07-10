@@ -181,11 +181,15 @@ char *generate_ir_array_access(struct mcc_ir_line_head *head, struct mcc_ast_exp
 {
 	char value[64] = {0};
 	char *id = expr->array_access_id->identifier->name;
-	char *pos = generate_ir_entity(head, expr->array_access_exp);
-	if (expr->array_access_exp->type == MCC_AST_EXPRESSION_TYPE_LITERAL)
-		sprintf(value, "%s[%s]", id, pos);
-	else
-		sprintf(value, "(%d)", head->index);
+	char *pos;
+
+	if (expr->array_access_exp->type == MCC_AST_EXPRESSION_TYPE_LITERAL) {
+		pos = generate_ir_entity(head, expr->array_access_exp);
+	} else {
+		pos = lookup_table_args(head, expr->array_access_exp->identifier->name, NULL,
+			                            expr->array_access_exp->type);
+	}
+	sprintf(value, "%s[%s]", id, pos);
 	return strdup(value);
 }
 
