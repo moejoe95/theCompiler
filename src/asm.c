@@ -129,8 +129,14 @@ char *lookup_data_section_array(FILE *out, char *arg, struct mcc_asm_head *asm_h
 	return strdup(index);
 }
 
-char *lookup_data_section(FILE *out, char *arg, struct mcc_asm_head *asm_head)
+char *lookup_data_section(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *asm_head, int arg_number)
 {
+	char *arg = NULL;
+	if (arg_number == 1) {
+		arg = line->arg1;
+	} else {
+		arg = line->arg2;
+	}
 	int number = is_number(arg);
 	if (number) { // return if arg is a literal
 		return NULL;
@@ -161,14 +167,22 @@ char *lookup_data_section(FILE *out, char *arg, struct mcc_asm_head *asm_head)
 		data_section = data_section->next_data_section;
 	}
 
-	if (arg[0] == '(') {
-		arg = get_id_by_line_ref(arg, asm_head);
-		return lookup_data_section(out, arg, asm_head);
-	} else if (strchr(arg, '_')) {
+	if (strchr(arg, '_')) {
 		return arg;
 	}
 	sprintf(val, "%s_%d", arg, data_section_label_count);
 	return strdup(val);
+}
+
+void update_data_section_line_number(char *old, char *new, struct mcc_asm_head *asm_head)
+{
+	struct mcc_asm_data_section *data_section = asm_head->data_section;
+	while (data_section != NULL) {
+		if (data_section->line_no != NULL && strcmp(old, data_section->line_no) == 0) {
+			data_section->line_no = strdup(new);
+		}
+		data_section = data_section->next_data_section;
+	}
 }
 
 /*
@@ -350,7 +364,7 @@ void create_asm_push(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *a
 	}
 
 	if (line->memory_size == 2) { // floats
-		char *loc = lookup_data_section(out, line->arg1, asm_head);
+		char *loc = lookup_data_section(out, line, asm_head, 1);
 		if (loc == NULL) {
 			loc = add_asm_float(line->arg1, line->index, asm_head);
 		}
@@ -517,11 +531,11 @@ void create_asm_binary_op_float(FILE *out, struct mcc_ir_line *line, struct mcc_
 {
 	asm_head->offset = asm_head->offset - 4;
 
-	char *arg1 = lookup_data_section(out, line->arg1, asm_head);
+	char *arg1 = lookup_data_section(out, line, asm_head, 1);
 	if (arg1 == NULL) {
 		arg1 = add_asm_float(line->arg1, line->index, asm_head);
 	}
-	char *arg2 = lookup_data_section(out, line->arg2, asm_head);
+	char *arg2 = lookup_data_section(out, line, asm_head, 2);
 	if (arg2 == NULL) {
 		arg2 = add_asm_float(line->arg2, line->index, asm_head);
 	}
@@ -567,10 +581,11 @@ void create_asm_unary_minus(FILE *out, struct mcc_ir_line *line, struct mcc_asm_
 
 	char value[64] = {0};
 	if (line->memory_size == 2) { // float
-		char *arg1 = lookup_data_section(out, line->arg1, asm_head);
+		char *arg1 = lookup_data_section(out, line, asm_head, 1);
 		if (arg1 == NULL) {
 			sprintf(value, "%s%s", get_un_op_string(line->un_op), line->arg1);
 			char *label = add_asm_float(value, line->index, asm_head);
+			print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FLDS, label);
 		}
 
 	} else { // int
@@ -774,23 +789,16 @@ void create_asm_assignment(FILE *out, struct mcc_ir_line *line, struct mcc_asm_h
 		return;
 	}
 
-	if (line->memory_size == 2) { // single float values#
-		char label[64] = {0};
-		if (line->arg2[0] == '(') {
-			char *data = lookup_data_section(out, line->arg2, head);
-			sprintf(label, "%s", data);
-		} else if (strchr(line->arg2, '[') || strchr(get_id_by_line_ref(line->arg2, head), '[')) {
-			char *index = lookup_data_section_array(out, line->arg2, head, 1);
-			print_asm_instruction_array_get(out, MCC_ASM_INSTRUCTION_MOVL, index, MCC_ASM_REGISTER_EAX);
-		} else {
+	if (line->memory_size == 2) { // single float values
+		if (line->arg2[0] != '(') {
 			create_asm_float(out, line, head);
-			char *id = lookup_data_section(out, line->arg1, head);
+			char *id = lookup_data_section(out, line, head, 1);
 			print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FLDS, id);
+		} else {
+			char label[64] = {0};
+			sprintf(label, "(%d)", line->index);
+			update_data_section_line_number(line->arg2, label, head);
 		}
-
-		print_asm_instruction_store_float(out, MCC_ASM_INSTRUCTION_FSTPS, MCC_ASM_REGISTER_EBP, stack_position);
-		print_asm_instruction_load_float_reg(out, MCC_ASM_INSTRUCTION_FLDS, MCC_ASM_REGISTER_EBP,
-		                                     stack_position);
 
 	} else {
 		if (strncmp(line->arg2, "(", 1) == 0) {
