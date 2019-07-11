@@ -165,6 +165,7 @@ char *lookup_data_section(FILE *out, struct mcc_ir_line *line, struct mcc_asm_he
 		if ((data_section->id != NULL && strcmp(arg, data_section->id) == 0)) {
 			data_section_label_count = data_section->label_count;
 		} else if (data_section->line_no != NULL && strcmp(arg, data_section->line_no) == 0) {
+			data_section_label_count = data_section->label_count;
 			arg = data_section->id;
 		}
 		data_section = data_section->next_data_section;

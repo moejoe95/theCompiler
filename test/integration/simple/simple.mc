@@ -1,13 +1,14 @@
-
 int main(){
 
+    float x;
+	float y;
     float z;
 
-    float fx;
+	x = 2.0;
+	y = 3.0;
 
-    fx = 160.0;
 
-    z = (-2.0) + ((1.0) - (-2.0)) * (fx / 80.0);
+    z = x * x + y * y;
 
     print_float(z);
  
