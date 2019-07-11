@@ -259,16 +259,16 @@ void create_asm_jumpfalse(FILE *out,
 		if (temp_line->op_type == MCC_IR_TABLE_BINARY_OP && temp_line->memory_size == 2) { // float comparison
 			switch (temp_line->bin_op) {
 			case MCC_AST_BINARY_OP_ST:
-				print_asm_instruction_call(out, MCC_ASM_INSTRUCTION_JB, line->arg2);
+				print_asm_instruction_call(out, MCC_ASM_INSTRUCTION_JBE, line->arg2);
 				break;
 			case MCC_AST_BINARY_OP_GT:
-				print_asm_instruction_call(out, MCC_ASM_INSTRUCTION_JA, line->arg2);
+				print_asm_instruction_call(out, MCC_ASM_INSTRUCTION_JAE, line->arg2);
 				break;
 			case MCC_AST_BINARY_OP_SE:
 				print_asm_instruction_call(out, MCC_ASM_INSTRUCTION_JB, line->arg2);
 				break;
 			case MCC_AST_BINARY_OP_GE:
-				print_asm_instruction_call(out, MCC_ASM_INSTRUCTION_JAE, line->arg2);
+				print_asm_instruction_call(out, MCC_ASM_INSTRUCTION_JA, line->arg2);
 				break;
 			case MCC_AST_BINARY_OP_EQ:
 				print_asm_instruction_call(out, MCC_ASM_INSTRUCTION_JNE, line->arg2);
@@ -563,7 +563,8 @@ void create_asm_binary_op_float(FILE *out, struct mcc_ir_line *line, struct mcc_
 		print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FDIVS, arg2);
 		break;
 	default: // floating point comparisons
-		print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FCOMPS, arg2);
+		print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FLDS, arg2);
+		print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FCOMIP, NULL);
 		print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FSTP, "%st(0)");
 		break;
 	}
@@ -765,6 +766,7 @@ void create_asm_array_assignment(FILE *out, struct mcc_ir_line *line, struct mcc
 	if (line->memory_size == 2) { // float arrays
 		print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FLDS, index);
 		print_asm_instruction_store_float(out, MCC_ASM_INSTRUCTION_FSTPS, MCC_ASM_REGISTER_EBP, stack_position);
+		print_asm_instruction_load_float_reg(out, MCC_ASM_INSTRUCTION_FLDS, MCC_ASM_REGISTER_EBP, stack_position);
 	} else if (line->memory_size == 1) { // int arrays
 		int stack_position_arg2 = -1;
 		if (strncmp(line->arg2, "(", 1) == 0) {
@@ -809,8 +811,8 @@ void create_asm_assignment(FILE *out, struct mcc_ir_line *line, struct mcc_asm_h
 			print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FLDS, label);
 		}
 
-		print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FLDS, label);
 		print_asm_instruction_store_float(out, MCC_ASM_INSTRUCTION_FSTPS, MCC_ASM_REGISTER_EBP, stack_position);
+		print_asm_instruction_load_float_reg(out, MCC_ASM_INSTRUCTION_FLDS, MCC_ASM_REGISTER_EBP, stack_position);
 
 	} else {
 		if (strncmp(line->arg2, "(", 1) == 0) {
