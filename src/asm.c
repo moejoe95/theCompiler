@@ -116,6 +116,9 @@ char *lookup_data_section_array(FILE *out, char *arg, struct mcc_asm_head *asm_h
 				int stack_pos = find_stack_position(access_position, asm_head->stack);
 				print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EBP,
 				                          stack_pos, MCC_ASM_REGISTER_EDI, 0);
+				sprintf(index, "%d", factor);
+				print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MULL, index, MCC_ASM_REGISTER_EDI,
+				                          0);
 			} else {
 				sprintf(index, "%d", atoi(access_position) * factor);
 				print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, index, MCC_ASM_REGISTER_EDI,
