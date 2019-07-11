@@ -1,12 +1,15 @@
-int main()
-{
-    int[4] arr;
+int main() {
 
-    int i;
-    i = 2;
+    float x;
 
-    arr[1+1] = 7;
-    print_int(arr[i]);
+    x = -4.0;
+
+    print_float(x);
+
+    x = 5.0;
+
+    print_nl();
+    print_float(x);
 
     return 0;
 }

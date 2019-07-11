@@ -590,8 +590,6 @@ void create_asm_unary_minus(FILE *out, struct mcc_ir_line *line, struct mcc_asm_
 		}
 
 		print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FLDS, arg1);
-		print_asm_instruction_store_float(out, MCC_ASM_INSTRUCTION_FSTPS, MCC_ASM_REGISTER_EBP,
-		                                  asm_head->offset);
 		push_on_stack(line, asm_head);
 		free(arg1);
 	} else { // int
@@ -808,12 +806,9 @@ void create_asm_assignment(FILE *out, struct mcc_ir_line *line, struct mcc_asm_h
 		if (assignment) {
 			sprintf(label, "%s_%d", line->arg1, head->temp_variable_id - 1);
 			print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FLDS, label);
-		} else { // re-assignment
-			print_asm_instruction_load_float_reg(out, MCC_ASM_INSTRUCTION_FLDS, MCC_ASM_REGISTER_EBP,
-			                                     head->offset);
 		}
-
 		print_asm_instruction_store_float(out, MCC_ASM_INSTRUCTION_FSTPS, MCC_ASM_REGISTER_EBP, stack_position);
+
 	} else {
 		if (strncmp(line->arg2, "(", 1) == 0) {
 			int pos = find_stack_position(line->arg2, head->stack);
