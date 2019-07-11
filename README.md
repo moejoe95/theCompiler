@@ -45,7 +45,7 @@ Taken from the [Meson Documentation](https://mesonbuild.com/Unit-tests.html#cove
 
 ## Known Issues
 
-* block size in CFG is fixed, on large blocks stack is smashed
+* string size of blocks in CFG is fixed, on really large blocks (around 1700 chars), stack is smashed
 
 
 ## Milestones
@@ -55,3 +55,4 @@ All milestones are explained in more detail here:
 * [Milestone 1 - AST](./docs/milestone1.md)
 * [Milestone 2 - Semantic Checks](./docs/milestone2.md)
 * [Milestone 3 - IR & CFG](./docs/milestone3.md)
+* [Milestone 4 - Backend](./docs/milestone4.md)
