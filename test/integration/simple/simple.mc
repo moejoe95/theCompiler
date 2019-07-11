@@ -1,16 +1,17 @@
+float transform_x(float x)
+{
+	float fx;
+	fx = x;
+	return (-2.0) + ((1.0) - (-2.0)) * (fx / 80.0);
+}
+
 int main(){
 
-    float x;
-	float y;
-    float z;
+	float x;
 
-	x = 2.0;
-	y = 3.0;
+    x = transform_x(160.0);
 
-
-    z = x * x + y * y;
-
-    print_float(z);
+    print_float(x);
  
     return 0;
 }
