@@ -257,7 +257,7 @@ struct mcc_ast_declare_assign {
 	union {
 		// MCC_AST_TYPE_DECLARATION
 		struct {
-			enum mcc_ast_literal_type declare_type;
+			enum mcc_ast_type declare_type;
 			struct mcc_ast_expression *declare_id;
 			long *declare_array_size;
 		};
