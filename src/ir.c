@@ -520,15 +520,18 @@ static void generate_ir_assignment(struct mcc_ast_declare_assign *assign, struct
 	}
 
 	if (assign_rhs->type != MCC_AST_EXPRESSION_TYPE_LITERAL) {
-		if (assign_rhs->type != MCC_AST_EXPRESSION_TYPE_IDENTIFIER) {
-			generate_ir_expression(assign_rhs, head, -1);
-			sprintf(value, "(%d)", head->index);
-		} else {
+		if (assign_rhs->type == MCC_AST_EXPRESSION_TYPE_IDENTIFIER) {
 			char *result = lookup_table_args(head, assign_rhs->identifier->name, NULL, MCC_AST_TYPE_STRING);
 			sprintf(value, "%s", result);
 			free(result);
+			entity2 = strdup(value);
+		} else if (assign_rhs->type == MCC_AST_EXPRESSION_TYPE_ARRAY_ACCESS) {
+			entity2 = generate_ir_array_access(head, assign_rhs);
+		} else {
+			generate_ir_expression(assign_rhs, head, -1);
+			sprintf(value, "(%d)", head->index);
+			entity2 = strdup(value);
 		}
-		entity2 = strdup(value);
 	} else {
 		entity2 = generate_ir_literal_entity(assign_rhs->literal);
 		lit_type = assign_rhs->literal->type;

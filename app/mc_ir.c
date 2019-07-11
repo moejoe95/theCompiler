@@ -16,7 +16,7 @@ int log_level_to_int(enum log_level level)
 {
 	switch (level) {
 	case LOG_DEFAULT:
-		return 1;
+		return 0;
 	case LOG_INFO:
 		return 1;
 	case LOG_DEBUG:
