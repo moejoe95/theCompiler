@@ -148,21 +148,27 @@ char *lookup_data_section(FILE *out, char *arg, struct mcc_asm_head *asm_head)
 		return strdup(val);
 	}
 
-	arg = get_id_by_line_ref(arg, asm_head);
+	// arg = get_id_by_line_ref(arg, asm_head);
 
 	int data_section_label_count = 0;
 	struct mcc_asm_data_section *data_section = asm_head->data_section;
 	while (data_section != NULL) {
-		if (data_section->id != NULL && strcmp(arg, data_section->id) == 0) {
+		if ((data_section->id != NULL && strcmp(arg, data_section->id) == 0)) {
 			data_section_label_count = data_section->label_count;
+		} else if (data_section->line_no != NULL && strcmp(arg, data_section->line_no) == 0) {
+			arg = data_section->id;
 		}
 		data_section = data_section->next_data_section;
 	}
-	if (data_section_label_count >= 0) {
-		sprintf(val, "%s_%d", arg, data_section_label_count);
-		return strdup(val);
+
+	if (arg[0] == '(') {
+		arg = get_id_by_line_ref(arg, asm_head);
+		return lookup_data_section(out, arg, asm_head);
+	} else if (strchr(arg, '_')) {
+		return arg;
 	}
-	return NULL;
+	sprintf(val, "%s_%d", arg, data_section_label_count);
+	return strdup(val);
 }
 
 int get_last_data_section(char *arg, struct mcc_asm_head *asm_head)
@@ -378,7 +384,7 @@ void create_asm_push(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *a
 
 			print_asm_instruction_store_float(out, MCC_ASM_INSTRUCTION_FSTPS, MCC_ASM_REGISTER_EBP, -4);
 			print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_PUSHL, MCC_ASM_REGISTER_EBP, -4, -1, 0);
-			free(loc);
+
 		} else { // literals
 			char arg[65];
 			sprintf(arg, "$%s", line->arg1);
@@ -541,7 +547,8 @@ void create_asm_binary_op_float(FILE *out, struct mcc_ir_line *line, struct mcc_
 		arg2 = add_asm_float(line->arg2, line->index, asm_head);
 	}
 
-	print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FLDS, arg1);
+	if (arg1[0] != '-')
+		print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FLDS, arg1);
 
 	switch (line->bin_op) {
 	case MCC_AST_BINARY_OP_ADD:
@@ -560,9 +567,6 @@ void create_asm_binary_op_float(FILE *out, struct mcc_ir_line *line, struct mcc_
 		print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FCOMPS, arg2);
 		break;
 	}
-
-	free(arg1);
-	free(arg2);
 }
 
 void create_asm_binary_op(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *asm_head)
@@ -583,12 +587,9 @@ void create_asm_unary_minus(FILE *out, struct mcc_ir_line *line, struct mcc_asm_
 		char *arg1 = lookup_data_section(out, line->arg1, asm_head);
 		if (arg1 == NULL) {
 			sprintf(value, "%s%s", get_un_op_string(line->un_op), line->arg1);
-			arg1 = add_asm_float(value, line->index, asm_head);
+			add_asm_float(value, line->index, asm_head);
 		}
 
-		print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FLDS, arg1);
-		push_on_stack(line, asm_head);
-		free(arg1);
 	} else { // int
 		sprintf(value, "%s%s", get_un_op_string(line->un_op), line->arg1);
 		print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, value, MCC_ASM_REGISTER_EAX, 0);
@@ -797,13 +798,16 @@ void create_asm_assignment(FILE *out, struct mcc_ir_line *line, struct mcc_asm_h
 	}
 
 	if (line->memory_size == 2) { // single float values
-		char *assignment = create_asm_float(out, line, head);
-
 		char label[64] = {0};
-		if (assignment) {
+		if (line->arg2[0] == '(') {
+			char *data = lookup_data_section(out, line->arg2, head);
+			sprintf(label, "%s", data);
+		} else {
+			create_asm_float(out, line, head);
 			sprintf(label, "%s_%d", line->arg1, head->temp_variable_id - 1);
-			print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FLDS, label);
 		}
+
+		// print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FLDS, label);
 		print_asm_instruction_store_float(out, MCC_ASM_INSTRUCTION_FSTPS, MCC_ASM_REGISTER_EBP, stack_position);
 
 	} else {
