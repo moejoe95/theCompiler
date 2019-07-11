@@ -185,6 +185,26 @@ void update_data_section_line_number(char *old, char *new, struct mcc_asm_head *
 	}
 }
 
+int is_reference_assignment(char *arg, struct mcc_asm_head *asm_head)
+{
+	if (arg[0] != '(')
+		return 1;
+	struct mcc_ir_line *current_line = asm_head->ir->line_head->root;
+	while (current_line != NULL) {
+		char value[64] = {0};
+		sprintf(value, "(%d)", current_line->index);
+		if (strcmp(arg, value) == 0) {
+			if (current_line->op_type == MCC_IR_TABLE_ASSIGNMENT ||
+			    current_line->op_type == MCC_IR_TABLE_UNARY_OP)
+				return 1;
+			else
+				return 0;
+		}
+		current_line = current_line->next_line;
+	}
+	return 0;
+}
+
 /*
 This sequence of instructions is typical at the start of a subroutine to save space on the stack for local variables;
 EBP is used as the base register to reference the local variables, and a value is subtracted from ESP to reserve space
@@ -541,14 +561,14 @@ void create_asm_binary_op_float(FILE *out, struct mcc_ir_line *line, struct mcc_
 	}
 
 	if (line->bin_op != MCC_AST_BINARY_OP_DIV) {
-		if (line->arg1[0] != '(')
+		if (is_reference_assignment(line->arg1, asm_head))
 			print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FLDS, arg1);
-		if (line->arg2[0] != '(')
+		if (is_reference_assignment(line->arg2, asm_head))
 			print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FLDS, arg2);
 	} else {
-		if (line->arg2[0] != '(')
+		if (is_reference_assignment(line->arg2, asm_head))
 			print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FLDS, arg2);
-		if (line->arg1[0] != '(')
+		if (is_reference_assignment(line->arg1, asm_head))
 			print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FLDS, arg1);
 	}
 	switch (line->bin_op) {
@@ -591,7 +611,7 @@ void create_asm_unary_minus(FILE *out, struct mcc_ir_line *line, struct mcc_asm_
 		if (arg1 == NULL) {
 			sprintf(value, "%s%s", get_un_op_string(line->un_op), line->arg1);
 			char *label = add_asm_float(value, line->index, asm_head);
-			print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FLDS, label);
+			// print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FLDS, label);
 		}
 
 	} else { // int
@@ -798,8 +818,6 @@ void create_asm_assignment(FILE *out, struct mcc_ir_line *line, struct mcc_asm_h
 	if (line->memory_size == 2) { // single float values
 		if (line->arg2[0] != '(') {
 			create_asm_float(out, line, head);
-			char *id = lookup_data_section(out, line, head, 1);
-			print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FLDS, id);
 		} else {
 			char label[64] = {0};
 			sprintf(label, "(%d)", line->index);
