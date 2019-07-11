@@ -239,10 +239,8 @@ void create_asm_jumpfalse(FILE *out,
 	assert(current_func);
 	assert(asm_head);
 
-	print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_CMP, "0", MCC_ASM_REGISTER_EAX, 0);
-
 	if (strncmp(line->arg1, "(", 1) != 0) {
-
+		print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_CMP, "0", MCC_ASM_REGISTER_EAX, 0);
 		if (strchr(line->arg1, '[') || strchr(get_id_by_line_ref(line->arg1, asm_head), '[')) {
 			char *index = lookup_data_section_array(out, line->arg1, asm_head, 1);
 			print_asm_instruction_array_get(out, MCC_ASM_INSTRUCTION_MOVL, index, MCC_ASM_REGISTER_EAX);
@@ -258,19 +256,19 @@ void create_asm_jumpfalse(FILE *out,
 		while (temp_line->index != atoi(search_index)) {
 			temp_line = temp_line->next_line;
 		}
-		if (temp_line->op_type == MCC_IR_TABLE_BINARY_OP && temp_line->memory_size == 2) {
+		if (temp_line->op_type == MCC_IR_TABLE_BINARY_OP && temp_line->memory_size == 2) { // float comparison
 			switch (temp_line->bin_op) {
 			case MCC_AST_BINARY_OP_ST:
-				print_asm_instruction_call(out, MCC_ASM_INSTRUCTION_JGE, line->arg2);
+				print_asm_instruction_call(out, MCC_ASM_INSTRUCTION_JB, line->arg2);
 				break;
 			case MCC_AST_BINARY_OP_GT:
-				print_asm_instruction_call(out, MCC_ASM_INSTRUCTION_JLE, line->arg2);
+				print_asm_instruction_call(out, MCC_ASM_INSTRUCTION_JA, line->arg2);
 				break;
 			case MCC_AST_BINARY_OP_SE:
-				print_asm_instruction_call(out, MCC_ASM_INSTRUCTION_JG, line->arg2);
+				print_asm_instruction_call(out, MCC_ASM_INSTRUCTION_JB, line->arg2);
 				break;
 			case MCC_AST_BINARY_OP_GE:
-				print_asm_instruction_call(out, MCC_ASM_INSTRUCTION_JL, line->arg2);
+				print_asm_instruction_call(out, MCC_ASM_INSTRUCTION_JAE, line->arg2);
 				break;
 			case MCC_AST_BINARY_OP_EQ:
 				print_asm_instruction_call(out, MCC_ASM_INSTRUCTION_JNE, line->arg2);
@@ -283,6 +281,7 @@ void create_asm_jumpfalse(FILE *out,
 				break;
 			}
 		} else {
+			print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_CMP, "0", MCC_ASM_REGISTER_EAX, 0);
 			print_asm_instruction_call(out, MCC_ASM_INSTRUCTION_JE, line->arg2);
 		}
 	}
@@ -565,6 +564,7 @@ void create_asm_binary_op_float(FILE *out, struct mcc_ir_line *line, struct mcc_
 		break;
 	default: // floating point comparisons
 		print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FCOMPS, arg2);
+		print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FSTP, "%st(0)");
 		break;
 	}
 }
@@ -807,7 +807,7 @@ void create_asm_assignment(FILE *out, struct mcc_ir_line *line, struct mcc_asm_h
 			sprintf(label, "%s_%d", line->arg1, head->temp_variable_id - 1);
 		}
 
-		// print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FLDS, label);
+		print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FLDS, label);
 		print_asm_instruction_store_float(out, MCC_ASM_INSTRUCTION_FSTPS, MCC_ASM_REGISTER_EBP, stack_position);
 
 	} else {
