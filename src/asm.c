@@ -372,6 +372,7 @@ void create_asm_push(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *a
 			loc = add_asm_float(line->arg1, line->index, asm_head);
 		}
 
+		print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FLDS, loc);
 		print_asm_instruction_store_float(out, MCC_ASM_INSTRUCTION_FSTPS, MCC_ASM_REGISTER_EBP, -4);
 		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_PUSHL, MCC_ASM_REGISTER_EBP, -4, -1, 0);
 
