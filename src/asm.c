@@ -561,9 +561,6 @@ void create_asm_binary_op_float(FILE *out, struct mcc_ir_line *line, struct mcc_
 		break;
 	}
 
-	print_asm_instruction_store_float(out, MCC_ASM_INSTRUCTION_FSTPS, MCC_ASM_REGISTER_EBP, asm_head->offset);
-	push_on_stack(line, asm_head);
-
 	free(arg1);
 	free(arg2);
 }
