@@ -171,7 +171,7 @@ char *lookup_data_section(FILE *out, struct mcc_ir_line *line, struct mcc_asm_he
 	}
 
 	if (strchr(arg, '_')) {
-		return arg;
+		return strdup(arg);
 	}
 	sprintf(val, "%s_%d", arg, data_section_label_count);
 	return strdup(val);
@@ -396,13 +396,14 @@ void create_asm_push(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *a
 		print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FLDS, loc);
 		print_asm_instruction_store_float(out, MCC_ASM_INSTRUCTION_FSTPS, MCC_ASM_REGISTER_EBP, -4);
 		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_PUSHL, MCC_ASM_REGISTER_EBP, -4, -1, 0);
-
+		free(loc);
 	} else if (strncmp(line->arg1, "(", 1) == 0) {
 		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_PUSHL, MCC_ASM_REGISTER_EBP, stack_pos, -1, 0);
 	} else {
 		if (strncmp(line->arg1, "\"", 1) == 0) { // strings
 			char *loc = add_string_to_datasection(NULL, line->arg1, asm_head);
 			print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_PUSHL, loc, -1, 0);
+			free(loc);
 		} else { // literals
 			char arg[65];
 			sprintf(arg, "$%s", line->arg1);
@@ -595,6 +596,9 @@ void create_asm_binary_op_float(FILE *out, struct mcc_ir_line *line, struct mcc_
 		print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FSTP, "%st(0)");
 		break;
 	}
+
+	free(arg1);
+	free(arg2);
 }
 
 void create_asm_binary_op(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *asm_head)
@@ -704,7 +708,7 @@ char *add_string_to_datasection(char *name, char *value, struct mcc_asm_head *he
 
 	head->temp_variable_id = head->temp_variable_id + 1;
 
-	return name;
+	return strdup(name);
 }
 
 char *add_asm_float(char *arg, int line_no, struct mcc_asm_head *head)
