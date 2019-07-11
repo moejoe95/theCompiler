@@ -46,6 +46,7 @@ Taken from the [Meson Documentation](https://mesonbuild.com/Unit-tests.html#cove
 ## Known Issues
 
 * string size of blocks in CFG is fixed, on really large blocks (around 1700 chars), stack is smashed
+* call by reference for arrays not working (is call by value)
 
 
 ## Milestones
