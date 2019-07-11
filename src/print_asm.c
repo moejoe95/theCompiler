@@ -135,6 +135,9 @@ void get_assembly_instruction(enum mcc_asm_instruction in, char *in_string)
 	case MCC_ASM_INSTRUCTION_FSTP:
 		strcpy(in_string, "fstp");
 		break;
+	case MCC_ASM_INSTRUCTION_FCOMIP:
+		strcpy(in_string, "fcomip");
+		break;
 	default:
 		strcpy(in_string, "UNDEF");
 		break;
