@@ -94,7 +94,7 @@ void get_assembly_instruction(enum mcc_asm_instruction in, char *in_string)
 		strcpy(in_string, "fmulp");
 		break;
 	case MCC_ASM_INSTRUCTION_FDIVS:
-		strcpy(in_string, "fdivs");
+		strcpy(in_string, "fdivp");
 		break;
 	case MCC_ASM_INSTRUCTION_FCOMPS:
 		strcpy(in_string, "fcomp");

@@ -540,11 +540,17 @@ void create_asm_binary_op_float(FILE *out, struct mcc_ir_line *line, struct mcc_
 		arg2 = add_asm_float(line->arg2, line->index, asm_head);
 	}
 
-	if (line->arg1[0] != '(')
-		print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FLDS, arg1);
-	if (line->arg2[0] != '(')
-		print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FLDS, arg2);
-
+	if (line->bin_op != MCC_AST_BINARY_OP_DIV) {
+		if (line->arg1[0] != '(')
+			print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FLDS, arg1);
+		if (line->arg2[0] != '(')
+			print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FLDS, arg2);
+	} else {
+		if (line->arg2[0] != '(')
+			print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FLDS, arg2);
+		if (line->arg1[0] != '(')
+			print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FLDS, arg1);
+	}
 	switch (line->bin_op) {
 	case MCC_AST_BINARY_OP_ADD:
 		print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FADDS, NULL);
@@ -556,7 +562,7 @@ void create_asm_binary_op_float(FILE *out, struct mcc_ir_line *line, struct mcc_
 		print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FMULS, NULL);
 		break;
 	case MCC_AST_BINARY_OP_DIV:
-		print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FDIVS, arg2);
+		print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FDIVS, NULL);
 		break;
 	default: // floating point comparisons
 		// print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FLDS, arg2);
