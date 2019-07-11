@@ -587,7 +587,8 @@ void create_asm_unary_minus(FILE *out, struct mcc_ir_line *line, struct mcc_asm_
 		char *arg1 = lookup_data_section(out, line->arg1, asm_head);
 		if (arg1 == NULL) {
 			sprintf(value, "%s%s", get_un_op_string(line->un_op), line->arg1);
-			add_asm_float(value, line->index, asm_head);
+			char *label = add_asm_float(value, line->index, asm_head);
+			print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FLDS, label);
 		}
 
 	} else { // int
@@ -805,6 +806,7 @@ void create_asm_assignment(FILE *out, struct mcc_ir_line *line, struct mcc_asm_h
 		} else {
 			create_asm_float(out, line, head);
 			sprintf(label, "%s_%d", line->arg1, head->temp_variable_id - 1);
+			print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FLDS, label);
 		}
 
 		print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FLDS, label);

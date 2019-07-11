@@ -279,20 +279,29 @@ static void generate_ir_binary_expression(struct mcc_ast_expression *bin_expr,
 	assert(bin_expr);
 	assert(head);
 
-	if (bin_expr->lhs->type != MCC_AST_EXPRESSION_TYPE_IDENTIFIER &&
-	    bin_expr->lhs->type != MCC_AST_EXPRESSION_TYPE_LITERAL) {
-		generate_ir_expression(bin_expr->lhs, head, type);
+	struct mcc_ast_expression *lhs = bin_expr->lhs;
+	struct mcc_ast_expression *rhs = bin_expr->rhs;
+
+	while (rhs->type == MCC_AST_EXPRESSION_TYPE_PARENTH) {
+		rhs = rhs->expression;
+	}
+
+	while (lhs->type == MCC_AST_EXPRESSION_TYPE_PARENTH) {
+		lhs = lhs->expression;
+	}
+
+	if (lhs->type != MCC_AST_EXPRESSION_TYPE_IDENTIFIER && lhs->type != MCC_AST_EXPRESSION_TYPE_LITERAL) {
+		generate_ir_expression(lhs, head, type);
 	}
 
 	char *entity1;
-	if (bin_expr->lhs->type != MCC_AST_EXPRESSION_TYPE_LITERAL) {
-		if (bin_expr->lhs->type == MCC_AST_EXPRESSION_TYPE_IDENTIFIER) {
-			entity1 = lookup_table_args(head, bin_expr->lhs->identifier->name, NULL,
-			                            bin_expr->lhs->expression_type);
-		} else if (bin_expr->lhs->type == MCC_AST_EXPRESSION_TYPE_ARRAY_ACCESS) {
-			char *arg2 = generate_ir_entity(head, bin_expr->lhs->array_access_exp);
-			entity1 = lookup_table_args(head, bin_expr->lhs->array_access_id->identifier->name, arg2,
-			                            MCC_AST_TYPE_ARRAY);
+	if (lhs->type != MCC_AST_EXPRESSION_TYPE_LITERAL) {
+		if (lhs->type == MCC_AST_EXPRESSION_TYPE_IDENTIFIER) {
+			entity1 = lookup_table_args(head, lhs->identifier->name, NULL, lhs->expression_type);
+		} else if (lhs->type == MCC_AST_EXPRESSION_TYPE_ARRAY_ACCESS) {
+			char *arg2 = generate_ir_entity(head, lhs->array_access_exp);
+			entity1 =
+			    lookup_table_args(head, lhs->array_access_id->identifier->name, arg2, MCC_AST_TYPE_ARRAY);
 			free(arg2);
 		} else {
 			char value[14];
@@ -301,23 +310,21 @@ static void generate_ir_binary_expression(struct mcc_ast_expression *bin_expr,
 		}
 
 	} else {
-		entity1 = generate_ir_entity(head, bin_expr->lhs);
+		entity1 = generate_ir_entity(head, lhs);
 	}
 
-	if (bin_expr->rhs->type != MCC_AST_EXPRESSION_TYPE_IDENTIFIER &&
-	    bin_expr->rhs->type != MCC_AST_EXPRESSION_TYPE_LITERAL) {
-		generate_ir_expression(bin_expr->rhs, head, type);
+	if (rhs->type != MCC_AST_EXPRESSION_TYPE_IDENTIFIER && rhs->type != MCC_AST_EXPRESSION_TYPE_LITERAL) {
+		generate_ir_expression(rhs, head, type);
 	}
 
 	char *entity2;
-	if (bin_expr->rhs->type != MCC_AST_EXPRESSION_TYPE_LITERAL) {
-		if (bin_expr->rhs->type == MCC_AST_EXPRESSION_TYPE_IDENTIFIER) {
-			entity2 = lookup_table_args(head, bin_expr->rhs->identifier->name, NULL,
-			                            bin_expr->rhs->expression_type);
-		} else if (bin_expr->rhs->type == MCC_AST_EXPRESSION_TYPE_ARRAY_ACCESS) {
-			char *arg2 = generate_ir_entity(head, bin_expr->rhs->array_access_exp);
-			entity2 = lookup_table_args(head, bin_expr->rhs->array_access_id->identifier->name, arg2,
-			                            MCC_AST_TYPE_ARRAY);
+	if (rhs->type != MCC_AST_EXPRESSION_TYPE_LITERAL) {
+		if (rhs->type == MCC_AST_EXPRESSION_TYPE_IDENTIFIER) {
+			entity2 = lookup_table_args(head, rhs->identifier->name, NULL, rhs->expression_type);
+		} else if (rhs->type == MCC_AST_EXPRESSION_TYPE_ARRAY_ACCESS) {
+			char *arg2 = generate_ir_entity(head, rhs->array_access_exp);
+			entity2 =
+			    lookup_table_args(head, rhs->array_access_id->identifier->name, arg2, MCC_AST_TYPE_ARRAY);
 			free(arg2);
 		} else {
 			char value[14];
@@ -325,7 +332,7 @@ static void generate_ir_binary_expression(struct mcc_ast_expression *bin_expr,
 			entity2 = strdup(value);
 		}
 	} else {
-		entity2 = generate_ir_entity(head, bin_expr->rhs);
+		entity2 = generate_ir_entity(head, rhs);
 	}
 
 	head->index++;
@@ -505,20 +512,26 @@ static void generate_ir_assignment(struct mcc_ast_declare_assign *assign, struct
 	enum mcc_ast_literal_type lit_type = -1;
 	char *entity2;
 	char value[64] = {0};
-	if (assign->assign_rhs->type != MCC_AST_EXPRESSION_TYPE_LITERAL) {
-		if (assign->assign_rhs->type != MCC_AST_EXPRESSION_TYPE_IDENTIFIER) {
-			generate_ir_expression(assign->assign_rhs, head, -1);
+
+	struct mcc_ast_expression *assign_rhs = assign->assign_rhs;
+
+	while (assign_rhs->type == MCC_AST_EXPRESSION_TYPE_PARENTH) {
+		assign_rhs = assign_rhs->expression;
+	}
+
+	if (assign_rhs->type != MCC_AST_EXPRESSION_TYPE_LITERAL) {
+		if (assign_rhs->type != MCC_AST_EXPRESSION_TYPE_IDENTIFIER) {
+			generate_ir_expression(assign_rhs, head, -1);
 			sprintf(value, "(%d)", head->index);
 		} else {
-			char *result =
-			    lookup_table_args(head, assign->assign_rhs->identifier->name, NULL, MCC_AST_TYPE_STRING);
+			char *result = lookup_table_args(head, assign_rhs->identifier->name, NULL, MCC_AST_TYPE_STRING);
 			sprintf(value, "%s", result);
 			free(result);
 		}
 		entity2 = strdup(value);
 	} else {
-		entity2 = generate_ir_literal_entity(assign->assign_rhs->literal);
-		lit_type = assign->assign_rhs->literal->type;
+		entity2 = generate_ir_literal_entity(assign_rhs->literal);
+		lit_type = assign_rhs->literal->type;
 	}
 
 	enum ir_table_operation_type type;
