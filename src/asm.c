@@ -182,6 +182,7 @@ void update_data_section_line_number(char *old, char *new, struct mcc_asm_head *
 	struct mcc_asm_data_section *data_section = asm_head->data_section;
 	while (data_section != NULL) {
 		if (data_section->line_no != NULL && strcmp(old, data_section->line_no) == 0) {
+			free(data_section->line_no);
 			data_section->line_no = strdup(new);
 		}
 		data_section = data_section->next_data_section;
@@ -395,6 +396,7 @@ void create_asm_push(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *a
 		print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FLDS, loc);
 		print_asm_instruction_store_float(out, MCC_ASM_INSTRUCTION_FSTPS, MCC_ASM_REGISTER_EBP, -4);
 		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_PUSHL, MCC_ASM_REGISTER_EBP, -4, -1, 0);
+		free(loc);
 
 	} else if (strncmp(line->arg1, "(", 1) == 0) {
 		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_PUSHL, MCC_ASM_REGISTER_EBP, stack_pos, -1, 0);
@@ -594,6 +596,9 @@ void create_asm_binary_op_float(FILE *out, struct mcc_ir_line *line, struct mcc_
 		print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FSTP, "%st(0)");
 		break;
 	}
+
+	free(arg1);
+	free(arg2);
 }
 
 void create_asm_binary_op(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *asm_head)
@@ -616,6 +621,7 @@ void create_asm_unary_minus(FILE *out, struct mcc_ir_line *line, struct mcc_asm_
 			sprintf(value, "%s%s", get_un_op_string(line->un_op), line->arg1);
 			char *label = add_asm_float(value, line->index, asm_head);
 			// print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FLDS, label);
+			free(label);
 		}
 
 	} else { // int
@@ -1083,20 +1089,26 @@ void mcc_delete_data_index(struct mcc_asm_data_index *index)
 	free(index);
 }
 
+void mcc_delete_data_section(struct mcc_asm_data_section *section)
+{
+	if (section->next_data_section != NULL) {
+		mcc_delete_data_section(section->next_data_section);
+	}
+
+	if (section->index != NULL) {
+		mcc_delete_data_index(section->index);
+	}
+	free(section->id);
+	free(section->line_no);
+	free(section);
+}
+
 void mcc_delete_asm(struct mcc_asm_head *asm_head)
 {
-	struct mcc_asm_data_section *data = asm_head->data_section;
-	while (data != NULL) {
-
-		struct mcc_asm_data_section *temp = data->next_data_section;
-		if (data->index != NULL) {
-			mcc_delete_data_index(data->index);
-		}
-		free(data->id);
-		free(data->line_no);
-		free(data);
-		data = temp;
+	if (asm_head->data_section != NULL) {
+		mcc_delete_data_section(asm_head->data_section);
 	}
+
 	if (asm_head->stack != NULL) {
 		mcc_delete_stack(asm_head->stack);
 	}

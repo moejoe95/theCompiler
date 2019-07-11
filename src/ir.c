@@ -960,7 +960,8 @@ void mcc_delete_line(struct mcc_ir_line *line)
 	}
 
 	free(line->arg1);
-	free(line->arg2);
+	if (line->arg2 != NULL)
+		free(line->arg2);
 	free(line);
 }
 
