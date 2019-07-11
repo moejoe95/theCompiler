@@ -545,7 +545,7 @@ void create_asm_binary_op_float(FILE *out, struct mcc_ir_line *line, struct mcc_
 		print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FDIVS, arg2);
 		break;
 	default: // floating point comparisons
-		print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FLDS, arg2);
+		// print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FLDS, arg2);
 		print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FCOMIP, NULL);
 		print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FSTP, "%st(0)");
 		break;
@@ -774,10 +774,6 @@ void create_asm_assignment(FILE *out, struct mcc_ir_line *line, struct mcc_asm_h
 		return;
 	}
 
-<<<<<<< HEAD
-	if (line->memory_size == 2) { // single float values
-		if (line->arg2[0] != '(') {
-=======
 	if (line->memory_size == 2) { // single float values#
 		char label[64] = {0};
 		if (line->arg2[0] == '(') {
@@ -787,20 +783,15 @@ void create_asm_assignment(FILE *out, struct mcc_ir_line *line, struct mcc_asm_h
 			char *index = lookup_data_section_array(out, line->arg2, head, 1);
 			print_asm_instruction_array_get(out, MCC_ASM_INSTRUCTION_MOVL, index, MCC_ASM_REGISTER_EAX);
 		} else {
->>>>>>> 289b7d1922f6695a76d5733611e6a8836fd3ee8e
 			create_asm_float(out, line, head);
 			char *id = lookup_data_section(out, line->arg1, head);
 			print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FLDS, id);
 		}
-<<<<<<< HEAD
-		return;
-=======
 
 		print_asm_instruction_store_float(out, MCC_ASM_INSTRUCTION_FSTPS, MCC_ASM_REGISTER_EBP, stack_position);
 		print_asm_instruction_load_float_reg(out, MCC_ASM_INSTRUCTION_FLDS, MCC_ASM_REGISTER_EBP,
 		                                     stack_position);
 
->>>>>>> 289b7d1922f6695a76d5733611e6a8836fd3ee8e
 	} else {
 		if (strncmp(line->arg2, "(", 1) == 0) {
 			int pos = find_stack_position(line->arg2, head->stack);
