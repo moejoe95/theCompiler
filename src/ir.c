@@ -249,8 +249,7 @@ static void generate_ir_table_line(struct mcc_ir_line_head *head,
 	struct mcc_ir_line *new_table = create_new_ir_line();
 
 	new_table->arg1 = arg1;
-	if (arg2)
-		new_table->arg2 = arg2;
+	new_table->arg2 = arg2;
 	new_table->op_type = type;
 	new_table->index = head->index;
 	if (jump_loc >= 0) {
@@ -960,8 +959,7 @@ void mcc_delete_line(struct mcc_ir_line *line)
 	}
 
 	free(line->arg1);
-	if (line->arg2 != NULL)
-		free(line->arg2);
+	free(line->arg2);
 	free(line);
 }
 
