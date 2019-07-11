@@ -367,10 +367,10 @@ void create_asm_push(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *a
 	if (strncmp(line->arg1, "(", 1) == 0) {
 		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_PUSHL, MCC_ASM_REGISTER_EBP, stack_pos, -1, 0);
 	} else {
-		if (strncmp(line->arg1, "\"", 1) == 0) {
+		if (strncmp(line->arg1, "\"", 1) == 0) { // strings
 			char *loc = add_string_to_datasection(NULL, line->arg1, asm_head);
 			print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_PUSHL, loc, -1, 0);
-		} else if (line->memory_size == 2) {
+		} else if (line->memory_size == 2) { // floats
 			char *loc = lookup_data_section(out, line->arg1, asm_head);
 			if (loc == NULL)
 				loc = add_asm_float(line->arg1, line->index, asm_head);
@@ -379,6 +379,10 @@ void create_asm_push(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *a
 			print_asm_instruction_store_float(out, MCC_ASM_INSTRUCTION_FSTPS, MCC_ASM_REGISTER_EBP, -4);
 			print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_PUSHL, MCC_ASM_REGISTER_EBP, -4, -1, 0);
 			free(loc);
+		} else { // literals
+			char arg[65];
+			sprintf(arg, "$%s", line->arg1);
+			print_asm_instruction_call(out, MCC_ASM_INSTRUCTION_PUSHL, arg);
 		}
 	}
 	asm_head->current_stack_size_parameters +=
