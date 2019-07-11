@@ -85,13 +85,13 @@ void get_assembly_instruction(enum mcc_asm_instruction in, char *in_string)
 		strcpy(in_string, "fstps");
 		break;
 	case MCC_ASM_INSTRUCTION_FADDS:
-		strcpy(in_string, "fadds");
+		strcpy(in_string, "faddp");
 		break;
 	case MCC_ASM_INSTRUCTION_FSUBS:
-		strcpy(in_string, "fsubs");
+		strcpy(in_string, "fsubp");
 		break;
 	case MCC_ASM_INSTRUCTION_FMULS:
-		strcpy(in_string, "fmuls");
+		strcpy(in_string, "fmulp");
 		break;
 	case MCC_ASM_INSTRUCTION_FDIVS:
 		strcpy(in_string, "fdivs");

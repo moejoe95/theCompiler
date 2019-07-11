@@ -171,26 +171,6 @@ char *lookup_data_section(FILE *out, char *arg, struct mcc_asm_head *asm_head)
 	return strdup(val);
 }
 
-int get_last_data_section(char *arg, struct mcc_asm_head *asm_head)
-{
-
-	int is_in_data_section = 0;
-	int current_pos = 0;
-	struct mcc_asm_data_section *data_section = asm_head->data_section;
-	while (data_section != NULL) {
-		if ((data_section->id != NULL && strcmp(arg, data_section->id) == 0) ||
-		    (data_section->line_no != NULL && strcmp(arg, data_section->line_no) == 0)) {
-			is_in_data_section++;
-		}
-		current_pos++;
-		data_section = data_section->next_data_section;
-	}
-	if (is_in_data_section) {
-		return is_in_data_section;
-	}
-	return current_pos - 1;
-}
-
 /*
 This sequence of instructions is typical at the start of a subroutine to save space on the stack for local variables;
 EBP is used as the base register to reference the local variables, and a value is subtracted from ESP to reserve space
@@ -370,21 +350,21 @@ void create_asm_push(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *a
 		return;
 	}
 
-	if (strncmp(line->arg1, "(", 1) == 0) {
+	if (line->memory_size == 2) { // floats
+		char *loc = lookup_data_section(out, line->arg1, asm_head);
+		if (loc == NULL) {
+			loc = add_asm_float(line->arg1, line->index, asm_head);
+		}
+
+		print_asm_instruction_store_float(out, MCC_ASM_INSTRUCTION_FSTPS, MCC_ASM_REGISTER_EBP, -4);
+		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_PUSHL, MCC_ASM_REGISTER_EBP, -4, -1, 0);
+
+	} else if (strncmp(line->arg1, "(", 1) == 0) {
 		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_PUSHL, MCC_ASM_REGISTER_EBP, stack_pos, -1, 0);
 	} else {
 		if (strncmp(line->arg1, "\"", 1) == 0) { // strings
 			char *loc = add_string_to_datasection(NULL, line->arg1, asm_head);
 			print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_PUSHL, loc, -1, 0);
-		} else if (line->memory_size == 2) { // floats
-			char *loc = lookup_data_section(out, line->arg1, asm_head);
-			if (loc == NULL)
-				loc = add_asm_float(line->arg1, line->index, asm_head);
-			print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FLDS, loc);
-
-			print_asm_instruction_store_float(out, MCC_ASM_INSTRUCTION_FSTPS, MCC_ASM_REGISTER_EBP, -4);
-			print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_PUSHL, MCC_ASM_REGISTER_EBP, -4, -1, 0);
-
 		} else { // literals
 			char arg[65];
 			sprintf(arg, "$%s", line->arg1);
@@ -547,18 +527,20 @@ void create_asm_binary_op_float(FILE *out, struct mcc_ir_line *line, struct mcc_
 		arg2 = add_asm_float(line->arg2, line->index, asm_head);
 	}
 
-	if (arg1[0] != '-')
+	if (line->arg1[0] != '(')
 		print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FLDS, arg1);
+	if (line->arg2[0] != '(')
+		print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FLDS, arg2);
 
 	switch (line->bin_op) {
 	case MCC_AST_BINARY_OP_ADD:
-		print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FADDS, arg2);
+		print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FADDS, NULL);
 		break;
 	case MCC_AST_BINARY_OP_SUB:
-		print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FSUBS, arg2);
+		print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FSUBS, NULL);
 		break;
 	case MCC_AST_BINARY_OP_MUL:
-		print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FMULS, arg2);
+		print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FMULS, NULL);
 		break;
 	case MCC_AST_BINARY_OP_DIV:
 		print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FDIVS, arg2);
@@ -588,7 +570,6 @@ void create_asm_unary_minus(FILE *out, struct mcc_ir_line *line, struct mcc_asm_
 		if (arg1 == NULL) {
 			sprintf(value, "%s%s", get_un_op_string(line->un_op), line->arg1);
 			char *label = add_asm_float(value, line->index, asm_head);
-			print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FLDS, label);
 		}
 
 	} else { // int
@@ -782,35 +763,21 @@ void create_asm_array_assignment(FILE *out, struct mcc_ir_line *line, struct mcc
 
 void create_asm_assignment(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *head)
 {
+
 	int stack_position = -1;
 	stack_position = find_stack_position(line->arg1, head->stack);
-
-	if (stack_position == -1) {
-		head->offset = head->offset - 4;
-		stack_position = head->offset;
-		push_on_stack(line, head);
-	} else {
-		update_stack(line, head->stack);
-	}
-
 	if (line->op_type == MCC_IR_TABLE_STORE) {
 		create_asm_array_assignment(out, line, head, stack_position);
 		return;
 	}
 
 	if (line->memory_size == 2) { // single float values
-		char label[64] = {0};
-		if (line->arg2[0] == '(') {
-			char *data = lookup_data_section(out, line->arg2, head);
-			sprintf(label, "%s", data);
-		} else {
+		if (line->arg2[0] != '(') {
 			create_asm_float(out, line, head);
-			sprintf(label, "%s_%d", line->arg1, head->temp_variable_id - 1);
-			print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FLDS, label);
+			char *id = lookup_data_section(out, line->arg1, head);
+			print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FLDS, id);
 		}
-
-		print_asm_instruction_store_float(out, MCC_ASM_INSTRUCTION_FSTPS, MCC_ASM_REGISTER_EBP, stack_position);
-
+		return;
 	} else {
 		if (strncmp(line->arg2, "(", 1) == 0) {
 			int pos = find_stack_position(line->arg2, head->stack);
@@ -828,6 +795,14 @@ void create_asm_assignment(FILE *out, struct mcc_ir_line *line, struct mcc_asm_h
 				print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, line->arg2,
 				                          MCC_ASM_REGISTER_EAX, 0);
 			}
+		}
+
+		if (stack_position == -1) {
+			head->offset = head->offset - 4;
+			stack_position = head->offset;
+			push_on_stack(line, head);
+		} else {
+			update_stack(line, head->stack);
 		}
 		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EAX, 0, MCC_ASM_REGISTER_EBP,
 		                          stack_position);
