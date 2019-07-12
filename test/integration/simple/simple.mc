@@ -1,18 +1,21 @@
+float transform_y(float y)
+{
+	float fy;
+	fy = y;
+	return ((1.0) - ((1.0) - (-1.0)) * (fy / 50.0)) * 2.0;
+}
+
+float transform_x(float x)
+{
+	float fx;
+	fx = x;
+	return (-2.0) + ((1.0) - (-2.0)) * (fx / 80.0);
+}
+
 int main(){
-    float x;
     float y;
-    int i;
-    int iterations;
+    y = transform_y(50.0);
+    print_float(y);
 
-    x = 0.5;
-    y = 0.5;
-    i = 1;
-    iterations = 5;
-
-
-	if (((x * x + y * 0.3) <= 4.0) && i < iterations) {
-        print("asdf");
-	}
- 
     return 0;
 }
