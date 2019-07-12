@@ -113,6 +113,7 @@ int main(int argc, char **argv)
 
 			if (result.status != MCC_PARSER_STATUS_OK) {
 				fprintf(stdout, "...parsing failed...\n");
+				mcc_ast_delete_program(result.program);
 				fclose(in);
 				return EXIT_FAILURE;
 			}
