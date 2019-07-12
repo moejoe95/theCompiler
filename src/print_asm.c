@@ -138,6 +138,18 @@ void get_assembly_instruction(enum mcc_asm_instruction in, char *in_string)
 	case MCC_ASM_INSTRUCTION_FCOMIP:
 		strcpy(in_string, "fcomip");
 		break;
+	case MCC_ASM_INSTRUCTION_SET_A:
+		strcpy(in_string, "seta");
+		break;
+	case MCC_ASM_INSTRUCTION_SET_AE:
+		strcpy(in_string, "setae");
+		break;
+	case MCC_ASM_INSTRUCTION_SET_B:
+		strcpy(in_string, "setb");
+		break;
+	case MCC_ASM_INSTRUCTION_SET_BE:
+		strcpy(in_string, "setbe");
+		break;
 	default:
 		strcpy(in_string, "UNDEF");
 		break;
@@ -190,6 +202,18 @@ void get_assembly_operand(enum mcc_asm_operand op, int offset, char *arg)
 		break;
 	case MCC_ASM_REGISTER_CL:
 		strcpy(arg, "%cl");
+		break;
+	case MCC_ASM_REGISTER_ST:
+		strcpy(arg, "%st");
+		break;
+	case MCC_ASM_REGISTER_ST_0:
+		strcpy(arg, "%st(0)");
+		break;
+	case MCC_ASM_REGISTER_ST_1:
+		strcpy(arg, "%st(1)");
+		break;
+	case MCC_ASM_REGISTER_AL:
+		strcpy(arg, "%al");
 		break;
 	default:
 		arg = "";

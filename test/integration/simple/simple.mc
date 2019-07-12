@@ -1,17 +1,18 @@
-float transform_x(float x)
-{
-	float fx;
-	fx = x;
-	return (-2.0) + ((1.0) - (-2.0)) * (fx / 80.0);
-}
-
 int main(){
+    float x;
+    float y;
+    int i;
+    int iterations;
 
-	float x;
+    x = 0.5;
+    y = 0.5;
+    i = 1;
+    iterations = 5;
 
-    x = transform_x(160.0);
 
-    print_float(x);
+	if ((2.0 <= 4.0) && 1 < 5) {
+        print("asdf");
+	}
  
     return 0;
 }
