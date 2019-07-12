@@ -10,7 +10,7 @@ int main(){
     iterations = 5;
 
 
-	if (((x * x + y * 10.0) <= 4.0) && i < iterations) {
+	if (((x * x + y * 0.3) <= 4.0) && i < iterations) {
         print("asdf");
 	}
  
