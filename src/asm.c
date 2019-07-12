@@ -590,12 +590,24 @@ void create_asm_binary_op_float(FILE *out, struct mcc_ir_line *line, struct mcc_
 		break;
 	case MCC_AST_BINARY_OP_SUB:
 		print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FSUBS, NULL);
+		print_asm_instruction_store_float(out, MCC_ASM_INSTRUCTION_FSTPS, MCC_ASM_REGISTER_EBP,
+		                                  asm_head->offset);
+		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EBP, asm_head->offset,
+		                          MCC_ASM_REGISTER_EAX, 0);
 		break;
 	case MCC_AST_BINARY_OP_MUL:
 		print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FMULS, NULL);
+		print_asm_instruction_store_float(out, MCC_ASM_INSTRUCTION_FSTPS, MCC_ASM_REGISTER_EBP,
+		                                  asm_head->offset);
+		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EBP, asm_head->offset,
+		                          MCC_ASM_REGISTER_EAX, 0);
 		break;
 	case MCC_AST_BINARY_OP_DIV:
 		print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FDIVS, NULL);
+		print_asm_instruction_store_float(out, MCC_ASM_INSTRUCTION_FSTPS, MCC_ASM_REGISTER_EBP,
+		                                  asm_head->offset);
+		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EBP, asm_head->offset,
+		                          MCC_ASM_REGISTER_EAX, 0);
 		break;
 	default: // floating point comparisons
 		// print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FLDS, arg2);
@@ -839,16 +851,15 @@ void create_asm_assignment(FILE *out, struct mcc_ir_line *line, struct mcc_asm_h
 			char label[64] = {0};
 			sprintf(label, "(%d)", line->index);
 			int stack_pos = find_stack_position(line->arg2, head->stack);
-			if(stack_pos != -1){
-				//todo
+			if (stack_pos != -1) {
+				// todo
 				head->offset = head->offset - 4;
-				print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EBP, stack_pos,
-			                          MCC_ASM_REGISTER_EAX, 0);
-				print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EAX, 0, MCC_ASM_REGISTER_EBP,
-		                          head->offset);
+				print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EBP,
+				                          stack_pos, MCC_ASM_REGISTER_EAX, 0);
+				print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EAX, 0,
+				                          MCC_ASM_REGISTER_EBP, head->offset);
 				push_on_stack(line, head);
-			}
-			else
+			} else
 				update_data_section_line_number(line->arg2, label, head);
 		}
 
