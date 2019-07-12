@@ -1074,6 +1074,8 @@ void mcc_create_asm(struct mcc_ir_table_head *ir, FILE *out, int destination)
 			struct mcc_ir_line *current_line = current_func->line_head->root;
 			asm_head->offset = 0;
 			asm_head->ir = current_func;
+			mcc_delete_stack(asm_head->stack);
+			asm_head->stack = NULL;
 			create_function_label(tmpfile, current_func, asm_head);
 			while (current_line != NULL) {
 				create_asm_line(tmpfile, current_line, asm_head, current_func);
@@ -1081,7 +1083,6 @@ void mcc_create_asm(struct mcc_ir_table_head *ir, FILE *out, int destination)
 			}
 		}
 		current_func = current_func->next_table;
-		// mcc_delete_stack(asm_head->stack);
 		asm_head->stack = NULL;
 	}
 
