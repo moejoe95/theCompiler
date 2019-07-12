@@ -326,6 +326,12 @@ void create_asm_return(FILE *out,
 	else if (stack_pos != -1)
 		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EBP, stack_pos,
 		                          MCC_ASM_REGISTER_EAX, 0);
+	else {
+		print_asm_instruction_store_float(out, MCC_ASM_INSTRUCTION_FSTPS, MCC_ASM_REGISTER_EBP,
+		                                  asm_head->offset);
+		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EBP, asm_head->offset,
+		                          MCC_ASM_REGISTER_EAX, 0);
+	}
 
 	if (strcmp(current_func->func_name, "main") != 0) { // main has own return procedure
 		char *stack_size = get_stack_size(current_func->line_head->root);
@@ -583,10 +589,6 @@ void create_asm_binary_op_float(FILE *out, struct mcc_ir_line *line, struct mcc_
 	switch (line->bin_op) {
 	case MCC_AST_BINARY_OP_ADD:
 		print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FADDS, NULL);
-		print_asm_instruction_store_float(out, MCC_ASM_INSTRUCTION_FSTPS, MCC_ASM_REGISTER_EBP,
-		                                  asm_head->offset);
-		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EBP, asm_head->offset,
-		                          MCC_ASM_REGISTER_EAX, 0);
 		break;
 	case MCC_AST_BINARY_OP_SUB:
 		print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FSUBS, NULL);
