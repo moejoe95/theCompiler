@@ -1012,6 +1012,10 @@ void create_asm_line(FILE *out,
 
 void mcc_delete_stack(struct mcc_asm_stack *stack)
 {
+	if (stack == NULL) {
+		return;
+	}
+
 	if (stack->next_stack != NULL) {
 		mcc_delete_stack(stack->next_stack);
 	}
