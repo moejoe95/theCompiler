@@ -109,10 +109,12 @@ int main(int argc, char **argv)
 
 		// parsing phase
 		{
-			struct mcc_parser_result result = mcc_parse_file(in, argv[i], out, log_level_to_int(LOG_LEVEL));
+			struct mcc_parser_result result =
+			    mcc_parse_file(in, argv[i], out, log_level_to_int(LOG_LEVEL) + 1);
 
 			if (result.status != MCC_PARSER_STATUS_OK) {
 				fprintf(stdout, "...parsing failed...\n");
+				mcc_ast_delete_program(result.program);
 				fclose(in);
 				return EXIT_FAILURE;
 			}

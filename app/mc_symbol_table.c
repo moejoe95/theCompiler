@@ -114,6 +114,7 @@ int main(int argc, char **argv)
 
 			if (result.status != MCC_PARSER_STATUS_OK) {
 				fprintf(stdout, "...parsing failed...\n");
+				mcc_ast_delete_program(result.program);
 				fclose(in);
 				return EXIT_FAILURE;
 			}
@@ -135,7 +136,7 @@ int main(int argc, char **argv)
 		}
 
 		// build symbol table
-		st = mcc_create_symbol_table(pro, out, log_level_to_int(LOG_LEVEL));
+		st = mcc_create_symbol_table(pro, out, log_level_to_int(LOG_LEVEL) + 1);
 		if (st == NULL) {
 			mcc_ast_delete_program(pro);
 			fclose(in);
