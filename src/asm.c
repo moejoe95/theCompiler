@@ -142,6 +142,9 @@ char *lookup_data_section(FILE *out, struct mcc_ir_line *line, struct mcc_asm_he
 	} else {
 		arg = line->arg2;
 	}
+	char func_arg[64] = {0};
+	sprintf(func_arg, "%s_%s", asm_head->ir->func_name, arg);
+
 	int number = is_number(arg);
 	if (number) { // return if arg is a literal
 		return NULL;
@@ -166,7 +169,7 @@ char *lookup_data_section(FILE *out, struct mcc_ir_line *line, struct mcc_asm_he
 	while (data_section != NULL) {
 		if ((data_section->id != NULL && strcmp(arg, data_section->id) == 0)) {
 			data_section_label_count = data_section->label_count;
-		} else if (data_section->line_no != NULL && strcmp(arg, data_section->line_no) == 0) {
+		} else if (data_section->line_no != NULL && strcmp(func_arg, data_section->line_no) == 0) {
 			data_section_label_count = data_section->label_count;
 			arg = data_section->id;
 		}
@@ -767,7 +770,7 @@ char *add_asm_float(char *arg, int line_no, struct mcc_asm_head *head)
 
 	new_data_section->index = data_index_root;
 
-	sprintf(var, "(%d)", line_no);
+	sprintf(var, "%s_(%d)", head->ir->func_name, line_no);
 	new_data_section->line_no = strdup(var);
 
 	head->temp_variable_id = head->temp_variable_id + 1;
@@ -809,7 +812,7 @@ char *create_asm_float(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head 
 	new_data_section->index = data_index_root;
 
 	char var[64];
-	sprintf(var, "(%d)", line->index);
+	sprintf(var, "%s_(%d)", head->ir->func_name, line->index);
 	new_data_section->line_no = strdup(var);
 
 	head->temp_variable_id = head->temp_variable_id + 1;
