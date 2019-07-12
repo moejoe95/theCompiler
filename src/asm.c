@@ -590,24 +590,12 @@ void create_asm_binary_op_float(FILE *out, struct mcc_ir_line *line, struct mcc_
 		break;
 	case MCC_AST_BINARY_OP_SUB:
 		print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FSUBS, NULL);
-		print_asm_instruction_store_float(out, MCC_ASM_INSTRUCTION_FSTPS, MCC_ASM_REGISTER_EBP,
-		                                  asm_head->offset);
-		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EBP, asm_head->offset,
-		                          MCC_ASM_REGISTER_EAX, 0);
 		break;
 	case MCC_AST_BINARY_OP_MUL:
 		print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FMULS, NULL);
-		print_asm_instruction_store_float(out, MCC_ASM_INSTRUCTION_FSTPS, MCC_ASM_REGISTER_EBP,
-		                                  asm_head->offset);
-		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EBP, asm_head->offset,
-		                          MCC_ASM_REGISTER_EAX, 0);
 		break;
 	case MCC_AST_BINARY_OP_DIV:
 		print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FDIVS, NULL);
-		print_asm_instruction_store_float(out, MCC_ASM_INSTRUCTION_FSTPS, MCC_ASM_REGISTER_EBP,
-		                                  asm_head->offset);
-		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EBP, asm_head->offset,
-		                          MCC_ASM_REGISTER_EAX, 0);
 		break;
 	default: // floating point comparisons
 		// print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FLDS, arg2);
