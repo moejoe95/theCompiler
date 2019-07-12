@@ -581,6 +581,10 @@ void create_asm_binary_op_float(FILE *out, struct mcc_ir_line *line, struct mcc_
 	switch (line->bin_op) {
 	case MCC_AST_BINARY_OP_ADD:
 		print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FADDS, NULL);
+		print_asm_instruction_store_float(out, MCC_ASM_INSTRUCTION_FSTPS, MCC_ASM_REGISTER_EBP,
+		                                  asm_head->offset);
+		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EBP, asm_head->offset,
+		                          MCC_ASM_REGISTER_EAX, 0);
 		break;
 	case MCC_AST_BINARY_OP_SUB:
 		print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FSUBS, NULL);
