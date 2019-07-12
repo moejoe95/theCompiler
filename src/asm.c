@@ -565,7 +565,7 @@ void create_asm_binary_op_float(FILE *out, struct mcc_ir_line *line, struct mcc_
 		arg2 = add_asm_float(line->arg2, line->index, asm_head);
 	}
 
-	if (line->bin_op == MCC_AST_BINARY_OP_GT || line->bin_op == MCC_AST_BINARY_OP_GE) {
+	if (line->bin_op == MCC_AST_BINARY_OP_ST || line->bin_op == MCC_AST_BINARY_OP_SE) {
 		if (is_reference_assignment(line->arg2, asm_head))
 			print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FLDS, arg1);
 		if (is_reference_assignment(line->arg1, asm_head))
