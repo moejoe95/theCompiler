@@ -368,6 +368,8 @@ void create_asm_function_call(FILE *out,
 		                          asm_head->offset);
 		print_asm_instruction_load_float_reg(out, MCC_ASM_INSTRUCTION_FLDS, MCC_ASM_REGISTER_EBP,
 		                                     asm_head->offset);
+
+		push_on_stack(line, asm_head);
 	}
 
 	push_on_stack(line, asm_head);
@@ -832,7 +834,18 @@ void create_asm_assignment(FILE *out, struct mcc_ir_line *line, struct mcc_asm_h
 		} else {
 			char label[64] = {0};
 			sprintf(label, "(%d)", line->index);
-			update_data_section_line_number(line->arg2, label, head);
+			int stack_pos = find_stack_position(line->arg2, head->stack);
+			if(stack_pos != -1){
+				//todo
+				head->offset = head->offset - 4;
+				print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EBP, stack_pos,
+			                          MCC_ASM_REGISTER_EAX, 0);
+				print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EAX, 0, MCC_ASM_REGISTER_EBP,
+		                          head->offset);
+				push_on_stack(line, head);
+			}
+			else
+				update_data_section_line_number(line->arg2, label, head);
 		}
 
 	} else {
