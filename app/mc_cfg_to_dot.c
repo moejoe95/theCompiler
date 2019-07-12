@@ -115,6 +115,7 @@ int main(int argc, char **argv)
 
 			if (result.status != MCC_PARSER_STATUS_OK) {
 				fprintf(stdout, "...parsing failed...\n");
+				mcc_ast_delete_program(result.program);
 				fclose(in);
 				return EXIT_FAILURE;
 			}
@@ -157,7 +158,7 @@ int main(int argc, char **argv)
 		ir = mcc_create_ir(pro, out, log_level_to_int(LOG_LEVEL));
 
 		// cfg
-		cfg = generate_cfg(ir, out, log_level_to_int(LOG_LEVEL));
+		cfg = generate_cfg(ir, out, log_level_to_int(LOG_LEVEL) + 1);
 
 		// cleanup
 		mcc_delete_cfg(cfg);

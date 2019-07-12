@@ -695,7 +695,9 @@ struct mcc_ast_program *mcc_ast_new_empty_program(char *filename)
 
 void mcc_ast_delete_program(struct mcc_ast_program *program)
 {
-	assert(program);
+	if (program == NULL) {
+		return;
+	}
 
 	switch (program->type) {
 	case MCC_AST_PROGRAM_TYPE_FUNCTION:
