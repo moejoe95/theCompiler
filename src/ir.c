@@ -779,10 +779,11 @@ static int hasStatementReturn(struct mcc_ast_statement *stmt)
 {
 	struct mcc_ast_statement_list *tmp_list = stmt->compound;
 
-	switch (stmt->type) {
-	case MCC_AST_STATEMENT_RETURN:
+	if (stmt->type == MCC_AST_STATEMENT_RETURN) {
 		return 1;
-	case MCC_AST_STATEMENT_COMPOUND: {
+	}
+
+	if (stmt->type == MCC_AST_STATEMENT_COMPOUND) {
 		int result;
 		while (tmp_list != NULL) {
 			result = hasStatementReturn(tmp_list->statement);
@@ -792,9 +793,6 @@ static int hasStatementReturn(struct mcc_ast_statement *stmt)
 		}
 	}
 
-	default:
-		break;
-	}
 	return 0;
 }
 
