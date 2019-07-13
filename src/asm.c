@@ -11,11 +11,11 @@
 
 char *add_asm_float(char *arg, int line_no, struct mcc_asm_head *head);
 
-int find_stack_position(char *arg, struct mcc_asm_stack *stack)
+int find_stack_position(char *arg, struct mcc_asm_head *head)
 {
-	assert(stack);
+	assert(head);
 
-	struct mcc_asm_stack *current = stack->next_stack;
+	struct mcc_asm_stack *current = head->stack->next_stack;
 	while (current != NULL) {
 		if (current->line_no != NULL && current->var != NULL) {
 			if (strcmp(arg, current->line_no) == 0 || strcmp(arg, current->var) == 0) {
@@ -24,6 +24,7 @@ int find_stack_position(char *arg, struct mcc_asm_stack *stack)
 		}
 		current = current->next_stack;
 	}
+
 	return -1;
 }
 
@@ -113,7 +114,7 @@ char *lookup_data_section_array(FILE *out, char *arg, struct mcc_asm_head *asm_h
 	while (data_section != NULL) {
 		if (data_section->id != NULL && strcmp(id, data_section->id) == 0) {
 			if (!is_number(access_position)) { // access with expression
-				int stack_pos = find_stack_position(access_position, asm_head->stack);
+				int stack_pos = find_stack_position(access_position, asm_head);
 				print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EBP,
 				                          stack_pos, MCC_ASM_REGISTER_EDI, 0);
 				sprintf(index, "%d", factor);
@@ -153,7 +154,7 @@ char *lookup_data_section(FILE *out, struct mcc_ir_line *line, struct mcc_asm_he
 
 	char val[64] = {0};
 
-	int stack_pos = find_stack_position(arg, asm_head->stack);
+	int stack_pos = find_stack_position(arg, asm_head);
 	if (stack_pos != -1) {
 		sprintf(val, "%d(%%ebp)", stack_pos);
 		return strdup(val);
@@ -295,7 +296,7 @@ void create_asm_return(FILE *out,
 	assert(line);
 	assert(current_func);
 
-	int stack_pos = find_stack_position(line->arg1, asm_head->stack);
+	int stack_pos = find_stack_position(line->arg1, asm_head);
 
 	if (line->arg1[0] != '(' && line->arg1[0] != '-')
 		print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, line->arg1, MCC_ASM_REGISTER_EAX, 0);
@@ -364,7 +365,7 @@ void create_asm_push(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *a
 	assert(asm_head);
 
 	int stack_pos = -1;
-	stack_pos = find_stack_position(line->arg1, asm_head->stack);
+	stack_pos = find_stack_position(line->arg1, asm_head);
 
 	if (strchr(line->arg1, '[') || strchr(get_id_by_line_ref(line->arg1, asm_head), '[')) { // array
 		char *index = lookup_data_section_array(out, line->arg1, asm_head, 4);
@@ -473,9 +474,9 @@ void create_asm_binary_op_int(FILE *out, struct mcc_ir_line *line, struct mcc_as
 	int stack_position_arg1 = -1;
 	int stack_position_arg2 = -1;
 	if (strncmp(line->arg1, "(", 1) == 0)
-		stack_position_arg1 = find_stack_position(line->arg1, asm_head->stack);
+		stack_position_arg1 = find_stack_position(line->arg1, asm_head);
 	if (strncmp(line->arg2, "(", 1) == 0)
-		stack_position_arg2 = find_stack_position(line->arg2, asm_head->stack);
+		stack_position_arg2 = find_stack_position(line->arg2, asm_head);
 
 	if (stack_position_arg1 != -1) // stack pos not found -> must be literal
 		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EBP, stack_position_arg1,
@@ -498,7 +499,7 @@ void create_asm_binary_op_int(FILE *out, struct mcc_ir_line *line, struct mcc_as
 
 	case MCC_AST_BINARY_OP_DIV:
 		print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, "0", MCC_ASM_REGISTER_EDX, 0);
-		int loc = find_stack_position(line->arg2, asm_head->stack);
+		int loc = find_stack_position(line->arg2, asm_head);
 
 		loc == -1
 		    ? print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, line->arg2, MCC_ASM_REGISTER_ECX, 0)
@@ -657,7 +658,7 @@ void create_asm_unary(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *
 
 	if (line->un_op == MCC_AST_UNARY_OP_NOT) {
 		if (line->arg1[0] == '(') {
-			int stack_pos = find_stack_position(line->arg1, head->stack);
+			int stack_pos = find_stack_position(line->arg1, head);
 			print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EBP, stack_pos,
 			                          MCC_ASM_REGISTER_EAX, 0);
 		} else if (strchr(line->arg1, '[') || strchr(get_id_by_line_ref(line->arg1, head), '[')) {
@@ -674,6 +675,7 @@ void create_asm_unary(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *
 		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EBP, head->offset,
 		                          MCC_ASM_REGISTER_EAX, 0);
 		print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_CMP, "0", MCC_ASM_REGISTER_EAX, 0);
+		push_on_stack(line, head);
 	}
 
 	if (line->un_op == MCC_AST_UNARY_OP_MINUS) {
@@ -686,7 +688,7 @@ void create_asm_standalone(FILE *out, struct mcc_ir_line *line, struct mcc_asm_h
 	head->offset = head->offset - 4;
 
 	if (line->arg1[0] == '(') {
-		int stack_pos = find_stack_position(line->arg1, head->stack);
+		int stack_pos = find_stack_position(line->arg1, head);
 		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EBP, stack_pos,
 		                          MCC_ASM_REGISTER_EAX, 0);
 	} else {
@@ -820,7 +822,7 @@ void create_asm_array_assignment(FILE *out, struct mcc_ir_line *line, struct mcc
 	} else if (line->memory_size == 1) { // int arrays
 		int stack_position_arg2 = -1;
 		if (strncmp(line->arg2, "(", 1) == 0) {
-			stack_position_arg2 = find_stack_position(line->arg2, head->stack);
+			stack_position_arg2 = find_stack_position(line->arg2, head);
 			print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EBP,
 			                          stack_position_arg2, MCC_ASM_REGISTER_EAX, 0);
 		} else {
@@ -837,7 +839,7 @@ void create_asm_assignment(FILE *out, struct mcc_ir_line *line, struct mcc_asm_h
 {
 
 	int stack_position = -1;
-	stack_position = find_stack_position(line->arg1, head->stack);
+	stack_position = find_stack_position(line->arg1, head);
 	if (line->op_type == MCC_IR_TABLE_STORE) {
 		create_asm_array_assignment(out, line, head, stack_position);
 		return;
@@ -849,7 +851,7 @@ void create_asm_assignment(FILE *out, struct mcc_ir_line *line, struct mcc_asm_h
 		} else {
 			char label[64] = {0};
 			sprintf(label, "(%d)", line->index);
-			int stack_pos = find_stack_position(line->arg2, head->stack);
+			int stack_pos = find_stack_position(line->arg2, head);
 			if (stack_pos != -1) {
 				// todo
 				head->offset = head->offset - 4;
@@ -864,7 +866,7 @@ void create_asm_assignment(FILE *out, struct mcc_ir_line *line, struct mcc_asm_h
 
 	} else {
 		if (strncmp(line->arg2, "(", 1) == 0) {
-			int pos = find_stack_position(line->arg2, head->stack);
+			int pos = find_stack_position(line->arg2, head);
 			print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EBP, pos,
 			                          MCC_ASM_REGISTER_EAX, 0);
 		} else {
