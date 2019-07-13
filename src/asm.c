@@ -213,12 +213,16 @@ int is_reference_assignment(char *arg, struct mcc_asm_head *asm_head)
 	return 0;
 }
 
-/*
-This sequence of instructions is typical at the start of a subroutine to save space on the stack for local variables;
-EBP is used as the base register to reference the local variables, and a value is subtracted from ESP to reserve space
-on the stack. In this case, eight bytes have been reserved on the stack. Note that pushl automatically decremented ESP
-by the appropriate length.
-*/
+void print_asm_instruction(FILE *out, enum mcc_asm_instruction instruction, int stack_position_arg2, char *arg2)
+{
+	if (stack_position_arg2 != -1) {
+		print_asm_instruction_reg(out, instruction, MCC_ASM_REGISTER_EBP, stack_position_arg2,
+		                          MCC_ASM_REGISTER_EAX, 0);
+	} else {
+		print_asm_instruction_lit(out, instruction, arg2, MCC_ASM_REGISTER_EAX, 0);
+	}
+}
+
 void create_function_label(FILE *out, struct mcc_ir_table *current_func, struct mcc_asm_head *asm_head)
 {
 	assert(out);
@@ -283,10 +287,6 @@ void create_asm_jumpfalse(FILE *out,
 	}
 }
 
-/*
-This line stores zero (return value) in EAX. The C calling convention is to store return values in EAX when exiting
-a routine.
-*/
 void create_asm_return(FILE *out,
                        struct mcc_ir_line *line,
                        struct mcc_ir_table *current_func,
@@ -298,14 +298,15 @@ void create_asm_return(FILE *out,
 
 	int stack_pos = find_stack_position(line->arg1, asm_head);
 
-	if (line->arg1[0] != '(' && line->arg1[0] != '-')
+	if (line->arg1[0] == '\"') {
+		char *label = add_string_to_datasection(NULL, strdup(line->arg1), asm_head);
+		print_asm_instruction(out, MCC_ASM_INSTRUCTION_MOVL, stack_pos, label);
+	} else if (line->arg1[0] != '(' && line->arg1[0] != '-')
 		print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, line->arg1, MCC_ASM_REGISTER_EAX, 0);
 	else if (stack_pos != -1)
 		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EBP, stack_pos,
 		                          MCC_ASM_REGISTER_EAX, 0);
 	else {
-		print_asm_instruction_store_float(out, MCC_ASM_INSTRUCTION_FSTPS, MCC_ASM_REGISTER_EBP,
-		                                  asm_head->offset);
 		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EBP, asm_head->offset,
 		                          MCC_ASM_REGISTER_EAX, 0);
 	}
@@ -427,16 +428,6 @@ void create_asm_pop(FILE *out,
 
 	print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EAX, 0, MCC_ASM_REGISTER_EBP,
 	                          asm_head->offset);
-}
-
-void print_asm_instruction(FILE *out, enum mcc_asm_instruction instruction, int stack_position_arg2, char *arg2)
-{
-	if (stack_position_arg2 != -1) {
-		print_asm_instruction_reg(out, instruction, MCC_ASM_REGISTER_EBP, stack_position_arg2,
-		                          MCC_ASM_REGISTER_EAX, 0);
-	} else {
-		print_asm_instruction_lit(out, instruction, arg2, MCC_ASM_REGISTER_EAX, 0);
-	}
 }
 
 void create_asm_comparison_int(FILE *out,
