@@ -1,18 +1,11 @@
 int main(){
-    float x;
-    float y;
-    int i;
-    int iterations;
+	float f;
+	f = 1.0;
 
-    x = 0.5;
-    y = 0.5;
-    i = 1;
-    iterations = 5;
+    f = f + 3.0;
 
-
-	if (((x * x + y * 10.0) <= 4.0) && i < iterations) {
-        print("asdf");
-	}
+    print_float(f);
+    print_nl;
  
     return 0;
 }

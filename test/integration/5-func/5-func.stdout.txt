@@ -1,0 +1,5 @@
+hello
+world
+42
+64
+bye
