@@ -301,6 +301,9 @@ void create_asm_return(FILE *out,
 	if (line->arg1[0] == '\"') {
 		char *label = add_string_to_datasection(NULL, strdup(line->arg1), asm_head);
 		print_asm_instruction(out, MCC_ASM_INSTRUCTION_MOVL, stack_pos, label);
+	} else if (line->memory_size == 2 && stack_pos == -1) {
+		char *tmp = add_asm_float(line->arg1, line->index, asm_head);
+		print_asm_instruction_array_get(out, MCC_ASM_INSTRUCTION_MOVL, tmp, MCC_ASM_REGISTER_EAX);
 	} else if (line->arg1[0] != '(' && line->arg1[0] != '-')
 		print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, line->arg1, MCC_ASM_REGISTER_EAX, 0);
 	else if (stack_pos != -1)
@@ -348,8 +351,13 @@ void create_asm_function_call(FILE *out,
 
 		asm_head->offset = asm_head->offset - (4 * line->memory_size);
 
-		print_asm_instruction_store_float(out, MCC_ASM_INSTRUCTION_FSTPS, MCC_ASM_REGISTER_EBP,
-		                                  asm_head->offset);
+		if (strcmp(line->arg1, "read_float") == 0) {
+			print_asm_instruction_store_float(out, MCC_ASM_INSTRUCTION_FSTPS, MCC_ASM_REGISTER_EBP,
+			                                  asm_head->offset);
+		} else {
+			print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EAX, 0,
+			                          MCC_ASM_REGISTER_EBP, asm_head->offset);
+		}
 		print_asm_instruction_load_float_reg(out, MCC_ASM_INSTRUCTION_FLDS, MCC_ASM_REGISTER_EBP,
 		                                     asm_head->offset);
 
