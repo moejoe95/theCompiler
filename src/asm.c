@@ -819,9 +819,10 @@ char *create_asm_float(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head 
 	sprintf(var, "(%d)", line->index);
 	new_data_section->line_no = strdup(var);
 
+	sprintf(var, "%s_%d", line->arg1, head->temp_variable_id);
 	head->temp_variable_id = head->temp_variable_id + 1;
 
-	return line->arg2;
+	return strdup(var);
 }
 
 void create_asm_array_assignment(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *head, int stack_position)
@@ -860,10 +861,9 @@ void create_asm_assignment(FILE *out, struct mcc_ir_line *line, struct mcc_asm_h
 
 	if (line->memory_size == 2) { // single float values
 		if (line->arg2[0] != '(') {
-			create_asm_float(out, line, head);
+			char *label = create_asm_float(out, line, head);
 
 			head->offset = head->offset - 4;
-			char *label = lookup_data_section(out, line, head, 1);
 
 			print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FLDS, label);
 			print_asm_instruction_store_float(out, MCC_ASM_INSTRUCTION_FSTPS, MCC_ASM_REGISTER_EBP,
