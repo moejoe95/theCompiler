@@ -314,12 +314,15 @@ void create_asm_return(FILE *out,
 		                          MCC_ASM_REGISTER_EAX, 0);
 	}
 
-	if (strcmp(current_func->func_name, "main") != 0) { // main has own return procedure
+	if (strcmp(current_func->func_name, "main") != 0) { // non main functions
 		char *stack_size = get_stack_size(current_func->line_head->root);
 		print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_ADDL, stack_size, MCC_ASM_REGISTER_ESP, 0);
 		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_POPL, MCC_ASM_REGISTER_EBP, 0, -1, 0);
 		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_RETL, -1, 0, -1, 0);
 		free(stack_size);
+	} else { // main function
+		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_LEAVE, -1, 0, -1, 0);
+		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_RETL, -1, 0, -1, 0);
 	}
 }
 
@@ -1104,8 +1107,7 @@ void mcc_create_asm(struct mcc_ir_table_head *ir, FILE *out, int destination)
 				create_asm_line(tmpfile, current_line, asm_head, current_func);
 				current_line = current_line->next_line;
 			}
-			print_asm_instruction_reg(tmpfile, MCC_ASM_INSTRUCTION_LEAVE, -1, 0, -1, 0);
-			print_asm_instruction_reg(tmpfile, MCC_ASM_INSTRUCTION_RETL, -1, 0, -1, 0);
+
 			break;
 		}
 		current_func = current_func->next_table;
