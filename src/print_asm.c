@@ -153,6 +153,9 @@ void get_assembly_instruction(enum mcc_asm_instruction in, char *in_string)
 	case MCC_ASM_INSTRUCTION_SET_NB:
 		strcpy(in_string, "setnb");
 		break;
+	case MCC_ASM_INSTRUCTION_FCHS:
+		strcpy(in_string, "fchs");
+		break;
 	default:
 		strcpy(in_string, "UNDEF");
 		break;

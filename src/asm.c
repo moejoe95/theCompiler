@@ -646,9 +646,14 @@ void create_asm_unary_minus(FILE *out, struct mcc_ir_line *line, struct mcc_asm_
 		char *arg1 = lookup_data_section(out, line, asm_head, 1);
 		if (arg1 == NULL) {
 			sprintf(value, "%s%s", get_un_op_string(line->un_op), line->arg1);
-			char *label = add_asm_float(value, line->index, asm_head);
-			// print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FLDS, label);
-			free(label);
+			arg1 = add_asm_float(value, line->index, asm_head);
+		} else {
+			print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FLDS, arg1);
+
+			print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FCHS, NULL);
+			push_on_stack(line, asm_head);
+			print_asm_instruction_load_float_reg(out, MCC_ASM_INSTRUCTION_FSTPS, MCC_ASM_REGISTER_EBP,
+			                                     asm_head->offset);
 		}
 		free(arg1);
 	} else { // int
