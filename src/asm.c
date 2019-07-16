@@ -475,6 +475,22 @@ void create_asm_comparison_float(FILE *out, enum mcc_asm_instruction type)
 	print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVZBL, MCC_ASM_REGISTER_AL, 0, MCC_ASM_REGISTER_EAX, 0);
 }
 
+void create_asm_int_div(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *asm_head)
+{
+	print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, "0", MCC_ASM_REGISTER_EDX, 0);
+	if (line->arg2[0] == '(') {
+		int loc = find_stack_position(line->arg2, asm_head);
+		if (loc == -1)
+			print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, line->arg2, MCC_ASM_REGISTER_ECX, 0);
+		else
+			print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EBP, loc,
+			                          MCC_ASM_REGISTER_ECX, 0);
+	} else {
+		print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, line->arg2, MCC_ASM_REGISTER_ECX, 0);
+	}
+	print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_DIVL, MCC_ASM_REGISTER_ECX, 0, -1, 0);
+}
+
 void create_asm_binary_op_int(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *asm_head)
 {
 	int stack_position_arg1 = -1;
@@ -504,14 +520,7 @@ void create_asm_binary_op_int(FILE *out, struct mcc_ir_line *line, struct mcc_as
 		break;
 
 	case MCC_AST_BINARY_OP_DIV:
-		print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, "0", MCC_ASM_REGISTER_EDX, 0);
-		int loc = find_stack_position(line->arg2, asm_head);
-
-		loc == -1
-		    ? print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, line->arg2, MCC_ASM_REGISTER_ECX, 0)
-		    : print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EBP, loc,
-		                                MCC_ASM_REGISTER_ECX, 0);
-		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_DIVL, MCC_ASM_REGISTER_ECX, 0, -1, 0);
+		create_asm_int_div(out, line, asm_head);
 		break;
 
 	case MCC_AST_BINARY_OP_LAND:
