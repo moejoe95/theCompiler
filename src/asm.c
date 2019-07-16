@@ -397,7 +397,6 @@ void create_asm_push(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *a
 		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_PUSHL, MCC_ASM_REGISTER_EBP, asm_head->offset, -1,
 		                          0);
 		free(loc);
-
 	} else if (strncmp(line->arg1, "(", 1) == 0) {
 		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_PUSHL, MCC_ASM_REGISTER_EBP, stack_pos, -1, 0);
 	} else {
@@ -461,7 +460,7 @@ void create_asm_comparison_int(FILE *out,
 	print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVZBL, MCC_ASM_REGISTER_CL, 0, MCC_ASM_REGISTER_EAX, 0);
 }
 
-void create_asm_comparison_float(FILE *out, enum mcc_asm_instruction type, struct mcc_asm_head *asm_head)
+void create_asm_comparison_float(FILE *out, enum mcc_asm_instruction type)
 {
 	assert(out);
 
@@ -471,8 +470,6 @@ void create_asm_comparison_float(FILE *out, enum mcc_asm_instruction type, struc
 	print_asm_instruction_reg(out, type, MCC_ASM_REGISTER_AL, 0, -1, 0);
 
 	print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVZBL, MCC_ASM_REGISTER_AL, 0, MCC_ASM_REGISTER_EAX, 0);
-	print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EAX, 0, MCC_ASM_REGISTER_EBP,
-	                          asm_head->offset);
 }
 
 void create_asm_binary_op_int(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *asm_head)
@@ -584,47 +581,38 @@ void create_asm_binary_op_float(FILE *out, struct mcc_ir_line *line, struct mcc_
 	switch (line->bin_op) {
 	case MCC_AST_BINARY_OP_ADD:
 		print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FADDS, NULL);
-		print_asm_instruction_load_float_reg(out, MCC_ASM_INSTRUCTION_FSTPS, MCC_ASM_REGISTER_EBP,
-		                                     asm_head->offset);
 		break;
 	case MCC_AST_BINARY_OP_SUB:
 		print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FSUBS, NULL);
-		print_asm_instruction_load_float_reg(out, MCC_ASM_INSTRUCTION_FSTPS, MCC_ASM_REGISTER_EBP,
-		                                     asm_head->offset);
 		break;
 	case MCC_AST_BINARY_OP_MUL:
 		print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FMULS, NULL);
-		print_asm_instruction_load_float_reg(out, MCC_ASM_INSTRUCTION_FSTPS, MCC_ASM_REGISTER_EBP,
-		                                     asm_head->offset);
 		break;
 	case MCC_AST_BINARY_OP_DIV:
 		print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FDIVS, NULL);
-		print_asm_instruction_load_float_reg(out, MCC_ASM_INSTRUCTION_FSTPS, MCC_ASM_REGISTER_EBP,
-		                                     asm_head->offset);
 		break;
-
 	case MCC_AST_BINARY_OP_EQ:
-		create_asm_comparison_float(out, MCC_ASM_INSTRUCTION_SET_EQ, asm_head);
+		create_asm_comparison_float(out, MCC_ASM_INSTRUCTION_SET_EQ);
 		comp++;
 		break;
 	case MCC_AST_BINARY_OP_NEQ:
-		create_asm_comparison_float(out, MCC_ASM_INSTRUCTION_SET_NEQ, asm_head);
+		create_asm_comparison_float(out, MCC_ASM_INSTRUCTION_SET_NEQ);
 		comp++;
 		break;
 	case MCC_AST_BINARY_OP_GT:
-		create_asm_comparison_float(out, MCC_ASM_INSTRUCTION_SET_A, asm_head);
+		create_asm_comparison_float(out, MCC_ASM_INSTRUCTION_SET_A);
 		comp++;
 		break;
 	case MCC_AST_BINARY_OP_ST:
-		create_asm_comparison_float(out, MCC_ASM_INSTRUCTION_SET_A, asm_head);
+		create_asm_comparison_float(out, MCC_ASM_INSTRUCTION_SET_A);
 		comp++;
 		break;
 	case MCC_AST_BINARY_OP_GE:
-		create_asm_comparison_float(out, MCC_ASM_INSTRUCTION_SET_NB, asm_head);
+		create_asm_comparison_float(out, MCC_ASM_INSTRUCTION_SET_NB);
 		comp++;
 		break;
 	case MCC_AST_BINARY_OP_SE:
-		create_asm_comparison_float(out, MCC_ASM_INSTRUCTION_SET_NB, asm_head);
+		create_asm_comparison_float(out, MCC_ASM_INSTRUCTION_SET_NB);
 		comp++;
 		break;
 	default:
@@ -873,32 +861,17 @@ void create_asm_assignment(FILE *out, struct mcc_ir_line *line, struct mcc_asm_h
 	if (line->memory_size == 2) { // single float values
 		if (line->arg2[0] != '(') {
 			create_asm_float(out, line, head);
-
-			head->offset = head->offset - 4;
-			char *label = lookup_data_section(out, line, head, 1);
-
-			print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FLDS, label);
-			print_asm_instruction_store_float(out, MCC_ASM_INSTRUCTION_FSTPS, MCC_ASM_REGISTER_EBP,
-			                                  head->offset);
-			push_on_stack(line, head);
 		} else {
 			char label[64] = {0};
 			sprintf(label, "(%d)", line->index);
-			int stack_pos_1 = find_stack_position(line->arg1, head);
-			int stack_pos_2 = find_stack_position(line->arg2, head);
-			if (stack_pos_1 == -1 && stack_pos_2 != -1) {
+			int stack_pos = find_stack_position(line->arg2, head);
+			if (stack_pos != -1) {
 				// todo
 				head->offset = head->offset - 4;
 				print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EBP,
-				                          stack_pos_2, MCC_ASM_REGISTER_EAX, 0);
+				                          stack_pos, MCC_ASM_REGISTER_EAX, 0);
 				print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EAX, 0,
 				                          MCC_ASM_REGISTER_EBP, head->offset);
-				push_on_stack(line, head);
-			} else if (stack_pos_1 != -1 && stack_pos_2 != -1) {
-				print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EBP,
-				                          stack_pos_2, MCC_ASM_REGISTER_EAX, 0);
-				print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EAX, 0,
-				                          MCC_ASM_REGISTER_EBP, stack_pos_1);
 				push_on_stack(line, head);
 			} else
 				update_data_section_line_number(line->arg2, label, head);
