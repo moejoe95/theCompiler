@@ -28,5 +28,9 @@ int main(){
     print_int(arr[1]);
     print_nl();
 
+    arr[2] = 2;
+    print_int(arr[1] * arr[2]);
+    print_nl();
+
     return 0;
 }

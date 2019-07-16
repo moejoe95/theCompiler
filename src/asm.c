@@ -152,6 +152,12 @@ char *lookup_data_section(FILE *out, struct mcc_ir_line *line, struct mcc_asm_he
 		return lookup_data_section_array(out, arg, asm_head, 4);
 	}
 
+	if (strchr(arg, '(')) {
+		char *l = get_id_by_line_ref(arg, asm_head);
+		if (strchr(l, '['))
+			return lookup_data_section_array(out, strdup(l), asm_head, 4);
+	}
+
 	char val[64] = {0};
 
 	int stack_pos = find_stack_position(arg, asm_head);
@@ -500,25 +506,39 @@ void create_asm_binary_op_int(FILE *out, struct mcc_ir_line *line, struct mcc_as
 	if (strncmp(line->arg2, "(", 1) == 0)
 		stack_position_arg2 = find_stack_position(line->arg2, asm_head);
 
-	if (stack_position_arg1 != -1) // stack pos not found -> must be literal
+	char *arg1 = lookup_data_section(out, line, asm_head, 1);
+	char *arg2 = NULL;
+
+	if (stack_position_arg1 != -1 && arg1 == NULL) // stack pos not found -> must be literal
 		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EBP, stack_position_arg1,
 		                          MCC_ASM_REGISTER_EAX, 0);
-	else
+	else if (arg1 == NULL)
 		print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, line->arg1, MCC_ASM_REGISTER_EAX, 0);
+	else if (arg1 != NULL) {
+		print_asm_instruction_array_get(out, MCC_ASM_INSTRUCTION_MOVL, arg1, MCC_ASM_REGISTER_EAX);
+		arg2 = lookup_data_section(out, line, asm_head, 2);
+	}
 
 	switch (line->bin_op) {
 	case MCC_AST_BINARY_OP_ADD:
-		print_asm_instruction(out, MCC_ASM_INSTRUCTION_ADDL, stack_position_arg2, line->arg2);
+		arg2 == NULL
+		    ? print_asm_instruction(out, MCC_ASM_INSTRUCTION_ADDL, stack_position_arg2, line->arg2)
+		    : print_asm_instruction_array_get(out, MCC_ASM_INSTRUCTION_ADDL, arg2, MCC_ASM_REGISTER_EAX);
 		break;
 
 	case MCC_AST_BINARY_OP_SUB:
-		print_asm_instruction(out, MCC_ASM_INSTRUCTION_SUBL, stack_position_arg2, line->arg2);
+		arg2 == NULL
+		    ? print_asm_instruction(out, MCC_ASM_INSTRUCTION_SUBL, stack_position_arg2, line->arg2)
+		    : print_asm_instruction_array_get(out, MCC_ASM_INSTRUCTION_SUBL, arg2, MCC_ASM_REGISTER_EAX);
 		break;
 
 	case MCC_AST_BINARY_OP_MUL:
-		print_asm_instruction(out, MCC_ASM_INSTRUCTION_MULL, stack_position_arg2, line->arg2);
+		arg2 == NULL
+		    ? print_asm_instruction(out, MCC_ASM_INSTRUCTION_MULL, stack_position_arg2, line->arg2)
+		    : print_asm_instruction_array_get(out, MCC_ASM_INSTRUCTION_MULL, arg2, MCC_ASM_REGISTER_EAX);
 		break;
 
+	// TODO array operations from here downwards are missing
 	case MCC_AST_BINARY_OP_DIV:
 		create_asm_int_div(out, line, asm_head);
 		break;
@@ -916,8 +936,14 @@ void create_asm_assignment(FILE *out, struct mcc_ir_line *line, struct mcc_asm_h
 				print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, label, MCC_ASM_REGISTER_EAX,
 				                          0);
 			} else {
-				print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, line->arg2,
-				                          MCC_ASM_REGISTER_EAX, 0);
+				if (strchr(line->arg2, '[')) {
+					char *index = lookup_data_section_array(out, line->arg2, head, 4);
+					print_asm_instruction_array_get(out, MCC_ASM_INSTRUCTION_MOVL, index,
+					                                MCC_ASM_REGISTER_EAX);
+				} else {
+					print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, line->arg2,
+					                          MCC_ASM_REGISTER_EAX, 0);
+				}
 			}
 		}
 
