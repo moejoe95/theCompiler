@@ -44,5 +44,13 @@ int main(){
 
     print_nl();
 
+    if (f < 0.0 || f < 0.0) {
+		print("6 true");
+	} else {
+        print("6 false");
+    }
+
+    print_nl();
+
     return 0;
 }
