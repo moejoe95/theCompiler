@@ -26,6 +26,11 @@ int main(){
 
     f = (-7.00);
     print_float(f);
+    print_nl();
+
+    f = 7.00;
+    f = -f;
+    print_float(f);
 
     return 0;
 }
