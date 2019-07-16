@@ -174,7 +174,7 @@ char *lookup_data_section(FILE *out, struct mcc_ir_line *line, struct mcc_asm_he
 		data_section = data_section->next_data_section;
 	}
 
-	if (strchr(arg, '_')) {
+	if (strncmp(arg, "tmp_", 4) == 0) {
 		return strdup(arg);
 	}
 	sprintf(val, "%s_%d", arg, data_section_label_count);
