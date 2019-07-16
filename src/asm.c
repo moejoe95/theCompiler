@@ -861,22 +861,36 @@ void create_asm_assignment(FILE *out, struct mcc_ir_line *line, struct mcc_asm_h
 	if (line->memory_size == 2) { // single float values
 		if (line->arg2[0] != '(') {
 			create_asm_float(out, line, head);
+
+			head->offset = head->offset - 4;
+			char *label = lookup_data_section(out, line, head, 1);
+
+			print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FLDS, label);
+			print_asm_instruction_store_float(out, MCC_ASM_INSTRUCTION_FSTPS, MCC_ASM_REGISTER_EBP,
+			                                  head->offset);
+			push_on_stack(line, head);
 		} else {
 			char label[64] = {0};
 			sprintf(label, "(%d)", line->index);
-			int stack_pos = find_stack_position(line->arg2, head);
-			if (stack_pos != -1) {
+			int stack_pos_1 = find_stack_position(line->arg1, head);
+			int stack_pos_2 = find_stack_position(line->arg2, head);
+			if (stack_pos_1 == -1 && stack_pos_2 != -1) {
 				// todo
 				head->offset = head->offset - 4;
 				print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EBP,
-				                          stack_pos, MCC_ASM_REGISTER_EAX, 0);
+				                          stack_pos_2, MCC_ASM_REGISTER_EAX, 0);
 				print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EAX, 0,
 				                          MCC_ASM_REGISTER_EBP, head->offset);
+				push_on_stack(line, head);
+			} else if (stack_pos_1 != -1 && stack_pos_2 != -1) {
+				print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EBP,
+				                          stack_pos_2, MCC_ASM_REGISTER_EAX, 0);
+				print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EAX, 0,
+				                          MCC_ASM_REGISTER_EBP, stack_pos_1);
 				push_on_stack(line, head);
 			} else
 				update_data_section_line_number(line->arg2, label, head);
 		}
-
 	} else {
 		if (strncmp(line->arg2, "(", 1) == 0) {
 			int pos = find_stack_position(line->arg2, head);
