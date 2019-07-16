@@ -1,26 +1,5 @@
-
 int main(){
-
-    float f;
-    f = 1.0;
-
-    if(f == 1.0) {
-        print("1 true");
-    } else {
-        print("1 false");
-    }
-
-    print_nl();
-
-    if(f < 2.0) {
-        print("2 true");
-    } else {
-        print("2 false");
-    }
-
-    print_nl();
-    print_nl();
-
+    
     float y;
     y = 0.0;
 
@@ -55,7 +34,6 @@ int main(){
         
 		z = z + 1.0;
 	}
-
 
     return 0;
 }
