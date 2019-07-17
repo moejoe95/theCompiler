@@ -47,6 +47,17 @@ int main(){
     } else {
         print("false");
     }
+    print_nl();
+
+    i = 3;
+    int j;
+    j = 5;
+
+    if(arr[i] < arr[j]){
+        print("true");
+    } else {
+        print("false");
+    }
 
     return 0;
 }
