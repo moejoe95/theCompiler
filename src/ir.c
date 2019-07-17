@@ -809,6 +809,13 @@ static void generate_ir_param(struct mcc_ast_parameter *param, struct mcc_ir_lin
 	new_table->op_type = MCC_IR_TABLE_POP;
 	new_table->index = head->index;
 
+	if (param->parameter->declare_array_size != NULL && *param->parameter->declare_array_size > 0) {
+		new_table->arg1 = param->parameter->declare_id->identifier->name;
+		char arg2[64] = {0};
+		sprintf(arg2, "%ld", *param->parameter->declare_array_size);
+		new_table->arg2 = strdup(arg2);
+	}
+
 	struct mcc_ir_function_signature_parameters *params = head->parameters;
 	while (params != NULL) {
 		if (strcmp(params->arg_name, param->parameter->declare_id->identifier->name) == 0) {
