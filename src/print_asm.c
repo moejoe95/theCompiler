@@ -100,7 +100,7 @@ void get_assembly_instruction(enum mcc_asm_instruction in, char *in_string)
 		strcpy(in_string, "fcomp");
 		break;
 	case MCC_ASM_INSTRUCTION_NEGL:
-		strcpy(in_string, "negs");
+		strcpy(in_string, "negl");
 		break;
 	case MCC_ASM_INSTRUCTION_SET_EQ:
 		strcpy(in_string, "sete");

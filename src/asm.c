@@ -705,8 +705,17 @@ void create_asm_unary_minus(FILE *out, struct mcc_ir_line *line, struct mcc_asm_
 		}
 		free(arg1);
 	} else { // int
-		sprintf(value, "%s%s", get_un_op_string(line->un_op), line->arg1);
-		print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, value, MCC_ASM_REGISTER_EAX, 0);
+		if (line->arg1[0] != '(') {
+			sprintf(value, "%s%s", get_un_op_string(line->un_op), line->arg1);
+			print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, value, MCC_ASM_REGISTER_EAX, 0);
+		} else {
+			int stack_pos = find_stack_position(line->arg1, asm_head);
+
+			print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EBP, stack_pos,
+			                          MCC_ASM_REGISTER_EAX, 0);
+
+			print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_NEGL, MCC_ASM_REGISTER_EAX, 0, -1, 0);
+		}
 		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EAX, 0, MCC_ASM_REGISTER_EBP,
 		                          asm_head->offset);
 		push_on_stack(line, asm_head);
