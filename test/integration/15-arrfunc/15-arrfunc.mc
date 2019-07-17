@@ -9,7 +9,6 @@ int func2(int[3] arr) {
 }
 
 void func4(int[3] arr) {
-    /* arrays are call by reference */
     arr[0] = 3;
 }
 
@@ -29,7 +28,6 @@ int main(){
 
     func(arr[1] + 1);
 
-    /* arrays are call by reference */
     func4(arr);
     print_int(arr[0]);
     print_nl();

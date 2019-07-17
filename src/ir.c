@@ -582,8 +582,16 @@ static void generate_ir_return(struct mcc_ast_expression *expr, struct mcc_ir_li
 
 		// insert additional line in IR table
 		if (expr->type != MCC_AST_EXPRESSION_TYPE_LITERAL && expr->type != MCC_AST_EXPRESSION_TYPE_IDENTIFIER) {
-			sprintf(value, "(%d)", head->index);
-			generate_ir_table_line(head, strdup(value), NULL, MCC_IR_TABLE_RETURN, -1, -1, -1);
+			if (expr->type == MCC_AST_EXPRESSION_TYPE_ARRAY_ACCESS) {
+				sprintf(value, "(%d)", head->index);
+
+				char *value2 = generate_ir_entity(head, expr->array_access_exp);
+				generate_ir_table_line(head, strdup(value), strdup(value2), MCC_IR_TABLE_RETURN, -1, -1,
+				                       -1);
+			} else {
+				sprintf(value, "(%d)", head->index);
+				generate_ir_table_line(head, strdup(value), NULL, MCC_IR_TABLE_RETURN, -1, -1, -1);
+			}
 		}
 	} else {
 		sprintf(value, "-");
