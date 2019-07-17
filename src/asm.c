@@ -399,7 +399,8 @@ void create_asm_push(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *a
 	int stack_pos = -1;
 	stack_pos = find_stack_position(line->arg1, asm_head);
 
-	if (strchr(line->arg1, '[') || strchr(get_id_by_line_ref(line->arg1, asm_head, 1), '[')) { // array
+	if (line->arg1[0] != '\"' &&
+	    (strchr(line->arg1, '[') || strchr(get_id_by_line_ref(line->arg1, asm_head, 1), '['))) { // array
 		char *index = lookup_data_section_array(out, line->arg1, asm_head, 4);
 		print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_PUSHL, index);
 		free(index);
