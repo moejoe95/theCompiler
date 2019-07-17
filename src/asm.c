@@ -604,7 +604,9 @@ void create_asm_binary_op_float(FILE *out, struct mcc_ir_line *line, struct mcc_
 		if (is_reference_assignment(line->arg1, asm_head))
 			print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FLDS, arg2);
 	} else {
+		lookup_data_section(out, line, asm_head, 1);
 		print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FLDS, arg2);
+		lookup_data_section(out, line, asm_head, 2);
 		print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FLDS, arg1);
 	}
 
@@ -903,7 +905,14 @@ void create_asm_assignment(FILE *out, struct mcc_ir_line *line, struct mcc_asm_h
 	}
 
 	if (line->memory_size == 2) { // single float values
-		if (line->arg2[0] != '(') {
+		if (strchr(line->arg2, '[')) {
+			char *index = lookup_data_section_array(out, line->arg2, head, 4);
+			head->offset = head->offset - 4;
+			print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FLDS, index);
+			print_asm_instruction_store_float(out, MCC_ASM_INSTRUCTION_FSTPS, MCC_ASM_REGISTER_EBP,
+			                                  head->offset);
+			push_on_stack(line, head);
+		} else if (line->arg2[0] != '(') {
 			char *label = create_asm_float(out, line, head);
 
 			head->offset = head->offset - 4;
