@@ -87,7 +87,7 @@ char *get_id_by_line_ref(char *arg, struct mcc_asm_head *asm_head, int arg_numbe
 			if (strcmp(arg, value) == 0) {
 				if (arg_number == 1)
 					return current_line->arg1;
-				else
+				else if (current_line->op_type == MCC_IR_TABLE_POP)
 					return current_line->arg2;
 			}
 			current_line = current_line->next_line;
