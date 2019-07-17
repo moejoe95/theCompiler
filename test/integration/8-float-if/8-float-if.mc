@@ -1,4 +1,3 @@
-
 int main(){
 
     float f;
