@@ -5,7 +5,6 @@ bool binary_search(int[20] arr, int val)
 
     while(i < 20)
     {
-
         if(arr[i] == val)
         {
             return true;

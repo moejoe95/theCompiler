@@ -32,5 +32,14 @@ int main(){
     print_int(arr[1] * arr[2]);
     print_nl();
 
+    int i;
+    i = 1;
+
+    if(arr[i] == 9){
+        print("true");
+    } else {
+        print("false");
+    }
+
     return 0;
 }
