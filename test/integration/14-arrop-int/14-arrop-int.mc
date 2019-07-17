@@ -40,6 +40,13 @@ int main(){
     } else {
         print("false");
     }
+    print_nl();
+
+    if(arr[2] < arr[1]){
+        print("true");
+    } else {
+        print("false");
+    }
 
     return 0;
 }

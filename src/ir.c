@@ -80,6 +80,8 @@ static char *lookup_table_args(struct mcc_ir_line_head *head, char *arg1, char *
 	char lookup_arg[128] = {0};
 	if (type == MCC_AST_TYPE_ARRAY) {
 		sprintf(lookup_arg, "%s[%s]", arg1, arg2);
+		if (arg2 != NULL && arg2[0] == '(')
+			return strdup(lookup_arg);
 	} else {
 		sprintf(lookup_arg, "%s", arg1);
 	}
@@ -300,6 +302,9 @@ static void generate_ir_binary_expression(struct mcc_ast_expression *bin_expr,
 			entity1 = lookup_table_args(head, lhs->identifier->name, NULL, lhs->expression_type);
 		} else if (lhs->type == MCC_AST_EXPRESSION_TYPE_ARRAY_ACCESS) {
 			char *arg2 = generate_ir_entity(head, lhs->array_access_exp);
+			char *table_arg = lookup_table_args(head, arg2, NULL, -1);
+			if (strcmp(table_arg, "0") != 0)
+				arg2 = table_arg;
 			entity1 =
 			    lookup_table_args(head, lhs->array_access_id->identifier->name, arg2, MCC_AST_TYPE_ARRAY);
 			free(arg2);
