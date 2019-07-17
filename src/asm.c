@@ -861,10 +861,21 @@ void create_asm_array_assignment(FILE *out, struct mcc_ir_line *line, struct mcc
 {
 	char *index = lookup_data_section_array(out, line->arg1, head, 4);
 	if (line->memory_size == 2) { // float arrays
-		print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FLDS, index);
-		print_asm_instruction_store_float(out, MCC_ASM_INSTRUCTION_FSTPS, MCC_ASM_REGISTER_EBP, stack_position);
-		print_asm_instruction_load_float_reg(out, MCC_ASM_INSTRUCTION_FLDS, MCC_ASM_REGISTER_EBP,
-		                                     stack_position);
+		if (line->arg2[0] != '(') {
+			char *label = add_asm_float(line->arg2, line->index, head);
+
+			head->offset = head->offset - 4;
+
+			print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FLDS, label);
+			print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FSTPS, index);
+			push_on_stack(line, head);
+		} else {
+			print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FLDS, index);
+			print_asm_instruction_store_float(out, MCC_ASM_INSTRUCTION_FSTPS, MCC_ASM_REGISTER_EBP,
+			                                  stack_position);
+			print_asm_instruction_load_float_reg(out, MCC_ASM_INSTRUCTION_FLDS, MCC_ASM_REGISTER_EBP,
+			                                     stack_position);
+		}
 	} else if (line->memory_size == 1) { // int arrays
 		int stack_position_arg2 = -1;
 		if (strncmp(line->arg2, "(", 1) == 0) {
