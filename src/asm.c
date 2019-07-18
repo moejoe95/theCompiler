@@ -381,8 +381,8 @@ void create_asm_function_call(FILE *out,
 			print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EAX, 0,
 			                          MCC_ASM_REGISTER_EBP, asm_head->offset);
 		}
-		print_asm_instruction_load_float_reg(out, MCC_ASM_INSTRUCTION_FLDS, MCC_ASM_REGISTER_EBP,
-		                                     asm_head->offset);
+		/*print_asm_instruction_load_float_reg(out, MCC_ASM_INSTRUCTION_FLDS, MCC_ASM_REGISTER_EBP,
+		                                     asm_head->offset);*/ //fix for leibniz
 
 		push_on_stack(line, asm_head);
 	}
