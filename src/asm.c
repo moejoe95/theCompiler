@@ -311,7 +311,7 @@ void create_asm_return(FILE *out,
 	int stack_pos = find_stack_position(line->arg1, asm_head);
 	char *arr_size = get_id_by_line_ref(line->arg1, asm_head, 2);
 
-	if (strcmp(arr_size, "-") != 0 && arr_size[0] != '(') {
+	if (arr_size != NULL && strcmp(arr_size, "-") != 0 && arr_size[0] != '(') {
 		char *arr_id = get_id_by_line_ref(line->arg1, asm_head, 1);
 		char arr[124] = {0};
 		sprintf(arr, "%s[%s]", arr_id, line->arg2);
@@ -381,8 +381,6 @@ void create_asm_function_call(FILE *out,
 			print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EAX, 0,
 			                          MCC_ASM_REGISTER_EBP, asm_head->offset);
 		}
-		/*print_asm_instruction_load_float_reg(out, MCC_ASM_INSTRUCTION_FLDS, MCC_ASM_REGISTER_EBP,
-		                                     asm_head->offset);*/ //fix for leibniz
 
 		push_on_stack(line, asm_head);
 	}
@@ -476,7 +474,12 @@ void create_asm_comparison_int(FILE *out,
 	assert(line);
 	assert(asm_head);
 
-	print_asm_instruction(out, MCC_ASM_INSTRUCTION_CMP, stack_position_arg2, line->arg2);
+	char *arg2 = lookup_data_section(out, line, asm_head, 2);
+
+	if (arg2 == NULL)
+		print_asm_instruction(out, MCC_ASM_INSTRUCTION_CMP, stack_position_arg2, line->arg2);
+	else
+		print_asm_instruction_array_get(out, MCC_ASM_INSTRUCTION_CMP, arg2, MCC_ASM_REGISTER_EAX);
 
 	print_asm_instruction_reg(out, type, MCC_ASM_REGISTER_CL, 0, -1, 0);
 	print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_ANDL, "1", MCC_ASM_REGISTER_CL, 0);
@@ -670,14 +673,12 @@ void create_asm_binary_op_float(FILE *out, struct mcc_ir_line *line, struct mcc_
 		push_on_stack(line, asm_head);
 		print_asm_instruction_load_float_reg(out, MCC_ASM_INSTRUCTION_FSTPS, MCC_ASM_REGISTER_EBP,
 		                                     asm_head->offset);
-	}
-	else
-	{
+	} else {
 		push_on_stack(line, asm_head);
 		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EAX, 0, MCC_ASM_REGISTER_EBP,
-	                          asm_head->offset);
+		                          asm_head->offset);
 	}
-	
+
 	free(arg1);
 	free(arg2);
 }
