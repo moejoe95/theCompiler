@@ -328,6 +328,9 @@ static void generate_ir_binary_expression(struct mcc_ast_expression *bin_expr,
 			entity2 = lookup_table_args(head, rhs->identifier->name, NULL, rhs->expression_type);
 		} else if (rhs->type == MCC_AST_EXPRESSION_TYPE_ARRAY_ACCESS) {
 			char *arg2 = generate_ir_entity(head, rhs->array_access_exp);
+			char *table_arg = lookup_table_args(head, arg2, NULL, -1);
+			if (strcmp(table_arg, "0") != 0)
+				arg2 = table_arg;
 			entity2 =
 			    lookup_table_args(head, rhs->array_access_id->identifier->name, arg2, MCC_AST_TYPE_ARRAY);
 			free(arg2);

@@ -49,9 +49,9 @@ int main(){
     }
     print_nl();
 
-    i = 3;
+    i = 2;
     int j;
-    j = 5;
+    j = 1;
 
     if(arr[i] < arr[j]){
         print("true");
