@@ -59,5 +59,13 @@ int main(){
         print("false");
     }
 
+    print_nl();
+    
+    if(arr[i] == arr[j+1]){
+        print("true");
+    } else {
+        print("false");
+    }
+
     return 0;
 }

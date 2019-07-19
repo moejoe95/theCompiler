@@ -301,13 +301,19 @@ static void generate_ir_binary_expression(struct mcc_ast_expression *bin_expr,
 		if (lhs->type == MCC_AST_EXPRESSION_TYPE_IDENTIFIER) {
 			entity1 = lookup_table_args(head, lhs->identifier->name, NULL, lhs->expression_type);
 		} else if (lhs->type == MCC_AST_EXPRESSION_TYPE_ARRAY_ACCESS) {
-			char *arg2 = generate_ir_entity(head, lhs->array_access_exp);
-			char *table_arg = lookup_table_args(head, arg2, NULL, -1);
-			if (strcmp(table_arg, "0") != 0)
-				arg2 = table_arg;
+			char arg2[64] = {0};
+			if (lhs->array_access_exp->type == MCC_AST_EXPRESSION_TYPE_LITERAL ||
+			    lhs->array_access_exp->type == MCC_AST_EXPRESSION_TYPE_IDENTIFIER) {
+				sprintf(arg2, generate_ir_entity(head, lhs->array_access_exp));
+				char *table_arg = lookup_table_args(head, arg2, NULL, -1);
+				if (strcmp(table_arg, "0") != 0)
+					sprintf(arg2, table_arg);
+			} else {
+				generate_ir_expression(lhs->array_access_exp, head, -1);
+				sprintf(arg2, "(%d)", head->index);
+			}
 			entity1 =
 			    lookup_table_args(head, lhs->array_access_id->identifier->name, arg2, MCC_AST_TYPE_ARRAY);
-			free(arg2);
 		} else {
 			char value[14];
 			sprintf(value, "(%d)", head->index);
@@ -327,13 +333,19 @@ static void generate_ir_binary_expression(struct mcc_ast_expression *bin_expr,
 		if (rhs->type == MCC_AST_EXPRESSION_TYPE_IDENTIFIER) {
 			entity2 = lookup_table_args(head, rhs->identifier->name, NULL, rhs->expression_type);
 		} else if (rhs->type == MCC_AST_EXPRESSION_TYPE_ARRAY_ACCESS) {
-			char *arg2 = generate_ir_entity(head, rhs->array_access_exp);
-			char *table_arg = lookup_table_args(head, arg2, NULL, -1);
-			if (strcmp(table_arg, "0") != 0)
-				arg2 = table_arg;
+			char arg2[64] = {0};
+			if (rhs->array_access_exp->type == MCC_AST_EXPRESSION_TYPE_LITERAL ||
+			    rhs->array_access_exp->type == MCC_AST_EXPRESSION_TYPE_IDENTIFIER) {
+				sprintf(arg2, generate_ir_entity(head, rhs->array_access_exp));
+				char *table_arg = lookup_table_args(head, arg2, NULL, -1);
+				if (strcmp(table_arg, "0") != 0)
+					sprintf(arg2, table_arg);
+			} else {
+				generate_ir_expression(rhs->array_access_exp, head, -1);
+				sprintf(arg2, "(%d)", head->index);
+			}
 			entity2 =
 			    lookup_table_args(head, rhs->array_access_id->identifier->name, arg2, MCC_AST_TYPE_ARRAY);
-			free(arg2);
 		} else {
 			char value[14];
 			sprintf(value, "(%d)", head->index);
