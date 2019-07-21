@@ -45,6 +45,23 @@ void push_on_stack(struct mcc_ir_line *line, struct mcc_asm_head *head)
 	current->next_stack = new_stack_var;
 }
 
+void push_on_stack_with_offset(struct mcc_ir_line *line, struct mcc_asm_head *head, int offset)
+{
+	struct mcc_asm_stack *new_stack_var = malloc(sizeof(*new_stack_var));
+	new_stack_var->stack_position = offset;
+	char value[14] = {0};
+	sprintf(value, "(%d)", line->index);
+	new_stack_var->line_no = strdup(value);
+	new_stack_var->var = strdup(line->arg1);
+	new_stack_var->next_stack = NULL;
+
+	struct mcc_asm_stack *current = head->stack;
+	while (current->next_stack != NULL) {
+		current = current->next_stack;
+	}
+	current->next_stack = new_stack_var;
+}
+
 void update_stack(struct mcc_ir_line *line, struct mcc_asm_stack *stack)
 {
 	assert(stack);
@@ -969,7 +986,7 @@ void create_asm_assignment(FILE *out, struct mcc_ir_line *line, struct mcc_asm_h
 				                          stack_pos_2, MCC_ASM_REGISTER_EAX, 0);
 				print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EAX, 0,
 				                          MCC_ASM_REGISTER_EBP, stack_pos_1);
-				push_on_stack(line, head);
+				push_on_stack_with_offset(line, head, stack_pos_1);
 			} else
 				update_data_section_line_number(line->arg2, label, head);
 		}
