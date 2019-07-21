@@ -906,9 +906,12 @@ char *create_asm_float(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head 
 	return strdup(var);
 }
 
-void create_asm_array_assignment(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *head, int stack_position)
+void create_asm_array_assignment(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *head)
 {
 	char *index = lookup_data_section_array(out, line->arg1, head, 4);
+	int stack_position_arg2 = -1;
+	stack_position_arg2 = find_stack_position(line->arg2, head);
+
 	if (line->memory_size == 2) { // float arrays
 		if (line->arg2[0] != '(') {
 			char *label = add_asm_float(line->arg2, line->index, head);
@@ -919,16 +922,13 @@ void create_asm_array_assignment(FILE *out, struct mcc_ir_line *line, struct mcc
 			print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FSTPS, index);
 			push_on_stack(line, head);
 		} else {
+			print_asm_instruction_load_float_reg(out, MCC_ASM_INSTRUCTION_FLDS, MCC_ASM_REGISTER_EBP, stack_position_arg2);
+			print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FSTPS, index);
 			print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FLDS, index);
-			print_asm_instruction_store_float(out, MCC_ASM_INSTRUCTION_FSTPS, MCC_ASM_REGISTER_EBP,
-			                                  stack_position);
-			print_asm_instruction_load_float_reg(out, MCC_ASM_INSTRUCTION_FLDS, MCC_ASM_REGISTER_EBP,
-			                                     stack_position);
 		}
 	} else if (line->memory_size == 1) { // int arrays
-		int stack_position_arg2 = -1;
+		
 		if (strncmp(line->arg2, "(", 1) == 0) {
-			stack_position_arg2 = find_stack_position(line->arg2, head);
 			print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EBP,
 			                          stack_position_arg2, MCC_ASM_REGISTER_EAX, 0);
 		} else {
@@ -947,7 +947,7 @@ void create_asm_assignment(FILE *out, struct mcc_ir_line *line, struct mcc_asm_h
 	int stack_position = -1;
 	stack_position = find_stack_position(line->arg1, head);
 	if (line->op_type == MCC_IR_TABLE_STORE) {
-		create_asm_array_assignment(out, line, head, stack_position);
+		create_asm_array_assignment(out, line, head);
 		return;
 	}
 
