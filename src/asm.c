@@ -149,6 +149,13 @@ char *lookup_data_section_array(FILE *out, char *arg, struct mcc_asm_head *asm_h
 			break;
 		}
 		data_section = data_section->next_data_section;
+
+		if(data_section == NULL){
+			int stack_pos_arr = find_stack_position(id, asm_head);
+
+			print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EBP, stack_pos_arr, MCC_ASM_REGISTER_EDX, 0);
+			print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, access_position, MCC_ASM_REGISTER_ECX, 0);	
+		}
 	}
 	sprintf(index, "(%%edx, %%ecx, %d)", factor);
 
@@ -419,6 +426,7 @@ void create_asm_push(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *a
 		char *index = lookup_data_section_array(out, line->arg1, asm_head, 4);
 		print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_PUSHL, index);
 		free(index);
+		asm_head->current_stack_size_parameters += 4 * 1;
 		return;
 	}
 
