@@ -4,12 +4,12 @@ void func(int i) {
     print_nl();
 }
 
-int func2(int[3] arr) {
-    return arr[1];
+int func2(int[3] array) {
+    return array[1];
 }
 
-void func4(int[3] arr) {
-    arr[0] = 3;
+void func4(int[3] array) {
+    array[0] = 3;
 }
 
 int main(){
