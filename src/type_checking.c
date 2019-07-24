@@ -89,7 +89,7 @@ static void check_declaration(struct mcc_ast_declare_assign *declare_assign, voi
 		struct mcc_type_log *log = get_mcc_type_log_struct(MCC_TYPE_VALID);
 		log->sloc = &declare_assign->node.sloc;
 		log->lhs_type = declare_assign->declare_type;
-		char array_len[4] = {0};
+		char array_len[10] = {0};
 		if (declare_assign->declare_array_size) {
 			snprintf(array_len, sizeof(array_len), "[%ld]", *declare_assign->declare_array_size);
 		}
@@ -168,6 +168,18 @@ static void check_expression_call(struct mcc_ast_expression *expr, void *data)
 			if (!tmp2)
 				return;
 			do {
+				if (tmp1->expression->expression_type == MCC_AST_TYPE_ARRAY &&
+				    (tmp1->expression->expression_array_type != tmp2->array_type)) {
+					struct mcc_semantic_error *error = get_mcc_semantic_error_struct(
+					    MCC_SC_ERROR_TYPE_INVALID_ARGUMENT_ARRAY_TYPE);
+					type_check->error = 1;
+					error->sloc = &expr->node.sloc;
+					error->par_type = tmp2->array_type;
+					error->arg_type = tmp1->expression->expression_array_type;
+					print_semantic_error(error, type_check->out);
+					break;
+				}
+
 				if (tmp1->expression->expression_type != tmp2->type) {
 					struct mcc_semantic_error *error =
 					    get_mcc_semantic_error_struct(MCC_SC_ERROR_TYPE_INVALID_ARGUMENT_TYPE);

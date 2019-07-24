@@ -141,6 +141,7 @@ struct mcc_ast_expression {
 
 	enum mcc_ast_expression_type type;
 	enum mcc_ast_type expression_type;
+	enum mcc_ast_type expression_array_type;
 	union {
 		// MCC_AST_EXPRESSION_TYPE_LITERAL
 		struct mcc_ast_literal *literal;
