@@ -113,7 +113,7 @@ char *get_id_by_line_ref(char *arg, struct mcc_asm_head *asm_head, int arg_numbe
 	if (arg_number == 1)
 		return arg;
 	else
-		return strdup("-");
+		return "-";
 }
 
 int is_number(char *str)
@@ -639,9 +639,12 @@ void create_asm_binary_op_float(FILE *out, struct mcc_ir_line *line, struct mcc_
 		print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FLDS, arg1);
 		print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FLDS, arg2);
 	} else {
-		lookup_data_section(out, line, asm_head, 1);
+		char *tmp;
+		tmp = lookup_data_section(out, line, asm_head, 1);
+		free(tmp);
 		print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FLDS, arg2);
-		lookup_data_section(out, line, asm_head, 2);
+		tmp = lookup_data_section(out, line, asm_head, 2);
+		free(tmp);
 		print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FLDS, arg1);
 	}
 
