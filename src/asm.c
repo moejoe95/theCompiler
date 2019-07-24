@@ -875,6 +875,7 @@ void create_asm_assignment(FILE *out, struct mcc_ir_line *line, struct mcc_asm_h
 			print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FLDS, datasec);
 			print_asm_instruction_store_float(out, MCC_ASM_INSTRUCTION_FSTPS, MCC_ASM_REGISTER_EBP,
 			                                  head->offset);
+			free(datasec);
 		} else {
 			char label[64] = {0};
 			sprintf(label, "(%d)", line->index);
