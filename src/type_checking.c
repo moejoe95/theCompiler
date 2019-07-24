@@ -89,7 +89,7 @@ static void check_declaration(struct mcc_ast_declare_assign *declare_assign, voi
 		struct mcc_type_log *log = get_mcc_type_log_struct(MCC_TYPE_VALID);
 		log->sloc = &declare_assign->node.sloc;
 		log->lhs_type = declare_assign->declare_type;
-		char array_len[4] = {0};
+		char array_len[10] = {0};
 		if (declare_assign->declare_array_size) {
 			snprintf(array_len, sizeof(array_len), "[%ld]", *declare_assign->declare_array_size);
 		}

@@ -423,6 +423,7 @@ static void symbol_table_function_def(struct mcc_ast_func_definition *function, 
 				    symbol_table, param->next_parameter->parameter->declare_id->identifier->name);
 				if (sym->array_size != NULL) {
 					argument_type_list_next->type = MCC_AST_TYPE_ARRAY;
+					argument_type_list_next->array_type = sym->type;
 				} else {
 					argument_type_list_next->type = sym->type;
 				}
