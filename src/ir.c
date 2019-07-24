@@ -82,11 +82,10 @@ static char *lookup_table_args(struct mcc_ir_line_head *head, char *arg1, char *
 		sprintf(lookup_arg, "%s[%s]", arg1, arg2);
 		if (arg2 != NULL && arg2[0] == '(')
 			return strdup(lookup_arg);
-		else if(arg2 == NULL)
-		{
+		else if (arg2 == NULL) {
 			return strdup(arg1);
 		}
-		
+
 	} else {
 		sprintf(lookup_arg, "%s", arg1);
 	}
@@ -309,10 +308,10 @@ static void generate_ir_binary_expression(struct mcc_ast_expression *bin_expr,
 			char arg2[64] = {0};
 			if (lhs->array_access_exp->type == MCC_AST_EXPRESSION_TYPE_LITERAL ||
 			    lhs->array_access_exp->type == MCC_AST_EXPRESSION_TYPE_IDENTIFIER) {
-				sprintf(arg2, generate_ir_entity(head, lhs->array_access_exp));
+				sprintf(arg2, "%s", generate_ir_entity(head, lhs->array_access_exp));
 				char *table_arg = lookup_table_args(head, arg2, NULL, -1);
 				if (strcmp(table_arg, "0") != 0)
-					sprintf(arg2, table_arg);
+					sprintf(arg2, "%s", table_arg);
 			} else {
 				generate_ir_expression(lhs->array_access_exp, head, -1);
 				sprintf(arg2, "(%d)", head->index);
@@ -341,10 +340,10 @@ static void generate_ir_binary_expression(struct mcc_ast_expression *bin_expr,
 			char arg2[64] = {0};
 			if (rhs->array_access_exp->type == MCC_AST_EXPRESSION_TYPE_LITERAL ||
 			    rhs->array_access_exp->type == MCC_AST_EXPRESSION_TYPE_IDENTIFIER) {
-				sprintf(arg2, generate_ir_entity(head, rhs->array_access_exp));
+				sprintf(arg2, "%s", generate_ir_entity(head, rhs->array_access_exp));
 				char *table_arg = lookup_table_args(head, arg2, NULL, -1);
 				if (strcmp(table_arg, "0") != 0)
-					sprintf(arg2, table_arg);
+					sprintf(arg2, "%s", table_arg);
 			} else {
 				generate_ir_expression(rhs->array_access_exp, head, -1);
 				sprintf(arg2, "(%d)", head->index);
