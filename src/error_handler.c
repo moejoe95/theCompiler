@@ -171,6 +171,14 @@ void print_semantic_error(struct mcc_semantic_error *semantic_error, FILE *out)
 		        "invalid argument type", get_type_string(semantic_error->par_type),
 		        get_type_string(semantic_error->arg_type));
 		break;
+	case MCC_SC_ERROR_TYPE_INVALID_ARGUMENT_ARRAY_TYPE:
+		assert(semantic_error->sloc);
+		assert(semantic_error->par_type);
+		fprintf(out, "%s:%d:%d: error: %s (expected 'ARRAY' of type '%s', but got type '%s')\n",
+		        semantic_error->sloc->filename, semantic_error->sloc->end_line, semantic_error->sloc->end_col,
+		        "invalid argument type", get_type_string(semantic_error->par_type),
+		        get_type_string(semantic_error->arg_type));
+		break;
 	}
 
 	delete_mcc_semantic_error_struct(semantic_error);

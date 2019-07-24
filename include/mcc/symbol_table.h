@@ -49,6 +49,7 @@ struct mcc_symbol {
 
 struct argument_type_list {
 	enum mcc_ast_type type;
+	enum mcc_ast_type array_type;
 	struct argument_type_list *next_type;
 };
 

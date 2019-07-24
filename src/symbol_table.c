@@ -410,6 +410,7 @@ static void symbol_table_function_def(struct mcc_ast_func_definition *function, 
 		    lookup_symbol_in_scope(symbol_table, param->parameter->declare_id->identifier->name);
 		if (sym->array_size != NULL) {
 			arg_type_list_first->type = MCC_AST_TYPE_ARRAY;
+			arg_type_list_first->array_type = sym->type;
 		} else {
 			arg_type_list_first->type = sym->type;
 		}
@@ -542,6 +543,7 @@ static void set_expression_type(struct mcc_ast_expression *expr, struct mcc_symb
 	}
 	if (sym->array_size != NULL && expr->array_access_exp == NULL) {
 		expr->expression_type = MCC_AST_TYPE_ARRAY;
+		expr->expression_array_type = sym->type;
 	} else {
 		expr->expression_type = sym->type;
 	}

@@ -444,8 +444,7 @@ static void generate_function_arguments(struct mcc_ast_expression *expr, struct 
 
 			int mem_size = list->expression->expression_type == MCC_AST_TYPE_FLOAT ? 2 : 0;
 
-			generate_ir_table_line(head, strdup(value), NULL, MCC_IR_TABLE_PUSH, -1, -1, mem_size);
-			free(value);
+			generate_ir_table_line(head, value, NULL, MCC_IR_TABLE_PUSH, -1, -1, mem_size);
 		}
 		list = list->next_argument;
 	}
@@ -474,7 +473,7 @@ static void generate_ir_identifier(struct mcc_ast_expression *expr,
 	if (expr->expression_type == MCC_AST_TYPE_BOOL)
 		generate_ir_table_line(head, value, NULL, MCC_IR_TABLE_BOOL, -1, -1, -1);
 	else
-		generate_ir_table_line(head, value, NULL, type, -1, -1, -1); // todo error from here!!
+		generate_ir_table_line(head, value, NULL, type, -1, -1, -1);
 }
 
 static void generate_ir_expression(struct mcc_ast_expression *expr,
@@ -842,7 +841,8 @@ static void generate_ir_param(struct mcc_ast_parameter *param, struct mcc_ir_lin
 	new_table->index = head->index;
 
 	if (param->parameter->declare_array_size != NULL && *param->parameter->declare_array_size > 0) {
-		new_table->arg1 = param->parameter->declare_id->identifier->name;
+		free(new_table->arg1);
+		new_table->arg1 = strdup(param->parameter->declare_id->identifier->name);
 		char arg2[64] = {0};
 		sprintf(arg2, "%ld", *param->parameter->declare_array_size);
 		new_table->arg2 = strdup(arg2);
