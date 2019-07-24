@@ -111,6 +111,7 @@ struct mcc_asm_data_section {
 	struct mcc_asm_data_index *index;
 	struct mcc_asm_data_section *next_data_section;
 	int label_count;
+	char *func_name;
 };
 
 struct mcc_asm_stack {

@@ -197,8 +197,10 @@ char *lookup_data_section(FILE *out, struct mcc_ir_line *line, struct mcc_asm_he
 		if ((data_section->id != NULL && strcmp(arg, data_section->id) == 0)) {
 			data_section_label_count = data_section->label_count;
 		} else if (data_section->line_no != NULL && strcmp(arg, data_section->line_no) == 0) {
-			data_section_label_count = data_section->label_count;
-			arg = data_section->id;
+			if(data_section->func_name == asm_head->ir->func_name) {
+				data_section_label_count = data_section->label_count;
+				arg = data_section->id;
+			}
 		}
 		data_section = data_section->next_data_section;
 	}
@@ -841,6 +843,7 @@ char *add_asm_float(char *arg, int line_no, struct mcc_asm_head *head)
 	new_data_section->line_no = NULL;
 	new_data_section->next_data_section = NULL;
 	new_data_section->label_count = head->temp_variable_id;
+	new_data_section->func_name = head->ir->func_name;
 
 	current->next_data_section = new_data_section;
 
@@ -882,6 +885,7 @@ char *create_asm_float(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head 
 	new_data_section->line_no = NULL;
 	new_data_section->next_data_section = NULL;
 	new_data_section->label_count = head->temp_variable_id;
+	new_data_section->func_name = head->ir->func_name;
 
 	current->next_data_section = new_data_section;
 
@@ -1053,6 +1057,7 @@ void create_asm_array(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *
 	new_data_section->line_no = NULL;
 	new_data_section->next_data_section = NULL;
 	new_data_section->label_count = -1;
+	new_data_section->func_name = head->ir->func_name;
 
 	struct mcc_asm_data_index *new_data_index_current = malloc(sizeof(*new_data_index_current));
 	struct mcc_asm_data_index *new_data_index_root = new_data_index_current;
@@ -1204,6 +1209,7 @@ void mcc_create_asm(struct mcc_ir_table_head *ir, FILE *out, int destination)
 	data_root->line_no = NULL;
 	data_root->index = NULL;
 	data_root->next_data_section = NULL;
+	data_root->func_name = NULL;
 
 	asm_head->data_section = data_root;
 
