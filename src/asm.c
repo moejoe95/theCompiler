@@ -451,9 +451,16 @@ void create_asm_push(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *a
 			char *loc = add_string_to_datasection(NULL, strdup(line->arg1), asm_head);
 			print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_PUSHL, loc, -1, 0);
 		} else { // literals
-			char arg[65];
-			sprintf(arg, "$%s", line->arg1);
-			print_asm_instruction_call(out, MCC_ASM_INSTRUCTION_PUSHL, arg);
+			int stack_pos_arr = find_stack_position(line->arg1, asm_head);
+
+			if(stack_pos_arr != -1){ // array name
+				print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_PUSHL, MCC_ASM_REGISTER_EBP, stack_pos_arr, -1, 0);
+			}
+			else{
+				char arg[65];
+				sprintf(arg, "$%s", line->arg1);
+				print_asm_instruction_call(out, MCC_ASM_INSTRUCTION_PUSHL, arg);
+			}
 		}
 	}
 	asm_head->current_stack_size_parameters +=
