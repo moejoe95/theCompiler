@@ -570,6 +570,10 @@ void create_asm_binary_op_int(FILE *out, struct mcc_ir_line *line, struct mcc_as
 	if (stack_position_arg1 != -1 && arg1 == NULL) // stack pos not found -> must be literal
 		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EBP, stack_position_arg1,
 		                          MCC_ASM_REGISTER_EAX, 0);
+	else if(stack_position_arg1 != -1 && stack_position_arg2 != -1){
+		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EBP, stack_position_arg1,
+		                          MCC_ASM_REGISTER_EAX, 0);
+	}
 	else if (arg1 == NULL)
 		print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, line->arg1, MCC_ASM_REGISTER_EAX, 0);
 	else if (arg1 != NULL) {
