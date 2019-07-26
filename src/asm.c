@@ -142,7 +142,6 @@ char *lookup_data_section_array(FILE *out, char *arg, struct mcc_asm_head *asm_h
 				print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EBP,
 				                          stack_pos, MCC_ASM_REGISTER_ECX, 0);
 			} else {
-				print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, id, MCC_ASM_REGISTER_EDX, 0);
 				print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, access_position,
 				                          MCC_ASM_REGISTER_ECX, 0);
 			}
@@ -154,7 +153,14 @@ char *lookup_data_section_array(FILE *out, char *arg, struct mcc_asm_head *asm_h
 			int stack_pos_arr = find_stack_position(id, asm_head);
 
 			print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EBP, stack_pos_arr, MCC_ASM_REGISTER_EDX, 0);
-			print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, access_position, MCC_ASM_REGISTER_ECX, 0);	
+
+			if (!is_number(access_position)) { // access with expression
+				int stack_pos = find_stack_position(access_position, asm_head);
+				print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EBP,
+				                          stack_pos, MCC_ASM_REGISTER_ECX, 0);
+			}
+			else
+				print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, access_position, MCC_ASM_REGISTER_ECX, 0);	
 		}
 	}
 	sprintf(index, "(%%edx, %%ecx, %d)", factor);
@@ -960,12 +966,18 @@ void create_asm_array_assignment(FILE *out, struct mcc_ir_line *line, struct mcc
 			print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FSTPS, index);
 			print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FLDS, index);
 		}
-	} else if (line->memory_size == 1) { // int arrays
+	} else { // int arrays
 
 		if (strncmp(line->arg2, "(", 1) == 0) {
 			print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EBP,
 			                          stack_position_arg2, MCC_ASM_REGISTER_EAX, 0);
-		} else {
+		}
+		else if(line->arg2[strlen(line->arg2) - 1] == ']'){
+			char* arr_val = lookup_data_section_array(out, line->arg2, head, 4);
+			print_asm_instruction_array_get(out, MCC_ASM_INSTRUCTION_MOVL, arr_val, MCC_ASM_REGISTER_EAX);
+			index = lookup_data_section_array(out, line->arg1, head, 4);
+		} 
+		else {
 			print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, line->arg2, MCC_ASM_REGISTER_EAX, 0);
 		}
 
