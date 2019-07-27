@@ -156,6 +156,9 @@ void get_assembly_instruction(enum mcc_asm_instruction in, char *in_string)
 	case MCC_ASM_INSTRUCTION_FCHS:
 		strcpy(in_string, "fchs");
 		break;
+	case MCC_ASM_INSTRUCTION_FINIT:
+		strcpy(in_string, "finit");
+		break;
 	default:
 		strcpy(in_string, "UNDEF");
 		break;
