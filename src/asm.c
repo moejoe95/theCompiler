@@ -149,18 +149,19 @@ char *lookup_data_section_array(FILE *out, char *arg, struct mcc_asm_head *asm_h
 		}
 		data_section = data_section->next_data_section;
 
-		if(data_section == NULL){
+		if (data_section == NULL) {
 			int stack_pos_arr = find_stack_position(id, asm_head);
 
-			print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EBP, stack_pos_arr, MCC_ASM_REGISTER_EDX, 0);
+			print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EBP, stack_pos_arr,
+			                          MCC_ASM_REGISTER_EDX, 0);
 
 			if (!is_number(access_position)) { // access with expression
 				int stack_pos = find_stack_position(access_position, asm_head);
 				print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EBP,
 				                          stack_pos, MCC_ASM_REGISTER_ECX, 0);
-			}
-			else
-				print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, access_position, MCC_ASM_REGISTER_ECX, 0);	
+			} else
+				print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, access_position,
+				                          MCC_ASM_REGISTER_ECX, 0);
 		}
 	}
 	sprintf(index, "(%%edx, %%ecx, %d)", factor);
@@ -199,8 +200,6 @@ char *lookup_data_section(FILE *out, struct mcc_ir_line *line, struct mcc_asm_he
 		sprintf(val, "%d(%%ebp)", stack_pos);
 		return strdup(val);
 	}
-
-	// arg = get_id_by_line_ref(arg, asm_head);
 
 	int data_section_label_count = 0;
 	struct mcc_asm_data_section *data_section = asm_head->data_section;
@@ -459,10 +458,10 @@ void create_asm_push(FILE *out, struct mcc_ir_line *line, struct mcc_asm_head *a
 		} else { // literals
 			int stack_pos_arr = find_stack_position(line->arg1, asm_head);
 
-			if(stack_pos_arr != -1){ // array name
-				print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_PUSHL, MCC_ASM_REGISTER_EBP, stack_pos_arr, -1, 0);
-			}
-			else{
+			if (stack_pos_arr != -1) { // array name
+				print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_PUSHL, MCC_ASM_REGISTER_EBP,
+				                          stack_pos_arr, -1, 0);
+			} else {
 				char arg[65];
 				sprintf(arg, "$%s", line->arg1);
 				print_asm_instruction_call(out, MCC_ASM_INSTRUCTION_PUSHL, arg);
@@ -488,7 +487,7 @@ void create_asm_pop(FILE *out,
 	int offset = 0;
 
 	while (params != NULL && strcmp(params->arg_name, line->arg1) != 0) {
-		offset = offset + (4 * 1); // params->size);
+		offset = offset + (4 * 1);
 		params = params->next_parameter;
 	}
 
@@ -570,11 +569,10 @@ void create_asm_binary_op_int(FILE *out, struct mcc_ir_line *line, struct mcc_as
 	if (stack_position_arg1 != -1 && arg1 == NULL) // stack pos not found -> must be literal
 		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EBP, stack_position_arg1,
 		                          MCC_ASM_REGISTER_EAX, 0);
-	else if(stack_position_arg1 != -1 && stack_position_arg2 != -1){
+	else if (stack_position_arg1 != -1 && stack_position_arg2 != -1) {
 		print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EBP, stack_position_arg1,
 		                          MCC_ASM_REGISTER_EAX, 0);
-	}
-	else if (arg1 == NULL)
+	} else if (arg1 == NULL)
 		print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, line->arg1, MCC_ASM_REGISTER_EAX, 0);
 	else if (arg1 != NULL) {
 		print_asm_instruction_array_get(out, MCC_ASM_INSTRUCTION_MOVL, arg1, MCC_ASM_REGISTER_EAX);
@@ -600,7 +598,6 @@ void create_asm_binary_op_int(FILE *out, struct mcc_ir_line *line, struct mcc_as
 		    : print_asm_instruction_array_get(out, MCC_ASM_INSTRUCTION_MULL, arg2, MCC_ASM_REGISTER_EAX);
 		break;
 
-	// TODO array operations from here downwards are missing
 	case MCC_AST_BINARY_OP_DIV:
 		create_asm_int_div(out, line, asm_head);
 		break;
@@ -975,13 +972,11 @@ void create_asm_array_assignment(FILE *out, struct mcc_ir_line *line, struct mcc
 		if (strncmp(line->arg2, "(", 1) == 0) {
 			print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EBP,
 			                          stack_position_arg2, MCC_ASM_REGISTER_EAX, 0);
-		}
-		else if(line->arg2[strlen(line->arg2) - 1] == ']'){
-			char* arr_val = lookup_data_section_array(out, line->arg2, head, 4);
+		} else if (line->arg2[strlen(line->arg2) - 1] == ']') {
+			char *arr_val = lookup_data_section_array(out, line->arg2, head, 4);
 			print_asm_instruction_array_get(out, MCC_ASM_INSTRUCTION_MOVL, arr_val, MCC_ASM_REGISTER_EAX);
 			index = lookup_data_section_array(out, line->arg1, head, 4);
-		} 
-		else {
+		} else {
 			print_asm_instruction_lit(out, MCC_ASM_INSTRUCTION_MOVL, line->arg2, MCC_ASM_REGISTER_EAX, 0);
 		}
 
@@ -1219,6 +1214,29 @@ void mcc_delete_stack(struct mcc_asm_stack *stack)
 	free(stack);
 }
 
+void create_asm_functions(FILE *tmpfile, struct mcc_ir_table *first_line, struct mcc_asm_head *asm_head, int is_main)
+{
+	struct mcc_ir_table *current_func = first_line;
+	while (current_func != NULL) {
+		int is_current_main = is_main ? strcmp(current_func->func_name, "main") == 0
+		                              : strcmp(current_func->func_name, "main") != 0;
+
+		if (is_current_main) {
+			struct mcc_ir_line *current_line = current_func->line_head->root;
+			asm_head->offset = 0;
+			asm_head->ir = current_func;
+			create_function_label(tmpfile, current_func, asm_head);
+			while (current_line != NULL) {
+				create_asm_line(tmpfile, current_line, asm_head, current_func);
+				current_line = current_line->next_line;
+			}
+		}
+		current_func = current_func->next_table;
+		mcc_delete_stack(asm_head->stack);
+		asm_head->stack = NULL;
+	}
+}
+
 void mcc_create_asm(struct mcc_ir_table_head *ir, FILE *out, int destination)
 {
 	assert(ir);
@@ -1252,42 +1270,8 @@ void mcc_create_asm(struct mcc_ir_table_head *ir, FILE *out, int destination)
 
 	asm_head->data_section = data_root;
 
-	struct mcc_ir_table *current_func = ir->root;
-	while (current_func != NULL) {
-		if (strcmp(current_func->func_name, "main") == 0) {
-			struct mcc_ir_line *current_line = current_func->line_head->root;
-			asm_head->offset = 0;
-			asm_head->ir = current_func;
-			create_function_label(tmpfile, current_func, asm_head);
-			while (current_line != NULL) {
-				create_asm_line(tmpfile, current_line, asm_head, current_func);
-				current_line = current_line->next_line;
-			}
-
-			break;
-		}
-		current_func = current_func->next_table;
-	}
-
-	mcc_delete_stack(asm_head->stack);
-	asm_head->stack = NULL;
-
-	current_func = ir->root;
-	while (current_func != NULL) {
-		if (strcmp(current_func->func_name, "main") != 0) {
-			struct mcc_ir_line *current_line = current_func->line_head->root;
-			asm_head->offset = 0;
-			asm_head->ir = current_func;
-			create_function_label(tmpfile, current_func, asm_head);
-			while (current_line != NULL) {
-				create_asm_line(tmpfile, current_line, asm_head, current_func);
-				current_line = current_line->next_line;
-			}
-		}
-		current_func = current_func->next_table;
-		mcc_delete_stack(asm_head->stack);
-		asm_head->stack = NULL;
-	}
+	create_asm_functions(tmpfile, ir->root, asm_head, 1); // create main first
+	create_asm_functions(tmpfile, ir->root, asm_head, 0); // then other functions
 
 	print_asm_data_section(tmpfile, data_root);
 
