@@ -136,7 +136,7 @@ int main(int argc, char **argv)
 		}
 
 		// build symbol table
-		st = mcc_create_symbol_table(pro, out, log_level_to_int(LOG_LEVEL));
+		st = mcc_create_symbol_table(pro, out, log_level_to_int(LOG_LEVEL), isScoped);
 		if (st == NULL) {
 			mcc_ast_delete_program(pro);
 			fclose(in);

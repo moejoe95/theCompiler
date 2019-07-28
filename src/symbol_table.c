@@ -177,7 +177,8 @@ struct mcc_symbol *create_symbol(enum mcc_ast_type type,
 	return sym;
 }
 
-struct mcc_symbol_table *mcc_create_symbol_table(struct mcc_ast_program *program, FILE *out, int log_level)
+struct mcc_symbol_table *
+mcc_create_symbol_table(struct mcc_ast_program *program, FILE *out, int log_level, int is_scoped)
 {
 	if (program == NULL) {
 		return NULL;
@@ -190,13 +191,14 @@ struct mcc_symbol_table *mcc_create_symbol_table(struct mcc_ast_program *program
 	temp_st->is_returned = 0;
 	temp_st->out = out;
 	temp_st->error_found = false;
+	temp_st->is_scoped = is_scoped;
 
 	add_built_ins(temp_st);
 
 	struct mcc_ast_visitor visitor = generate_symbol_table_visitor(temp_st);
 	mcc_ast_visit(program, &visitor);
 
-	if (!temp_st->main_found) {
+	if (!temp_st->main_found && !temp_st->is_scoped) {
 		temp_st->error_found = true;
 		struct mcc_semantic_error *error = get_mcc_semantic_error_struct(MCC_SC_ERROR_NO_MAIN);
 
