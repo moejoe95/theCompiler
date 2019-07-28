@@ -965,7 +965,6 @@ void create_asm_array_assignment(FILE *out, struct mcc_ir_line *line, struct mcc
 
 			print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FSTPS, index);
 			print_asm_instruction_load_float(out, MCC_ASM_INSTRUCTION_FLDS, index);
-			free(index2);
 		}
 	} else { // int arrays
 
@@ -1004,7 +1003,6 @@ void create_asm_assignment(FILE *out, struct mcc_ir_line *line, struct mcc_asm_h
 			print_asm_instruction_store_float(out, MCC_ASM_INSTRUCTION_FSTPS, MCC_ASM_REGISTER_EBP,
 			                                  head->offset);
 			push_on_stack(line, head);
-			free(index);
 		} else if (line->arg2[0] != '(') {
 			char *label = create_asm_float(out, line, head);
 
