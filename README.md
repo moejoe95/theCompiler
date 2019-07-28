@@ -45,9 +45,8 @@ Taken from the [Meson Documentation](https://mesonbuild.com/Unit-tests.html#cove
 
 ## Known Issues
 
-* function parameter type checking ignores type of array
 * string size of blocks in CFG is fixed, on really large blocks (around 1700 chars), stack is smashed
-* major problems with arrays and floats in the ASM code, features related to that will not work
+* -f flag to limit scope to a function is only working on simple functions without function calls
 * only a single input files is supported
 
 
