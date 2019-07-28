@@ -14,17 +14,29 @@ struct mcc_type_log {
 };
 
 void mcc_print_type_log_header(FILE *out);
+
 void mcc_print_type_log_assign(FILE *out, struct mcc_type_log *log, char *expression);
+
 void mcc_print_type_log_return(FILE *out, struct mcc_type_log *log, char *expression);
+
 void mcc_print_type_log_op(FILE *out, struct mcc_type_log *log, char *expression);
+
 void mcc_print_type_log_bin(FILE *out, struct mcc_type_log *log, char *expression);
+
 void mcc_print_type_log_u_op(FILE *out, struct mcc_type_log *log, char *expr);
+
 void mcc_print_type_log_u_bin(FILE *out, struct mcc_type_log *log, char *expr);
+
 void mcc_print_type_log_decl(FILE *out, struct mcc_type_log *log, char *expr);
-struct mcc_type_log *get_mcc_type_log_struct(enum mcc_type_status status);
+
 void mcc_print_type_log_footer(FILE *out);
+
+struct mcc_type_log *get_mcc_type_log_struct(enum mcc_type_status status);
+
 char *get_status_string(enum mcc_type_status status);
+
 void mcc_delete_log_struct(struct mcc_type_log *log);
+
 void print_line(FILE *out);
 
 #endif

@@ -6,6 +6,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+void create_asm_header(FILE *out);
+
 void print_asm_instruction_reg(FILE *out,
                                enum mcc_asm_instruction in,
                                enum mcc_asm_operand op1,
@@ -22,9 +24,8 @@ void print_asm_instruction_load_float(FILE *out, enum mcc_asm_instruction in, ch
 void print_asm_instruction_load_float_reg(FILE *out, enum mcc_asm_instruction in, enum mcc_asm_operand reg, int offset);
 void print_asm_instruction_store_float(FILE *out, enum mcc_asm_instruction in, enum mcc_asm_operand reg, int offset);
 
-void create_asm_header(FILE *out);
-FILE *open_tmp_file();
-
 void print_asm_data_section(FILE *out, struct mcc_asm_data_section *data);
+
+FILE *open_tmp_file();
 
 #endif // MCC_PRINT_ASM

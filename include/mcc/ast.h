@@ -218,16 +218,6 @@ struct mcc_ast_identifier {
 	enum mcc_ast_type type;
 };
 
-// struct mcc_ast_symbol_declaration {
-
-// 	enum mcc_ast_type type;
-// 	int index;
-// 	long *array_size;
-// 	struct mcc_ast_identifier *identifier;
-
-// 	// mcc_array *parameter_declaration;
-// };
-
 void mcc_ast_delete_identifier(struct mcc_ast_identifier *id);
 
 // -------------------------------------------------------------------- Parameter

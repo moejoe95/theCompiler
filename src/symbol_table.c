@@ -8,6 +8,32 @@
 #include "mcc/ast.h"
 #include "mcc/error_handler.h"
 
+struct mcc_ast_visitor generate_symbol_table_visitor(struct temp_create_symbol_table *temp_st);
+struct mcc_ast_identifier *
+create_ast_identifier(int start_line, int start_col, int end_line, int end_col, char *filename, char *identifier);
+
+void add_child_symbol_table(struct mcc_symbol_table *parent, struct mcc_symbol_table *table);
+void add_symbol_to_list(struct mcc_symbol_list *list, struct mcc_symbol *symbol);
+void insert_built_in_symbol(struct temp_create_symbol_table *temp_st,
+                            char *identifier,
+                            enum mcc_ast_type return_type,
+                            enum mcc_ast_type parameter_type);
+void insert_symbol_function(struct mcc_symbol_table *st,
+                            struct mcc_ast_func_definition *function_def,
+                            int numArgs,
+                            struct argument_type_list *argument_type_list);
+void mcc_print_symbol_table(FILE *out, struct mcc_symbol_table *symbol_table, int indent);
+
+void enter_scope(struct temp_create_symbol_table *tmp, struct mcc_symbol_table *symbol_table)
+{
+	tmp->symbol_table = symbol_table;
+}
+
+void exit_scope(struct temp_create_symbol_table *tmp)
+{
+	tmp->symbol_table = tmp->symbol_table->parent;
+}
+
 static struct argument_type_list *create_argument_type_list()
 {
 	struct argument_type_list *argument_type_list = malloc(sizeof(*argument_type_list));
@@ -828,14 +854,4 @@ void add_child_symbol_table(struct mcc_symbol_table *parent, struct mcc_symbol_t
 	}
 
 	current->next = table;
-}
-
-void enter_scope(struct temp_create_symbol_table *tmp, struct mcc_symbol_table *symbol_table)
-{
-	tmp->symbol_table = symbol_table;
-}
-
-void exit_scope(struct temp_create_symbol_table *tmp)
-{
-	tmp->symbol_table = tmp->symbol_table->parent;
 }

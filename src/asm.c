@@ -10,6 +10,7 @@
 #include "mcc/print_asm.h"
 
 char *add_asm_float(char *arg, int line_no, struct mcc_asm_head *head);
+char *add_string_to_datasection(char *name, char *value, struct mcc_asm_head *head);
 
 int find_stack_position(char *arg, struct mcc_asm_head *head)
 {

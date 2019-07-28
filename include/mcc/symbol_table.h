@@ -58,41 +58,12 @@ struct mcc_symbol_list {
 	struct mcc_symbol *head;
 };
 
-void add_child_symbol_table(struct mcc_symbol_table *parent, struct mcc_symbol_table *table);
-void add_symbol_to_list(struct mcc_symbol_list *list, struct mcc_symbol *symbol);
-void add_symbol_table_to_list(struct mcc_symbol_table_list *list, struct mcc_symbol_table *table);
-
-struct mcc_symbol_table *mcc_create_symbol_table(struct mcc_ast_program *program, FILE *out, int log_level, int is_scoped);
-
-struct mcc_ast_visitor generate_symbol_table_visitor(struct temp_create_symbol_table *temp_st);
-
-void insert_built_in_symbol(struct temp_create_symbol_table *temp_st,
-                            char *identifier,
-                            enum mcc_ast_type return_type,
-                            enum mcc_ast_type parameter_type);
-
-struct mcc_symbol *create_symbol_built_in(enum mcc_ast_type type,
-                                          struct mcc_ast_identifier *identifier,
-                                          long *arr_size,
-                                          int numArgs,
-                                          struct argument_type_list *argument_type_list);
-
-void insert_symbol_function(struct mcc_symbol_table *st,
-                            struct mcc_ast_func_definition *function_def,
-                            int numArgs,
-                            struct argument_type_list *argument_type_list);
-
-void enter_scope(struct temp_create_symbol_table *tmp, struct mcc_symbol_table *symbol_table);
-void exit_scope(struct temp_create_symbol_table *tmp);
+struct mcc_symbol_table *
+mcc_create_symbol_table(struct mcc_ast_program *program, FILE *out, int log_level, int is_scoped);
 
 void mcc_delete_symbol_table(struct mcc_symbol_table *symbol_table);
 void mcc_delete_symbol(struct mcc_symbol *symbol);
 void mcc_delete_argument_typelist(struct argument_type_list *list);
-
-struct mcc_ast_identifier *
-create_ast_identifier(int start_line, int start_col, int end_line, int end_col, char *filename, char *identifier);
-
-void mcc_print_symbol_table(FILE *out, struct mcc_symbol_table *symbol_table, int indent);
 
 struct mcc_symbol *lookup_symbol_in_scope(struct mcc_symbol_table *symbol_table, char *key);
 struct mcc_symbol *lookup_symbol(struct mcc_symbol_table *symbol_table, char *symbol);

@@ -93,7 +93,6 @@ enum mcc_asm_operand {
 	MCC_ASM_REGISTER_EBP,
 	MCC_ASM_REGISTER_ESP,
 
-	//
 	MCC_ASM_REGISTER_CL,
 	MCC_ASM_REGISTER_ST,
 	MCC_ASM_REGISTER_ST_0,
@@ -130,8 +129,6 @@ struct mcc_asm_head {
 	int temp_variable_id;
 	struct mcc_ir_table *ir;
 };
-
-char *add_string_to_datasection(char *name, char *value, struct mcc_asm_head *head);
 
 void mcc_create_asm(struct mcc_ir_table_head *ir, FILE *out, int destination);
 void mcc_delete_asm(struct mcc_asm_head *asm_head);
