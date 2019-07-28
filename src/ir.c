@@ -79,8 +79,8 @@ static char *lookup_table_args(struct mcc_ir_line_head *head, char *arg1, char *
 
 	char lookup_arg[128] = {0};
 	if (type == MCC_AST_TYPE_ARRAY) {
+		sprintf(lookup_arg, "%s[%s]", arg1, arg2);
 		if (arg2 != NULL && arg2[0] == '(') {
-			sprintf(lookup_arg, "%s[%s]", arg1, arg2);
 			return strdup(lookup_arg);
 		} else if (arg2 == NULL) {
 			return strdup(arg1);
