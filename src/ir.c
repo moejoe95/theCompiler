@@ -79,10 +79,10 @@ static char *lookup_table_args(struct mcc_ir_line_head *head, char *arg1, char *
 
 	char lookup_arg[128] = {0};
 	if (type == MCC_AST_TYPE_ARRAY) {
-		sprintf(lookup_arg, "%s[%s]", arg1, arg2);
-		if (arg2 != NULL && arg2[0] == '(')
+		if (arg2 != NULL && arg2[0] == '(') {
+			sprintf(lookup_arg, "%s[%s]", arg1, arg2);
 			return strdup(lookup_arg);
-		else if (arg2 == NULL) {
+		} else if (arg2 == NULL) {
 			return strdup(arg1);
 		}
 
@@ -565,8 +565,8 @@ static void generate_ir_assignment(struct mcc_ast_declare_assign *assign, struct
 		lit_type = assign_rhs->literal->type;
 	}
 
-	enum ir_table_operation_type type;
-	char *entity1;
+	enum ir_table_operation_type type = MCC_IR_TABLE_NULL;
+	char *entity1 = NULL;
 	if (assign->assign_lhs->type == MCC_AST_EXPRESSION_TYPE_IDENTIFIER) {
 		entity1 = generate_ir_entity(head, assign->assign_lhs);
 		type = MCC_IR_TABLE_ASSIGNMENT;
@@ -902,8 +902,8 @@ struct mcc_ir_function_signature_parameters *get_function_parameter_size(struct 
 {
 	assert(parameter_list);
 
-	struct mcc_ir_function_signature_parameters *root;
-	struct mcc_ir_function_signature_parameters *current;
+	struct mcc_ir_function_signature_parameters *root = NULL;
+	struct mcc_ir_function_signature_parameters *current = NULL;
 
 	int counter = 0;
 	int total_size = 0;
@@ -921,7 +921,7 @@ struct mcc_ir_function_signature_parameters *get_function_parameter_size(struct 
 		if (counter == 0) {
 			root = new_params;
 			current = root;
-		} else {
+		} else if (current != NULL) {
 			current->next_parameter = new_params;
 			current = new_params;
 		}
@@ -930,7 +930,8 @@ struct mcc_ir_function_signature_parameters *get_function_parameter_size(struct 
 		counter++;
 	}
 
-	root->total_size = total_size;
+	if (root != NULL)
+		root->total_size = total_size;
 	return root;
 }
 

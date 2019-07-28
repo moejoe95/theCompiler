@@ -39,7 +39,7 @@ void print_help(const char *prg_name)
 	printf("\t-q, --quiet <name> \tsuppress error output\n");
 }
 
-void mcc_invoke_backend(char *gcc, char *file_name, char *output_name)
+int mcc_invoke_backend(char *gcc, char *file_name, char *output_name)
 {
 	assert(file_name);
 
@@ -53,7 +53,8 @@ void mcc_invoke_backend(char *gcc, char *file_name, char *output_name)
 	strcat(command, file_name);
 	strcat(command, " -o ");
 	strcat(command, output_name);
-	system(command);
+
+	return system(command);
 }
 
 int main(int argc, char *argv[])
@@ -177,7 +178,14 @@ int main(int argc, char *argv[])
 		mcc_create_asm(ir, out, log_level_to_int(LOG_LEVEL) + 1);
 
 		// generate binary from ASM
-		mcc_invoke_backend(gcc_path, "asm_tmp.s", outfile);
+		int systemRet = mcc_invoke_backend(gcc_path, "asm_tmp.s", outfile);
+		if (systemRet == -1) {
+			mcc_delete_ir(ir);
+			mcc_delete_symbol_table(st);
+			mcc_ast_delete_program(pro);
+			fclose(in);
+			return EXIT_FAILURE;
+		}
 
 		// cleanup
 		mcc_delete_ir(ir);

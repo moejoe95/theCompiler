@@ -124,7 +124,7 @@ int main(int argc, char **argv)
 
 		if (isScoped) {
 			struct mcc_ast_func_list *list = pro->function_list;
-			struct mcc_ast_func_list *scope_func_list;
+			struct mcc_ast_func_list *scope_func_list = NULL;
 			while (list != NULL) {
 				char *id = list->function->func_identifier->identifier->name;
 				if (strcmp(func_name_scope, id) == 0) {

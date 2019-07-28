@@ -1,5 +1,5 @@
 project('mcc', 'c',
-    default_options: [ 'buildtype=debug',
+    default_options: [ 'buildtype=release',
                        'c_std=c11',
                        'warning_level=3' ],
     meson_version: '>=0.44.0'
