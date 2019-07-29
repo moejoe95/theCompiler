@@ -1026,7 +1026,6 @@ void create_asm_assignment(FILE *out, struct mcc_ir_line *line, struct mcc_asm_h
 			int stack_pos_1 = find_stack_position(line->arg1, head);
 			int stack_pos_2 = find_stack_position(line->arg2, head);
 			if (stack_pos_1 == -1 && stack_pos_2 != -1) {
-				// todo
 				head->offset = head->offset - 4;
 				print_asm_instruction_reg(out, MCC_ASM_INSTRUCTION_MOVL, MCC_ASM_REGISTER_EBP,
 				                          stack_pos_2, MCC_ASM_REGISTER_EAX, 0);

@@ -103,7 +103,7 @@ static void get_table_line(struct mcc_ir_line *line, char *target)
 		sprintf(value, "(%d): %s %s\n", line->index, "label", line->arg1);
 		break;
 	case MCC_IR_TABLE_NULL:
-		sprintf(value, "(%d): %s \n", line->index, "null"); // TODO delete
+		sprintf(value, "(%d): %s \n", line->index, "null");
 		break;
 
 	default:
