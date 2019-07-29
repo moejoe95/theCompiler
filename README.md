@@ -47,7 +47,7 @@ Taken from the [Meson Documentation](https://mesonbuild.com/Unit-tests.html#cove
 
 * String size of blocks in CFG is fixed, thus the stack smashes on large blocks (around 1700 chars).
 * -f flag to limit scope to a function is only working on simple functions without function calls.
-* -q quiet flag is not implemented in the driver.
+* -q quiet flag does not work for scanning and parsing errors
 
 ## Milestones
 
