@@ -45,10 +45,9 @@ Taken from the [Meson Documentation](https://mesonbuild.com/Unit-tests.html#cove
 
 ## Known Issues
 
-* string size of blocks in CFG is fixed, on really large blocks (around 1700 chars), stack is smashed
-* -f flag to limit scope to a function is only working on simple functions without function calls
-* only a single input files is supported
-
+* String size of blocks in CFG is fixed, thus the stack smashes on large blocks (around 1700 chars).
+* -f flag to limit scope to a function is only working on simple functions without function calls.
+* -q quiet flag is not implemented in the driver.
 
 ## Milestones
 
