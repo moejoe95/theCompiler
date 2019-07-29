@@ -14,9 +14,11 @@ struct mcc_type_checking {
 	struct mcc_ast_func_definition *current_function;
 	int tracing;
 	int error;
+	int is_quiet;
 	FILE *out;
 };
 
-int mcc_check_types(struct mcc_ast_program *program, struct mcc_symbol_table *symbol_table, FILE *out, int tracing);
+int mcc_check_types(
+    struct mcc_ast_program *program, struct mcc_symbol_table *symbol_table, FILE *out, int tracing, int is_quiet);
 
 #endif

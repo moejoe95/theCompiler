@@ -76,9 +76,9 @@ int main(int argc, char *argv[])
 	}
 
 	static struct option long_options[] = {{"help", no_argument, NULL, 'h'},
-	                                       {"output", optional_argument, NULL, 'o'},
-	                                       {"version", optional_argument, NULL, 'v'},
-	                                       {"quiet", optional_argument, NULL, 'q'}};
+	                                       {"output", required_argument, NULL, 'o'},
+	                                       {"version", no_argument, NULL, 'v'},
+	                                       {"quiet", no_argument, NULL, 'q'}};
 
 	char outfile[64] = {0};
 	snprintf(outfile, sizeof(outfile), "%s", "a.out");
@@ -90,8 +90,10 @@ int main(int argc, char *argv[])
 	} else {
 		snprintf(logfile, sizeof(logfile), "%s", logfile_env);
 	}
+
+	int quiet = 0;
 	int c;
-	while ((c = getopt_long(argc, argv, "ho:vq:", long_options, NULL)) != -1)
+	while ((c = getopt_long(argc, argv, "ho:vq", long_options, NULL)) != -1)
 		switch (c) {
 		case 'h':
 			print_help(argv[0]);
@@ -101,10 +103,10 @@ int main(int argc, char *argv[])
 			snprintf(outfile, sizeof(outfile), "%s", optarg);
 			break;
 		case 'v':
-			printf("compiler version 0.1\n");
+			printf("theCompiler 1.0\n");
 			break;
 		case 'q':
-			// TODO suppress error output
+			quiet = 1;
 			break;
 		default:
 			return EXIT_FAILURE;
@@ -154,7 +156,7 @@ int main(int argc, char *argv[])
 		}
 
 		// build symbol table
-		st = mcc_create_symbol_table(pro, out, log_level_to_int(LOG_LEVEL), 0);
+		st = mcc_create_symbol_table(pro, out, log_level_to_int(LOG_LEVEL), 0, quiet);
 		if (st == NULL) {
 			mcc_ast_delete_program(pro);
 			fclose(in);
@@ -162,7 +164,7 @@ int main(int argc, char *argv[])
 		}
 
 		// type checking
-		int error = mcc_check_types(pro, st, out, log_level_to_int(LOG_LEVEL));
+		int error = mcc_check_types(pro, st, out, log_level_to_int(LOG_LEVEL), quiet);
 
 		if (error) {
 			mcc_delete_symbol_table(st);

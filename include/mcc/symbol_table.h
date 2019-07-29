@@ -21,6 +21,7 @@ struct temp_create_symbol_table {
 	int is_duplicate;
 	int is_returned;
 	int is_scoped;
+	int is_quiet;
 	struct mcc_symbol_table *symbol_table;
 	bool error_found;
 };
@@ -59,7 +60,7 @@ struct mcc_symbol_list {
 };
 
 struct mcc_symbol_table *
-mcc_create_symbol_table(struct mcc_ast_program *program, FILE *out, int log_level, int is_scoped);
+mcc_create_symbol_table(struct mcc_ast_program *program, FILE *out, int log_level, int is_scoped, int is_quiet);
 
 void mcc_delete_symbol_table(struct mcc_symbol_table *symbol_table);
 void mcc_delete_symbol(struct mcc_symbol *symbol);

@@ -23,7 +23,7 @@ static void check_expression_array(struct mcc_ast_expression *expr, void *data)
 		type_checking->error = 1;
 		error->sloc = &expr->node.sloc;
 		error->lhs_type = array_access_expr->expression_type;
-		print_semantic_error(error, type_checking->out);
+		print_semantic_error(error, type_checking->out, type_checking->is_quiet);
 		log->status = MCC_TYPE_INVALID;
 	}
 
@@ -52,7 +52,7 @@ static void check_assignment(struct mcc_ast_declare_assign *declare_assign, void
 		error->sloc = &declare_assign->node.sloc;
 		error->lhs_type = lhs->expression_type;
 		error->rhs_type = rhs->expression_type;
-		print_semantic_error(error, type_checking->out);
+		print_semantic_error(error, type_checking->out, type_checking->is_quiet);
 		log->status = MCC_TYPE_INVALID;
 	}
 
@@ -60,7 +60,7 @@ static void check_assignment(struct mcc_ast_declare_assign *declare_assign, void
 		struct mcc_semantic_error *error = get_mcc_semantic_error_struct(MCC_SC_ERROR_INVALID_ASSIGNMENT_ARR);
 		type_checking->error = 1;
 		error->sloc = &declare_assign->node.sloc;
-		print_semantic_error(error, type_checking->out);
+		print_semantic_error(error, type_checking->out, type_checking->is_quiet);
 		log->status = MCC_TYPE_INVALID;
 	}
 
@@ -139,7 +139,7 @@ static void check_function_return(struct mcc_ast_statement *ret_stmt, void *data
 		error->sloc = &ret_stmt->node.sloc;
 		error->ret_type = ret_type;
 		error->func_type = func_type;
-		print_semantic_error(error, type_check->out);
+		print_semantic_error(error, type_check->out, type_check->is_quiet);
 		log->status = MCC_TYPE_INVALID;
 	}
 
@@ -176,7 +176,7 @@ static void check_expression_call(struct mcc_ast_expression *expr, void *data)
 					error->sloc = &expr->node.sloc;
 					error->par_type = tmp2->array_type;
 					error->arg_type = tmp1->expression->expression_array_type;
-					print_semantic_error(error, type_check->out);
+					print_semantic_error(error, type_check->out, type_check->is_quiet);
 					break;
 				}
 
@@ -187,7 +187,7 @@ static void check_expression_call(struct mcc_ast_expression *expr, void *data)
 					error->sloc = &expr->node.sloc;
 					error->par_type = tmp2->type;
 					error->arg_type = tmp1->expression->expression_type;
-					print_semantic_error(error, type_check->out);
+					print_semantic_error(error, type_check->out, type_check->is_quiet);
 					break;
 				} else {
 					tmp1 = tmp1->next_argument;
@@ -210,7 +210,7 @@ static void check_eval_expression(struct mcc_ast_expression *expr, struct mcc_sy
 			type_check->error = 1;
 			error->sloc = &expr->node.sloc;
 			error->expr_type = expr->expression_type;
-			print_semantic_error(error, type_check->out);
+			print_semantic_error(error, type_check->out, type_check->is_quiet);
 		}
 		return;
 	}
@@ -222,7 +222,7 @@ static void check_eval_expression(struct mcc_ast_expression *expr, struct mcc_sy
 			type_check->error = 1;
 			error->sloc = &expr->node.sloc;
 			error->expr_type = expr->expression_type;
-			print_semantic_error(error, type_check->out);
+			print_semantic_error(error, type_check->out, type_check->is_quiet);
 		}
 		return;
 	}
@@ -239,7 +239,7 @@ static void check_eval_expression(struct mcc_ast_expression *expr, struct mcc_sy
 			type_check->error = 1;
 			error->sloc = &expr->node.sloc;
 			error->expr_type = expr->array_access_id->expression_type;
-			print_semantic_error(error, type_check->out);
+			print_semantic_error(error, type_check->out, type_check->is_quiet);
 		}
 		return;
 	}
@@ -268,7 +268,7 @@ static void check_eval_expression(struct mcc_ast_expression *expr, struct mcc_sy
 			type_check->error = 1;
 			error->sloc = &expr->node.sloc;
 			error->bin_expr = expr;
-			print_semantic_error(error, type_check->out);
+			print_semantic_error(error, type_check->out, type_check->is_quiet);
 			break;
 		}
 		}
@@ -283,7 +283,7 @@ static void check_eval_expression(struct mcc_ast_expression *expr, struct mcc_sy
 			type_check->error = 1;
 			error->sloc = &expr->node.sloc;
 			error->un_expr = expr;
-			print_semantic_error(error, type_check->out);
+			print_semantic_error(error, type_check->out, type_check->is_quiet);
 		}
 		return;
 	}
@@ -297,7 +297,7 @@ static void check_eval_expression(struct mcc_ast_expression *expr, struct mcc_sy
 			type_check->error = 1;
 			error->sloc = &expr->node.sloc;
 			error->expr_type = symbol->type;
-			print_semantic_error(error, type_check->out);
+			print_semantic_error(error, type_check->out, type_check->is_quiet);
 		}
 		return;
 	}
@@ -305,7 +305,7 @@ static void check_eval_expression(struct mcc_ast_expression *expr, struct mcc_sy
 	struct mcc_semantic_error *error = get_mcc_semantic_error_struct(MCC_SC_ERROR_TYPE_NO_CONDITION);
 	type_check->error = 1;
 	error->sloc = &expr->node.sloc;
-	print_semantic_error(error, type_check->out);
+	print_semantic_error(error, type_check->out, type_check->is_quiet);
 }
 
 static void check_statement_if(struct mcc_ast_statement *if_stmt, void *data)
@@ -364,7 +364,7 @@ static void check_expression_literal(struct mcc_ast_expression *expr, void *data
 		type_check->error = 1;
 		error->sloc = &expr->node.sloc;
 		error->identifier = expr->identifier;
-		print_semantic_error(error, type_check->out);
+		print_semantic_error(error, type_check->out, type_check->is_quiet);
 		break;
 	}
 	}
@@ -382,7 +382,7 @@ static void check_arithmetic_ops(struct mcc_ast_expression *bin_expr, void *data
 		type_check->error = 1;
 		error->sloc = &bin_expr->node.sloc;
 		error->expr_type = bin_expr->expression_type;
-		print_semantic_error(error, type_check->out);
+		print_semantic_error(error, type_check->out, type_check->is_quiet);
 		log->status = MCC_TYPE_INVALID;
 	}
 
@@ -411,7 +411,7 @@ static void check_logical_ops(struct mcc_ast_expression *bin_expr, void *data)
 		error->sloc = &bin_expr->node.sloc;
 		error->expr_type = bin_expr->expression_type;
 		type_check->error = 1;
-		print_semantic_error(error, type_check->out);
+		print_semantic_error(error, type_check->out, type_check->is_quiet);
 		log->status = MCC_TYPE_INVALID;
 	}
 
@@ -449,7 +449,7 @@ static void check_expression_binary(struct mcc_ast_expression *bin_expr, void *d
 		type_check->error = 1;
 		error->sloc = &bin_expr->node.sloc;
 		error->bin_expr = bin_expr;
-		print_semantic_error(error, type_check->out);
+		print_semantic_error(error, type_check->out, type_check->is_quiet);
 		log->status = MCC_TYPE_INVALID;
 	}
 
@@ -545,7 +545,8 @@ static struct mcc_ast_visitor type_checking_visitor(void *data)
 	                                .statement_while = check_statement_while};
 }
 
-int mcc_check_types(struct mcc_ast_program *program, struct mcc_symbol_table *symbol_table, FILE *out, int tracing)
+int mcc_check_types(
+    struct mcc_ast_program *program, struct mcc_symbol_table *symbol_table, FILE *out, int tracing, int is_quiet)
 {
 	assert(program);
 	assert(symbol_table);
@@ -558,6 +559,7 @@ int mcc_check_types(struct mcc_ast_program *program, struct mcc_symbol_table *sy
 	type_checking->out = out;
 	type_checking->tracing = tracing;
 	type_checking->error = 0;
+	type_checking->is_quiet = is_quiet;
 
 	if (tracing)
 		mcc_print_type_log_header(out); // print logging header

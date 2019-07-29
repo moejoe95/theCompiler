@@ -204,7 +204,7 @@ struct mcc_symbol *create_symbol(enum mcc_ast_type type,
 }
 
 struct mcc_symbol_table *
-mcc_create_symbol_table(struct mcc_ast_program *program, FILE *out, int log_level, int is_scoped)
+mcc_create_symbol_table(struct mcc_ast_program *program, FILE *out, int log_level, int is_scoped, int is_quiet)
 {
 	if (program == NULL) {
 		return NULL;
@@ -218,6 +218,7 @@ mcc_create_symbol_table(struct mcc_ast_program *program, FILE *out, int log_leve
 	temp_st->out = out;
 	temp_st->error_found = false;
 	temp_st->is_scoped = is_scoped;
+	temp_st->is_quiet = is_quiet;
 
 	add_built_ins(temp_st);
 
@@ -234,7 +235,7 @@ mcc_create_symbol_table(struct mcc_ast_program *program, FILE *out, int log_leve
 			error->sloc = &program->function_list->node.sloc;
 		}
 
-		print_semantic_error(error, temp_st->out);
+		print_semantic_error(error, temp_st->out, temp_st->is_quiet);
 	}
 
 	struct mcc_symbol_table *symbol_table = temp_st->symbol_table;
@@ -266,7 +267,7 @@ static void symbol_table_declaration(struct mcc_ast_declare_assign *declaration,
 		struct mcc_semantic_error *error = get_mcc_semantic_error_struct(MCC_SC_ERROR_DUPLICATE_DECLARATION);
 		error->sloc = &declaration->node.sloc;
 		error->identifier = declaration->declare_id->identifier;
-		print_semantic_error(error, temp->out);
+		print_semantic_error(error, temp->out, temp->is_quiet);
 		return;
 	}
 
@@ -400,7 +401,7 @@ static void symbol_table_function_def(struct mcc_ast_func_definition *function, 
 		    get_mcc_semantic_error_struct(MCC_SC_ERROR_DUPLICATE_FUNCTION_DEFINITION);
 		error->sloc = &function->node.sloc;
 		error->identifier = function->func_identifier->identifier;
-		print_semantic_error(error, tmp->out);
+		print_semantic_error(error, tmp->out, tmp->is_quiet);
 		return;
 	}
 
@@ -411,7 +412,7 @@ static void symbol_table_function_def(struct mcc_ast_func_definition *function, 
 		struct mcc_semantic_error *error = get_mcc_semantic_error_struct(MCC_SC_ERROR_NO_RETURN);
 		error->sloc = &function->node.sloc;
 		error->identifier = function->func_identifier->identifier;
-		print_semantic_error(error, tmp->out);
+		print_semantic_error(error, tmp->out, tmp->is_quiet);
 	}
 	tmp->is_returned = 0;
 
@@ -515,7 +516,7 @@ static void symbol_table_function_call(struct mcc_ast_expression *expression, vo
 		error = get_mcc_semantic_error_struct(MCC_SC_ERROR_FUNCTION_NOT_DECLARED);
 		error->sloc = &expression->node.sloc;
 		error->identifier = expression->function_call_identifier->identifier;
-		print_semantic_error(error, tmp->out);
+		print_semantic_error(error, tmp->out, tmp->is_quiet);
 		return;
 	}
 	expression->expression_type = sym->type;
@@ -536,7 +537,7 @@ static void symbol_table_function_call(struct mcc_ast_expression *expression, vo
 		error->func_identifier = expression->function_call_identifier->identifier;
 		error->expArgs = sym->numArgs;
 		error->gotArgs = numArgs;
-		print_semantic_error(error, tmp->out);
+		print_semantic_error(error, tmp->out, tmp->is_quiet);
 	}
 }
 
@@ -558,7 +559,7 @@ static struct mcc_symbol *check_identifier(struct mcc_ast_source_location *sloc,
 			    get_mcc_semantic_error_struct(MCC_SC_ERROR_UNDEFINED_IDENTIFIER);
 			error->sloc = sloc;
 			error->identifier = id;
-			print_semantic_error(error, temp->out);
+			print_semantic_error(error, temp->out, temp->is_quiet);
 		}
 		return NULL;
 	}
@@ -589,7 +590,7 @@ set_arr_expression_type(struct mcc_ast_expression *expr, struct mcc_symbol *sym,
 		struct mcc_semantic_error *error = get_mcc_semantic_error_struct(MCC_SC_ERROR_INVALID_ARRAY_ACCESS);
 		error->sloc = &expr->node.sloc;
 		error->lhs_type = sym->type;
-		print_semantic_error(error, temp->out);
+		print_semantic_error(error, temp->out, temp->is_quiet);
 	} else {
 		expr->expression_type = sym->type;
 	}

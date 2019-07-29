@@ -18,11 +18,14 @@ void print_scanner_error(char *filename, int last_line, int last_column, char er
 	fprintf(out, "%s:%d:%d: unknown character '%c'\n", filename, last_line, last_column, error_char);
 }
 
-void print_semantic_error(struct mcc_semantic_error *semantic_error, FILE *out)
+void print_semantic_error(struct mcc_semantic_error *semantic_error, FILE *out, int is_quiet)
 {
 	if (out == stdout) {
 		out = stderr;
 	}
+
+	if (is_quiet)
+		return;
 
 	enum mcc_ast_type lhs_type;
 	enum mcc_ast_type rhs_type;

@@ -77,7 +77,7 @@ struct mcc_semantic_error *get_mcc_semantic_error_struct(enum semantic_error_typ
 
 void print_lexer_error(char *filename, int last_line, int last_column, const char *msg, FILE *out);
 void print_scanner_error(char *filename, int last_line, int last_column, char error_char, FILE *out);
-void print_semantic_error(struct mcc_semantic_error *semantic_error, FILE *out);
+void print_semantic_error(struct mcc_semantic_error *semantic_error, FILE *out, int is_quiet);
 void delete_mcc_semantic_error_struct(struct mcc_semantic_error *semantic_error);
 
 #endif // MCC_ERROR_HANDLER_H
