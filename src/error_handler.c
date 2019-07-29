@@ -24,8 +24,10 @@ void print_semantic_error(struct mcc_semantic_error *semantic_error, FILE *out, 
 		out = stderr;
 	}
 
-	if (is_quiet)
+	if (is_quiet) {
+		free(semantic_error);
 		return;
+	}
 
 	enum mcc_ast_type lhs_type;
 	enum mcc_ast_type rhs_type;
